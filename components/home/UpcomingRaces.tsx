@@ -20,7 +20,11 @@ export function UpcomingRaces() {
             <p className="font-semibold">{race.name}</p>
             <p className="text-muted-foreground">{race.circuit}</p>
             <p className="text-xs">
-              {new Date(race.date).toLocaleDateString("fr-FR")}
+              {new Date(race.date).toLocaleDateString("fr-FR", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+              })}{" "}
             </p>
           </div>
         ))}
