@@ -1,6 +1,6 @@
 import { UpcomingRaces } from "@/components/home/UpcomingRaces";
 import { NextRaceCountdown } from "@/components/home/NextRaceCountdown";
-import { LastRaceResults } from "@/components/home/LastRaceResults";
+import { RaceResultsTable } from "@/components/race/RaceResultTable";
 
 export default function HomePage() {
   return (
@@ -8,8 +8,7 @@ export default function HomePage() {
       <NextRaceCountdown />
 
       <UpcomingRaces />
-
-      <LastRaceResults />
+      <RaceResultsTable round="last" title="Résultats dernière course" />
     </>
   );
 }

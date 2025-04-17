@@ -1,11 +1,16 @@
 "use client";
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { useRaceResults } from "@/features/race/useRaceResults";
 
-import { useRaceResults } from "@/features/lastRace";
-
-export function LastRaceResults() {
-  const { data: results, isLoading, isError } = useRaceResults("last");
+export function RaceResultsTable({
+  round,
+  title = "Résultats de course",
+}: {
+  round: number | "last";
+  title?: string;
+}) {
+  const { data: results, isLoading, isError } = useRaceResults(round);
 
   if (isLoading) return <p>Chargement des résultats...</p>;
   if (isError || !results) return <p>Erreur lors du chargement.</p>;
@@ -13,7 +18,7 @@ export function LastRaceResults() {
   return (
     <Card className="h-full">
       <CardHeader>
-        <CardTitle>🏁 Résultats dernière course</CardTitle>
+        <CardTitle>🏁 {title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
         {results.slice(0, 5).map((r, i) => (

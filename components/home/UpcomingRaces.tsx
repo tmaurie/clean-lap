@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { useUpcomingRaces } from "@/features/upcomingRaces";
+import { useUpcomingRaces } from "@/features/upcomingRaces/useUpcomingRaces";
 
 export function UpcomingRaces() {
   const { data: races, isLoading, isError } = useUpcomingRaces();

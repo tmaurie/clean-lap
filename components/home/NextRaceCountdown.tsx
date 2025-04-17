@@ -3,7 +3,7 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { MapPin, Clock, CalendarDays } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useNextRace } from "@/features/nextRace";
+import { useNextRace } from "@/features/nextRace/useNextRace";
 import { RaceCountdown } from "@/components/RaceCountdown";
 
 export function NextRaceCountdown() {
