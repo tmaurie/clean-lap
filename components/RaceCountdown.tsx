@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import clsx from "clsx";
+import {Card} from "@/components/ui/card";
 
 type RaceCountdownProps = {
   date: string;
@@ -16,33 +17,48 @@ export function RaceCountdown({ date, time }: RaceCountdownProps) {
     const interval = setInterval(() => {
       setRemaining(getTimeRemaining(raceDate));
     }, 1000);
-
     return () => clearInterval(interval);
   }, [raceDate]);
 
+  const isImminent = remaining.total < 1000 * 60 * 60 * 24; // 24h
+
   if (remaining.total <= 0) {
     return (
-      <Card className="bg-destructive text-destructive-foreground">
-        <CardHeader>
-          <CardTitle>🏁 C’est l’heure de la course !</CardTitle>
-        </CardHeader>
-      </Card>
+      <div className="text-center text-sm text-destructive font-semibold mt-4">
+        🏁 C’est l’heure de la course !{" "}
+        <span className="text-green-500 animate-pulse ml-1">🔴 En direct</span>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>⏳ Décompte jusqu'à la course</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p>La course commence dans :</p>
-        <p className="text-3xl font-mono mt-2">
-          {remaining.days}j {remaining.hours}h {remaining.minutes}m{" "}
-          {remaining.seconds}s
-        </p>
-      </CardContent>
+    <Card className="border-none bg-accent">
+      <div className="flex justify-center">
+        Compte à rebours avant la course
+      </div>
+      <div
+        className={clsx(
+          "grid grid-cols-4 gap-2 text-center mt-4",
+          isImminent && "animate-pulse text-destructive",
+        )}
+      >
+        <CountdownItem label="jours" value={remaining.days} />
+        <CountdownItem label="h" value={remaining.hours} />
+        <CountdownItem label="m" value={remaining.minutes} />
+        <CountdownItem label="s" value={remaining.seconds} />
+      </div>
     </Card>
+  );
+}
+
+function CountdownItem({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="flex flex-col items-center">
+      <span className="text-3xl font-bold tabular-nums">{value}</span>
+      <span className="text-xs text-muted-foreground uppercase tracking-wide">
+        {label}
+      </span>
+    </div>
   );
 }
 
