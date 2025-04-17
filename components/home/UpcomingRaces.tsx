@@ -14,9 +14,14 @@ import {
 } from "@/components/ui/tooltip";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {ArrowRight, Calendar} from "lucide-react";
+import { ArrowDown, ArrowRight, ArrowUp, Calendar } from "lucide-react";
+import { countryToFlagEmoji } from "@/lib/utils/flags";
+import { useState } from "react";
+
 
 export function UpcomingRaces() {
+  const [expanded, setExpanded] = useState(false);
+
   const { data: races, isLoading, isError } = useUpcomingRaces();
 
   if (isLoading)
@@ -29,6 +34,7 @@ export function UpcomingRaces() {
       </div>
     );
   if (isError || !races) return <p>Erreur lors du chargement.</p>;
+  const visibleRaces = expanded ? races.slice(1, 11) : races.slice(1, 6);
 
   return (
     <Card className="h-full">
@@ -36,16 +42,19 @@ export function UpcomingRaces() {
         <CardTitle>📆 Prochaines courses</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {races.slice(1, 6).map((race, index) => {
+        {visibleRaces.map((race, i) => {
           const timeUntilLabel = getTimeUntilLabel(race.date);
 
           return (
             <div
-              key={index}
+              key={i}
               className="text-sm border-b pb-2 last:border-none flex justify-between items-center"
             >
               <div>
-                <p className="font-semibold">{race.name}</p>
+                <Badge variant="secondary" className="font-semibold">
+                  {countryToFlagEmoji(race.location.split(", ").at(-1) || "")}{" "}
+                  {race.name}
+                </Badge>
                 <p className="text-muted-foreground text-xs">{race.circuit}</p>
                 <p className="text-xs md:hidden">
                   {new Date(race.date).toLocaleDateString("fr-FR", {
@@ -85,12 +94,28 @@ export function UpcomingRaces() {
             </div>
           );
         })}
-        <div className="pt-4">
-            <Button variant="secondary" size="sm" >
-                <Calendar />
-                <Link href="/calendar">Voir le calendrier complet</Link>
-                <ArrowRight />
-            </Button>
+        <div className="flex justify-between items-center">
+          <Button
+            className="cursor-pointer"
+            variant="outline"
+            size="sm"
+            onClick={() => setExpanded(!expanded)}
+          >
+            {expanded ? (
+              <>
+                <ArrowUp /> Réduire
+              </>
+            ) : (
+              <>
+                <ArrowDown /> Voir plus
+              </>
+            )}
+          </Button>
+          <Button hidden={!expanded} variant="outline" size="sm">
+            <Calendar />
+            <Link href="/calendar">Voir le calendrier complet</Link>
+            <ArrowRight />
+          </Button>
         </div>
       </CardContent>
     </Card>
