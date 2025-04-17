@@ -17,9 +17,9 @@ export function SiteHeader() {
     return (
         <header className="w-full border-b bg-background">
             <div className="container flex h-16 items-center justify-between px-4">
-                <h1 className="text-xl font-bold tracking-tight text-primary">🏎️ CleanLap</h1>
+                <h1 className="text-xl font-bold tracking-tight text-primary">CleanLap 🏎️</h1>
 
-                <nav className="flex items-center gap-4 text-sm font-medium">
+                <nav className="hidden md:flex items-center gap-4 text-sm font-medium">
                     {navItems.map((item) => (
                         <Link
                             key={item.href}
