@@ -19,3 +19,26 @@ export async function fetchNextRace(): Promise<Race | null> {
     return null;
   }
 }
+
+export async function fetchUpcomingRaces(): Promise<Race[]> {
+  const res = await fetch(
+    API_ROUTES.races(new Date().getFullYear().toString()),
+  );
+  const json = await res.json();
+
+  const races = json.MRData.RaceTable.Races as any[];
+
+  const now = new Date();
+
+  return races
+    .map(
+      (race): Race => ({
+        name: race.raceName,
+        date: race.date,
+        time: race.time,
+        circuit: race.Circuit.circuitName,
+        location: `${race.Circuit.Location.locality}, ${race.Circuit.Location.country}`,
+      }),
+    )
+    .filter((race) => new Date(`${race.date}T${race.time}`) > now);
+}
