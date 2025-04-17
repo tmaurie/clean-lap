@@ -5,11 +5,11 @@ import { StandingsPreview } from "@/components/home/StandingsPreview";
 
 export default function HomePage() {
   return (
-    <>
+    <section className="grid grid-cols-1 md:grid-cols-2 grid-flow-row-dense auto-rows-auto gap-6">
       <NextRaceCountdown />
-      <UpcomingRaces />
       <RaceResultsTable round="last" title="Résultats dernière course" />
+      <UpcomingRaces />
       <StandingsPreview />
-    </>
+    </section>
   );
 }

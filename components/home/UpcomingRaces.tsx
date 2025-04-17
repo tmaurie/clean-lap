@@ -15,7 +15,7 @@ export function UpcomingRaces() {
         <CardTitle>📆 Prochaines courses</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {races.slice(0, 10).map((race, index) => (
+        {races.slice(1, 6).map((race, index) => (
           <div key={index} className="text-sm border-b pb-2">
             <p className="font-semibold">{race.name}</p>
             <p className="text-muted-foreground">{race.circuit}</p>

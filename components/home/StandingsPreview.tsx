@@ -16,14 +16,14 @@ export function StandingsPreview() {
     return <p>Chargement des classements...</p>;
 
   return (
-    <Card className="h-full">
+    <Card className="h-auto">
       <CardHeader>
         <CardTitle>📊 Classements provisoires</CardTitle>
       </CardHeader>
       <CardContent className="grid grid-cols-2 gap-6 text-sm">
         <div>
           <p className="font-semibold mb-2">🏎️ Pilotes</p>
-          {drivers?.slice(0, 5).map((d, i) => (
+          {drivers?.slice(0, 10).map((d, i) => (
             <div key={i} className="flex justify-between items-center mb-1">
               <div className="flex gap-2 items-center">
                 <span className="w-5">{d.position}.</span>
@@ -42,7 +42,7 @@ export function StandingsPreview() {
 
         <div>
           <p className="font-semibold mb-2">🏢 Écuries</p>
-          {constructors?.slice(0, 5).map((c, i) => (
+          {constructors?.map((c, i) => (
             <div key={i} className="flex justify-between items-center mb-1">
               <div className="flex gap-2 items-center">
                 <span className="w-5">{c.position}.</span>
