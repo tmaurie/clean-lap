@@ -4,6 +4,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useRaceResults } from "@/features/race/useRaceResults";
 import { getConstructorColor } from "@/components/ui/colors";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import confetti from "canvas-confetti";
 
 export function RaceResultsTable({
   round,
@@ -14,6 +16,17 @@ export function RaceResultsTable({
 }) {
   const { data: results, isLoading, isError } = useRaceResults(round);
 
+  const handleConfetti = () => {
+    confetti({
+      particleCount: 100,
+      startVelocity: 30,
+      spread: 360,
+      origin: {
+        x: Math.random(),
+        y: Math.random(),
+      },
+    });
+  };
   if (isLoading)
     return (
       <div className="flex flex-col space-y-3">
@@ -51,9 +64,12 @@ export function RaceResultsTable({
                 />
                 <span>{r.driver}</span>
                 {isWinner && (
-                  <span className="text-xs text-green-500 ml-2 animate-pulse">
+                  <Badge
+                    onClick={handleConfetti}
+                    className="text-xs bg-green-300 text-accent ml-2 animate-pulse cursor-pointer"
+                  >
                     🏆 Vainqueur
-                  </span>
+                  </Badge>
                 )}
               </div>
 

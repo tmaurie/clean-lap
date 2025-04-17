@@ -18,7 +18,6 @@ import { ArrowDown, ArrowRight, ArrowUp, Calendar } from "lucide-react";
 import { countryToFlagEmoji } from "@/lib/utils/flags";
 import { useState } from "react";
 
-
 export function UpcomingRaces() {
   const [expanded, setExpanded] = useState(false);
 
