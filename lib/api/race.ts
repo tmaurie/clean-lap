@@ -1,4 +1,4 @@
-import { Race } from "@/entities/race/model";
+import { Race, RaceResult } from "@/entities/race/model";
 import { API_ROUTES } from "@/lib/config/api";
 
 export async function fetchNextRace(): Promise<Race | null> {
@@ -41,4 +41,25 @@ export async function fetchUpcomingRaces(): Promise<Race[]> {
       }),
     )
     .filter((race) => new Date(`${race.date}T${race.time}`) > now);
+}
+
+export async function fetchRaceResults(
+  round: number | "last",
+): Promise<RaceResult[]> {
+  const res = await fetch(
+    API_ROUTES.results(new Date().getFullYear().toString(), round),
+  );
+  const json = await res.json();
+
+  const results = json.MRData.RaceTable.Races[0]?.Results;
+
+  return results.map(
+    (r: any): RaceResult => ({
+      position: r.position,
+      driver: `${r.Driver.givenName} ${r.Driver.familyName}`,
+      constructor: r.Constructor.name,
+      time: r.Time?.time ?? "+ " + r.status,
+      points: r.points,
+    }),
+  );
 }

@@ -5,3 +5,11 @@ export type Race = {
   time: string; // UTC time
   location: string;
 };
+
+export type RaceResult = {
+  position: string;
+  driver: string;
+  constructor: string;
+  time: string;
+  points: string;
+};

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
-import {Card} from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 
 type RaceCountdownProps = {
   date: string;
