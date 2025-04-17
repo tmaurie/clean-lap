@@ -6,6 +6,7 @@ import {
   useConstructorStandings,
 } from "@/features/standings/hooks";
 import { getConstructorColor } from "@/components/ui/colors";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function StandingsPreview() {
   const { data: drivers, isLoading: loadingDrivers } = useDriverStandings();
@@ -13,7 +14,14 @@ export function StandingsPreview() {
     useConstructorStandings();
 
   if (loadingDrivers || loadingConstructors)
-    return <p>Chargement des classements...</p>;
+    return (
+      <div className="flex flex-col space-y-3">
+        <Skeleton className="h-[125px] w-full rounded-xl" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-1/2" />
+        </div>
+      </div>
+    );
 
   return (
     <Card className="h-auto">

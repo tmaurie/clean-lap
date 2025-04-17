@@ -5,11 +5,20 @@ import { MapPin, Clock, CalendarDays } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useNextRace } from "@/features/nextRace/useNextRace";
 import { RaceCountdown } from "@/components/RaceCountdown";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function NextRaceCountdown() {
   const { data: race, isLoading, isError } = useNextRace();
 
-  if (isLoading) return <p>Chargement de la prochaine course...</p>;
+  if (isLoading)
+    return (
+      <div className="flex flex-col space-y-3">
+        <Skeleton className="h-[125px] w-full rounded-xl" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-1/2" />
+        </div>
+      </div>
+    );
   if (isError || !race) return <p>Erreur lors du chargement.</p>;
 
   const raceDate = new Date(`${race.date}T${race.time}`);
