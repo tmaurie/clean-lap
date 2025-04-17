@@ -26,7 +26,7 @@ CleanLap est une web app Next.js orientée F1, dont l’objectif est de fournir 
 
 ### 📍 Navigation & pages
 
-- [ ] `Navbar` globale avec routing (mobile + desktop)
+- [x] `Navbar` globale avec routing (mobile + desktop)
 - [ ] `/standings` — Classement complet
 - [ ] `/calendar` — Calendrier complet filtrable
 - [ ] `/results/[round]` — Résultats complets d’une course

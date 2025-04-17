@@ -10,7 +10,7 @@ export function getConstructorColor(constructor: string): string {
     Williams: "#005aff",
     AlphaTauri: "#2b4562",
     "RB F1 Team": "#3d3d3d",
-    "Sauber" : "#a2a2a2",
+    Sauber: "#a2a2a2",
   };
 
   return colors[constructor] ?? "#999";

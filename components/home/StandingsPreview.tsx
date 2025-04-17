@@ -20,7 +20,7 @@ export function StandingsPreview() {
       <CardHeader>
         <CardTitle>📊 Classements provisoires</CardTitle>
       </CardHeader>
-      <CardContent className="grid grid-cols-2 gap-6 text-sm">
+      <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
         <div>
           <p className="font-semibold mb-2">🏎️ Pilotes</p>
           {drivers?.slice(0, 10).map((d, i) => (
