@@ -4,6 +4,7 @@ import { useNextRace } from "@/features/nextRace";
 import { Suspense } from "react";
 import { RaceCountdown } from "@/components/RaceCountdown";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export default function NextRacePage() {
   return (
@@ -23,7 +24,7 @@ function RaceDetails() {
 
   return (
     <>
-      <Card className="w-full max-w-xl  bg-card border border-muted">
+      <Card className="w-full max-w-xl bg-card border border-muted">
         <CardHeader>
           <CardTitle className="text-2xl flex items-center gap-2">
             🏁 Prochaine course
@@ -34,7 +35,11 @@ function RaceDetails() {
           <div className="flex items-center gap-2">
             <span>📍</span>
             <span>
-              <strong>Circuit :</strong> {race.circuit} ({race.location})
+              <strong>Circuit :</strong>{" "}
+              <Badge variant="outline" className="ml-2">
+                {race.circuit}
+              </Badge>
+              ({race.location})
             </span>
           </div>
 
