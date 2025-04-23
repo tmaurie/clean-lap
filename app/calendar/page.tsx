@@ -7,7 +7,7 @@ import { countryToFlagEmoji } from "@/lib/utils/flags";
 import { Calendar } from "lucide-react";
 import Link from "next/link";
 import { ViewToggle } from "@/components/calendar/ViewToggle";
-import {MiniRaceCard} from "@/components/calendar/MiniRaceCard";
+import { MiniRaceCard } from "@/components/calendar/MiniRaceCard";
 
 export default async function CalendarPage({
   searchParams,
@@ -32,10 +32,8 @@ export default async function CalendarPage({
         }
       />
 
-      {(view === "list" && (
-        <div
-          className="space-y-6"
-        >
+      {view === "list" && (
+        <div className="space-y-6">
           {races.map((race, i) => {
             const badge = getTimeUntilLabel(race.date);
             const flag = countryToFlagEmoji(
@@ -73,15 +71,15 @@ export default async function CalendarPage({
             );
           })}
         </div>
-      ))}
+      )}
 
-        {view === 'grid' && (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {races.map((race, i) => (
-                    <MiniRaceCard key={i} race={{ ...race, round: String(i + 1) }} />
-                ))}
-            </div>
-        )}
+      {view === "grid" && (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {races.map((race, i) => (
+            <MiniRaceCard key={i} race={{ ...race, round: String(i + 1) }} />
+          ))}
+        </div>
+      )}
 
       {view === "timeline" && (
         <div className="relative border-l pl-4 space-y-6">

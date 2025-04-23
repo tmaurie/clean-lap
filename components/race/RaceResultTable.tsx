@@ -63,7 +63,7 @@ export function RaceResultsTable({
         return (
           <div
             key={i}
-            className={`flex justify-between items-center text-sm border-b pb-1 last:border-none ${
+            className={`flex justify-between items-center text-sm border-b p-2 last:border-none ${
               isWinner ? "font-bold text-primary" : ""
             }`}
           >
@@ -75,7 +75,10 @@ export function RaceResultsTable({
                   backgroundColor: getConstructorColor(r.constructor),
                 }}
               />
+
               <span>{r.driver}</span>
+              <div className="text-muted-foreground">{r.constructor}</div>
+
               {isWinner && (
                 <Badge
                   onClick={handleConfetti}
@@ -87,7 +90,6 @@ export function RaceResultsTable({
             </div>
 
             <div className="text-xs text-right space-y-1">
-              <div className="text-muted-foreground">{r.constructor}</div>
               <div className="text-muted-foreground">{r.time}</div>
               <div className="text-sm font-semibold">{r.points} pts</div>
             </div>
