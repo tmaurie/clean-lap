@@ -1,6 +1,5 @@
 "use client";
 
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useRaceResults } from "@/features/race/useRaceResults";
 import { getConstructorColor } from "@/components/ui/colors";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -9,7 +8,6 @@ import confetti from "canvas-confetti";
 
 export function RaceResultsTable({
   round,
-  title = "Résultats de course",
 }: {
   round: number | "last";
   title?: string;
@@ -59,43 +57,43 @@ export function RaceResultsTable({
 
   return (
     <>
-        {results.slice(0, 5).map((r, i) => {
-          const isWinner = r.position === "1";
+      {results.slice(0, 5).map((r, i) => {
+        const isWinner = r.position === "1";
 
-          return (
-            <div
-              key={i}
-              className={`flex justify-between items-center text-sm border-b pb-1 last:border-none ${
-                isWinner ? "font-bold text-primary" : ""
-              }`}
-            >
-              <div className="flex gap-2 items-center">
-                <span className="w-5">{r.position}.</span>
-                <div
-                  className="w-2 h-2 rounded-full"
-                  style={{
-                    backgroundColor: getConstructorColor(r.constructor),
-                  }}
-                />
-                <span>{r.driver}</span>
-                {isWinner && (
-                  <Badge
-                    onClick={handleConfetti}
-                    className="text-xs bg-green-300 text-accent ml-2 animate-pulse cursor-pointer"
-                  >
-                    🏆 Vainqueur
-                  </Badge>
-                )}
-              </div>
-
-              <div className="text-xs text-right space-y-1">
-                <div className="text-muted-foreground">{r.constructor}</div>
-                <div className="text-muted-foreground">{r.time}</div>
-                <div className="text-sm font-semibold">{r.points} pts</div>
-              </div>
+        return (
+          <div
+            key={i}
+            className={`flex justify-between items-center text-sm border-b pb-1 last:border-none ${
+              isWinner ? "font-bold text-primary" : ""
+            }`}
+          >
+            <div className="flex gap-2 items-center">
+              <span className="w-5">{r.position}.</span>
+              <div
+                className="w-2 h-2 rounded-full"
+                style={{
+                  backgroundColor: getConstructorColor(r.constructor),
+                }}
+              />
+              <span>{r.driver}</span>
+              {isWinner && (
+                <Badge
+                  onClick={handleConfetti}
+                  className="text-xs bg-green-300 text-accent ml-2 animate-pulse cursor-pointer"
+                >
+                  🏆 Vainqueur
+                </Badge>
+              )}
             </div>
-          );
-        })}
-      </>
+
+            <div className="text-xs text-right space-y-1">
+              <div className="text-muted-foreground">{r.constructor}</div>
+              <div className="text-muted-foreground">{r.time}</div>
+              <div className="text-sm font-semibold">{r.points} pts</div>
+            </div>
+          </div>
+        );
+      })}
+    </>
   );
 }
