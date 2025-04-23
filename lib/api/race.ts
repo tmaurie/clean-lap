@@ -58,22 +58,25 @@ export async function fetchRaces(season: string): Promise<Race[]> {
 }
 
 export async function fetchRaceResults(
+  season: string,
   round: number | "last",
-): Promise<RaceResult[]> {
-  const res = await fetch(
-    API_ROUTES.results(new Date().getFullYear().toString(), round),
-  );
+): Promise<{ raceName: string; results: RaceResult[] }> {
+  const res = await fetch(API_ROUTES.results(season, round));
   const json = await res.json();
 
-  const results = json.MRData.RaceTable.Races[0]?.Results;
+  const race = json.MRData.RaceTable.Races[0];
+  const results = race?.Results ?? [];
 
-  return results.map(
-    (r: any): RaceResult => ({
-      position: r.position,
-      driver: `${r.Driver.givenName} ${r.Driver.familyName}`,
-      constructor: r.Constructor.name,
-      time: r.Time?.time ?? "+ " + r.status,
-      points: r.points,
-    }),
-  );
+  return {
+    raceName: race?.raceName ?? "Grand Prix inconnu",
+    results: results.map(
+      (r: any): RaceResult => ({
+        position: r.position,
+        driver: `${r.Driver.givenName} ${r.Driver.familyName}`,
+        constructor: r.Constructor.name,
+        time: r.Time?.time ?? "+ " + r.status,
+        points: r.points,
+      }),
+    ),
+  };
 }

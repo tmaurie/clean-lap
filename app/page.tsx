@@ -13,7 +13,10 @@ export default function HomePage() {
         title="Résultats dernière course"
         icon={<Flag className="w-4 h-4" />}
       >
-        <RaceResultsTable round="last" />
+        <RaceResultsTable
+          season={new Date().getFullYear().toString()}
+          round="last"
+        />
       </SectionCard>
       <UpcomingRaces />
       <SectionCard

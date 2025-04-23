@@ -43,7 +43,9 @@ export function MiniRaceCard({ race }: Props) {
         {past && (
           <span className="text-xs px-2 py-1 rounded-full font-medium">
             {isPastRace(race.date) ? (
-              <Link href={`/results/${race.round || '#'}`}>Voir les résultats -{">"}</Link>
+              <Link href={`/results/${race.round || "#"}`}>
+                Voir les résultats -{">"}
+              </Link>
             ) : (
               ""
             )}

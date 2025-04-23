@@ -7,12 +7,14 @@ import { Badge } from "@/components/ui/badge";
 import confetti from "canvas-confetti";
 
 export function RaceResultsTable({
+  season,
   round,
 }: {
+  season: string;
   round: number | "last";
   title?: string;
 }) {
-  const { data: results, isLoading, isError } = useRaceResults(round);
+  const { data: results, isLoading, isError } = useRaceResults(season, round);
 
   const handleConfetti = () => {
     const end = Date.now() + 3 * 1000; // 3 seconds
@@ -57,7 +59,10 @@ export function RaceResultsTable({
 
   return (
     <>
-      {results.slice(0, 5).map((r, i) => {
+      <span className="text-sm font-semibold mb-2">
+       {results.raceName}
+      </span>
+      {results.results.slice(0, 5).map((r, i) => {
         const isWinner = r.position === "1";
 
         return (
