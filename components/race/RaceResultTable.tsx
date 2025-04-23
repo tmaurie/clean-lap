@@ -58,11 +58,7 @@ export function RaceResultsTable({
   if (isError || !results) return <p>Erreur lors du chargement.</p>;
 
   return (
-    <Card className="h-full">
-      <CardHeader>
-        <CardTitle>🏁 {title}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-2">
+    <>
         {results.slice(0, 5).map((r, i) => {
           const isWinner = r.position === "1";
 
@@ -100,7 +96,6 @@ export function RaceResultsTable({
             </div>
           );
         })}
-      </CardContent>
-    </Card>
+      </>
   );
 }
