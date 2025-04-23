@@ -18,7 +18,7 @@ export default function HomePage() {
       <UpcomingRaces />
       <SectionCard
         title="Classement"
-        icon={<ChartNoAxesColumn />}
+        icon={<ChartNoAxesColumn className="w-4 h-4" />}
         description={`Classement pilotes et écuries de la saison ${new Date().getFullYear()}`}
       >
         <StandingsPreview />

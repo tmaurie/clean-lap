@@ -43,6 +43,20 @@ export async function fetchUpcomingRaces(): Promise<Race[]> {
     .filter((race) => new Date(`${race.date}T${race.time}`) > now);
 }
 
+export async function fetchRaces(season: string): Promise<Race[]> {
+  const res = await fetch(API_ROUTES.races(season));
+  const json = await res.json();
+  const rawRaces = json.MRData.RaceTable.Races;
+
+  return rawRaces.map((r: any) => ({
+    name: r.raceName,
+    date: r.date,
+    time: r.time,
+    circuit: r.Circuit.circuitName,
+    location: `${r.Circuit.Location.locality}, ${r.Circuit.Location.country}`,
+  }));
+}
+
 export async function fetchRaceResults(
   round: number | "last",
 ): Promise<RaceResult[]> {

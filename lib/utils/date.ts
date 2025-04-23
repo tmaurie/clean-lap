@@ -38,3 +38,9 @@ export function getTimeUntilLabel(
 
   return null;
 }
+
+export function isPastRace(dateString: string): boolean {
+  const now = new Date();
+  const target = new Date(dateString);
+  return target.getTime() < now.getTime();
+}
