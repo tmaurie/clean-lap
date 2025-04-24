@@ -1,7 +1,7 @@
-import {PageHeader} from "@/components/ui/page-header";
+import { PageHeader } from "@/components/ui/page-header";
 import Link from "next/link";
-import {countryToFlagEmoji} from "@/lib/utils/flags";
-import {useRacesWithWinner} from "@/features/results/hooks";
+import { countryToFlagEmoji } from "@/lib/utils/flags";
+import { useRacesWithWinner } from "@/features/results/hooks";
 
 export default async function SeasonResultsPage({
   params,

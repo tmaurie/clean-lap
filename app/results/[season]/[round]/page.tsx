@@ -1,10 +1,10 @@
 import { PageHeader } from "@/components/ui/page-header";
-import { fetchRaceResults } from "@/lib/api/race";
 import { countryToFlagEmoji } from "@/lib/utils/flags";
 import { isPastRace } from "@/lib/utils/date";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PodiumBlock } from "@/app/results/PodiumBlock";
+import { getRaceResults } from "@/features/results/hooks";
 
 export default async function ResultsPage({
   params,
@@ -12,7 +12,7 @@ export default async function ResultsPage({
   params: { season: string; round: string };
 }) {
   const { season, round } = await params;
-  const { raceName, location, date, results } = await fetchRaceResults(
+  const { raceName, location, date, results } = await getRaceResults(
     season,
     round,
   );

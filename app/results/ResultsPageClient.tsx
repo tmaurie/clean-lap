@@ -4,8 +4,15 @@ import { useState } from "react";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
+import { getConstructorColor } from "@/components/ui/colors";
+import {nationalityToFlagEmoji} from "@/lib/utils/flags";
 
-type Season = { season: string; raceCount: number };
+type Season = {
+  season: string;
+  raceCount: number;
+  driverChampion?: { name: string, nationality: string };
+  constructorChampion?: string;
+};
 
 export function ResultsPageClient({ seasons }: { seasons: Season[] }) {
   const [visible, setVisible] = useState(10);
@@ -26,12 +33,36 @@ export function ResultsPageClient({ seasons }: { seasons: Season[] }) {
           <li key={s.season}>
             <Link
               href={`/results/${s.season}`}
-              className="flex justify-between items-center px-4 py-3 rounded-md border hover:bg-muted transition"
+              className="flex justify-between items-start gap-4 px-4 py-3 rounded-md border hover:bg-muted transition"
             >
-              <span className="font-medium">{s.season}</span>
-              <span className="text-sm text-muted-foreground">
-                {s.raceCount} Grands Prix
-              </span>
+              <div>
+                <p className="font-medium text-lg">{s.season}</p>
+                <p className="text-sm text-muted-foreground">
+                  {s.raceCount} Grands Prix
+                </p>
+              </div>
+              <div className="text-right text-sm text-muted-foreground space-y-0.5">
+                  { s.driverChampion && (
+                      <p>
+                          🏆 {nationalityToFlagEmoji(s.driverChampion.nationality)} {s.driverChampion.name}
+                      </p>
+                  )}
+                {s.constructorChampion && (
+                  <div className="flex justify-end items-center gap-1">
+                    🚘
+                    <span
+                      className="px-2 py-0.5 text-xs rounded-full text-white"
+                      style={{
+                        backgroundColor: getConstructorColor(
+                          s.constructorChampion,
+                        ),
+                      }}
+                    >
+                      {s.constructorChampion}
+                    </span>
+                  </div>
+                )}
+              </div>
             </Link>
           </li>
         ))}
