@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {Github} from "lucide-react";
 import {useEffect, useState} from "react";
+import Image from "next/image";
 
 const navItems = [
   { name: "Accueil", href: "/" },
@@ -30,9 +31,16 @@ export function SiteHeader() {
         scrolled && 'shadow-sm backdrop-blur-lg bg-background/80 border-b',
     )}>
       <div className=" flex h-16 items-center justify-between px-4">
-        <h1 className="text-xl font-bold tracking-tight text-primary">
-          CleanLap 🏎️
-        </h1>
+        <Link href="/" className="flex items-center gap-2">
+          <Image
+              src="/cleanlaplogo.png"
+              alt="CleanLap"
+              width={48}
+              height={48}
+              priority
+          />
+          <span className="font-bold text-lg tracking-tight">CleanLap</span>
+        </Link>
 
         <nav className="hidden md:flex items-center gap-4 text-sm font-medium">
           {navItems.map((item) => (
@@ -49,7 +57,7 @@ export function SiteHeader() {
           ))}
         </nav>
         <Link
-            href="https://github.com/ton-utilisateur/cleanlap"
+            href="https://github.com/tmaurie/clean-lap"
             target="_blank"
             rel="noopener noreferrer"
             className="text-muted-foreground hover:text-primary transition-colors"
