@@ -59,7 +59,8 @@ export default async function CalendarPage({
                       </span>
                       <span className="text-xs px-2 py-1 rounded-full font-medium">
                         {isPastRace(race.date) ? (
-                          <Link href="/results">Voir les résultats -{">"}</Link>
+                            <Link href={`/results/${(new Date(race.date).getFullYear())}/${String(i + 1) || "#"}`}>
+                                Voir les résultats -{">"}</Link>
                         ) : (
                           ""
                         )}

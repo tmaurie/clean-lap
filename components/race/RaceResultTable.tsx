@@ -11,7 +11,7 @@ export function RaceResultsTable({
   round,
 }: {
   season: string;
-  round: number | "last";
+  round: string | "last";
   title?: string;
 }) {
   const { data: results, isLoading, isError } = useRaceResults(season, round);
