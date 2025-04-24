@@ -4,6 +4,7 @@ import {countryToFlagEmoji} from '@/lib/utils/flags'
 import {isPastRace} from "@/lib/utils/date";
 import {Badge} from "@/components/ui/badge";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {PodiumBlock} from "@/app/results/PodiumBlock";
 
 export default async function ResultsPage({
                                               params,
@@ -39,6 +40,7 @@ export default async function ResultsPage({
                 </TabsList>
 
                 <TabsContent value="results">
+                    <PodiumBlock results={results} />
                     <ul className="text-sm space-y-1">
                         {results.slice(0, 5).map((r) => (
                             <li key={r.position}>
