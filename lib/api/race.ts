@@ -58,30 +58,32 @@ export async function fetchRaces(season: string): Promise<Race[]> {
 }
 
 export async function fetchRaceResults(
-    season: string,
-    round: string
+  season: string,
+  round: string,
 ): Promise<{
-    raceName: string
-    location: string
-    date: string
-    results: RaceResult[]
+  raceName: string;
+  location: string;
+  date: string;
+  results: RaceResult[];
 }> {
-    const res = await fetch(API_ROUTES.results(season, round))
-    const json = await res.json()
+  const res = await fetch(API_ROUTES.results(season, round));
+  const json = await res.json();
 
-    const race = json.MRData.RaceTable.Races[0]
-    const results = race?.Results ?? []
+  const race = json.MRData.RaceTable.Races[0];
+  const results = race?.Results ?? [];
 
-    return {
-        raceName: race?.raceName ?? 'Grand Prix inconnu',
-        location: `${race?.Circuit?.Location?.locality}, ${race?.Circuit?.Location?.country}`,
-        date: race?.date,
-        results: results.map((r: any): RaceResult => ({
-            position: r.position,
-            driver: `${r.Driver.givenName} ${r.Driver.familyName}`,
-            constructor: r.Constructor.name,
-            time: r.Time?.time ?? '+ ' + r.status,
-            points: r.points,
-        })),
-    }
+  return {
+    raceName: race?.raceName ?? "Grand Prix inconnu",
+    location: `${race?.Circuit?.Location?.locality}, ${race?.Circuit?.Location?.country}`,
+    date: race?.date,
+    results: results.map(
+      (r: any): RaceResult => ({
+        position: r.position,
+        driver: `${r.Driver.givenName} ${r.Driver.familyName}`,
+        constructor: r.Constructor.name,
+        time: r.Time?.time ?? "+ " + r.status,
+        points: r.points,
+      }),
+    ),
+  };
 }

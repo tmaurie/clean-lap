@@ -26,7 +26,7 @@ export default async function CalendarPage({
         description="Liste complète des courses de la saison sélectionnée"
         actions={
           <div className="flex items-center gap-2">
-              <ViewToggle />
+            <ViewToggle />
             <SeasonSelect />
           </div>
         }
@@ -59,8 +59,11 @@ export default async function CalendarPage({
                       </span>
                       <span className="text-xs px-2 py-1 rounded-full font-medium">
                         {isPastRace(race.date) ? (
-                            <Link href={`/results/${(new Date(race.date).getFullYear())}/${String(i + 1) || "#"}`}>
-                                Voir les résultats -{">"}</Link>
+                          <Link
+                            href={`/results/${new Date(race.date).getFullYear()}/${String(i + 1) || "#"}`}
+                          >
+                            Voir les résultats -{">"}
+                          </Link>
                         ) : (
                           ""
                         )}

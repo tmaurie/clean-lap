@@ -59,9 +59,7 @@ export function RaceResultsTable({
 
   return (
     <>
-      <span className="text-sm font-semibold mb-2">
-       {results.raceName}
-      </span>
+      <span className="text-sm font-semibold mb-2">{results.raceName}</span>
       {results.results.slice(0, 5).map((r, i) => {
         const isWinner = r.position === "1";
 
