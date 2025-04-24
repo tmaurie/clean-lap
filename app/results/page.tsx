@@ -1,8 +1,7 @@
-import {fetchSeasonsWithRaceCount} from '@/lib/api/results'
-import {ResultsPageClient} from "@/app/results/ResultsPageClient";
+import { ResultsPageClient } from "@/app/results/ResultsPageClient";
+import { useSeasonWithRaceCount } from "@/features/results/hooks";
 
 export default async function ResultsIndexPage() {
-    const seasons = await fetchSeasonsWithRaceCount()
-
-    return <ResultsPageClient seasons={seasons} />
+  const seasons = await useSeasonWithRaceCount();
+  return <ResultsPageClient seasons={seasons} />;
 }

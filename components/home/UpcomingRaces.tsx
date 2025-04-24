@@ -36,7 +36,7 @@ export function UpcomingRaces() {
   const visibleRaces = expanded ? races.slice(1, 11) : races.slice(1, 6);
 
   return (
-    <Card className="h-full">
+    <Card className="relative overflow-hidden flex flex-col justify-between">
       <CardHeader>
         <CardTitle>📆 Prochaines courses</CardTitle>
       </CardHeader>
