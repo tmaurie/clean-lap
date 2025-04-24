@@ -26,8 +26,8 @@ export default async function CalendarPage({
         description="Liste complète des courses de la saison sélectionnée"
         actions={
           <div className="flex items-center gap-2">
+              <ViewToggle />
             <SeasonSelect />
-            <ViewToggle />
           </div>
         }
       />

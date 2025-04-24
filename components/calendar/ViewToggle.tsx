@@ -21,7 +21,7 @@ export function ViewToggle() {
       type="single"
       value={current}
       onValueChange={handleChange}
-      className="ml-2"
+      className="ml-2 bg-background-foreground rounded-md border border-muted "
     >
       <ToggleGroupItem value="list" aria-label="Vue liste">
         <LayoutList className="w-4 h-4" />
