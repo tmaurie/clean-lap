@@ -77,7 +77,7 @@ export default async function ResultsPage({
           <TabsTrigger value="laps">Tours</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="results">
+        <TabsContent className="flex flex-col gap-4" value="results">
           <PodiumBlock results={results} />
           <ResultTable results={results} />
         </TabsContent>

@@ -1,8 +1,21 @@
 import { RaceResult } from "@/entities/race/model";
 import { getConstructorColor } from "@/components/ui/colors";
-import {clsx} from "clsx";
+import { clsx } from "clsx";
 
 export function ResultTable({ results }: { results: RaceResult[] }) {
+  if (!results || results.length === 0) {
+    return <div className="text-center p-4">Aucun résultat disponible</div>;
+  }
+
+  const gridResultDiff = (grid: string, position: string) => {
+    const diff = parseInt(grid) - parseInt(position);
+    if (diff > 0) {
+      return <span className="text-green-400">(+{diff})</span>;
+    } else if (diff < 0) {
+      return <span className="text-red-400">({diff})</span>;
+    }
+    return null;
+  };
   return (
     <div className="overflow-x-auto border rounded-md">
       <table className="w-full text-sm">
@@ -29,7 +42,9 @@ export function ResultTable({ results }: { results: RaceResult[] }) {
                 className="border-t hover:bg-muted/40 transition-colors"
               >
                 <td className="px-3 py-2 font-semibold">{r.position}</td>
-                <td className="px-3 py-2">{r.driver} {r.position === "1" && <span>🏆</span>}</td>
+                <td className="px-3 py-2">
+                  {r.driver} {r.position === "1" && <span>🏆</span>}
+                </td>
                 <td className="px-3 py-2">
                   <span
                     className="inline-block w-2 h-2 mr-2 rounded-full align-middle"
@@ -37,11 +52,20 @@ export function ResultTable({ results }: { results: RaceResult[] }) {
                   />
                   {r.constructor}
                 </td>
-                <td className="px-3 py-2">{r.grid}</td>
+                <td className="px-3 py-2">
+                  {r.grid} {gridResultDiff(r.grid, r.position)}
+                </td>
                 <td className="px-3 py-2">{r.laps}</td>
                 <td className="px-3 py-2">{r.time}</td>
                 <td className="px-3 py-2 font-semibold ">{r.points}</td>
-                <td className={clsx("px-3 py-2", isFastestLap && "font-black text-purple-600")}>{r.fastestLap?.time}</td>
+                <td
+                  className={clsx(
+                    "px-3 py-2",
+                    isFastestLap && "font-black text-purple-400",
+                  )}
+                >
+                  {r.fastestLap?.time}
+                </td>
               </tr>
             );
           })}
