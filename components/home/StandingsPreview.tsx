@@ -69,7 +69,7 @@ export function StandingsPreview() {
       </div>
       <div className="flex justify-between items-center">
         <Button variant="outline" size="sm">
-          <Link href="/calendar">Voir le classement complet</Link>
+          <Link href="/standings">Voir le classement complet</Link>
           <ArrowRight />
         </Button>
       </div>

@@ -1,11 +1,10 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
 import {
   Select,
-  SelectTrigger,
   SelectContent,
   SelectItem,
+  SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 
@@ -14,24 +13,19 @@ const seasons = Array.from(
   (_, i) => (new Date().getFullYear() - i).toString(),
 );
 
-export function SeasonSelect() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const current =
-    searchParams.get("season") || new Date().getFullYear().toString();
-
-  const handleChange = (season: string) => {
-    const params = new URLSearchParams(searchParams);
-    params.set("season", season);
-    router.push(`/calendar?${params.toString()}`);
-  };
-
+export function SeasonSelect({
+  value,
+  action,
+}: {
+  value: string;
+  action: (season: string) => void;
+}) {
   return (
-    <Select onValueChange={handleChange} value={current}>
-      <SelectTrigger className="w-[160px] md:w-[180px]">
+    <Select value={value} onValueChange={action}>
+      <SelectTrigger className="w-[160px]">
         <SelectValue placeholder="Saison" />
       </SelectTrigger>
-      <SelectContent className="overflow-y-auto max-h-[300px]">
+      <SelectContent>
         {seasons.map((year) => (
           <SelectItem key={year} value={year}>
             {year}{" "}
