@@ -3,6 +3,7 @@ export type DriverStanding = {
   driver: string;
   constructor: string;
   points: string;
+  nationality: string;
 };
 
 export type ConstructorStanding = {

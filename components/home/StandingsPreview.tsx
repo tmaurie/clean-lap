@@ -11,9 +11,10 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export function StandingsPreview() {
-  const { data: drivers, isLoading: loadingDrivers } = useDriverStandings();
+  const { data: drivers, isLoading: loadingDrivers } =
+    useDriverStandings("current");
   const { data: constructors, isLoading: loadingConstructors } =
-    useConstructorStandings();
+    useConstructorStandings("current");
 
   if (loadingDrivers || loadingConstructors)
     return (

@@ -1,3 +1,13 @@
+import { StandingsTabs } from "@/components/standings/StandingsTabs";
+import { PageHeader } from "@/components/ui/page-header";
+
 export default function StandingsPage() {
-  return <h2 className="text-2xl font-semibold">📊 Classement complet</h2>;
+  const season = new Date().getFullYear().toString();
+
+  return (
+    <div className="space-y-6">
+      <PageHeader title="Classements" description={`Saison ${season}`} />
+      <StandingsTabs season={season} />
+    </div>
+  );
 }
