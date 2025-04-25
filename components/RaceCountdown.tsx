@@ -5,6 +5,7 @@ import clsx from "clsx";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ShineBorder } from "@/components/magicui/shine-border";
+import { AnimatePresence, motion } from "framer-motion";
 
 type RaceCountdownProps = {
   date: string;
@@ -60,7 +61,19 @@ export function RaceCountdown({ date, time }: RaceCountdownProps) {
 function CountdownItem({ label, value }: { label: string; value: number }) {
   return (
     <div className="flex flex-col items-center">
-      <span className="text-3xl font-bold tabular-nums">{value}</span>
+      <span className="text-3xl font-bold tabular-nums">
+        <AnimatePresence mode="popLayout">
+          <motion.span
+            key={value}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.3 }}
+          >
+            {value}
+          </motion.span>
+        </AnimatePresence>
+      </span>
       <span className="text-xs text-muted-foreground uppercase tracking-wide">
         {label}
       </span>

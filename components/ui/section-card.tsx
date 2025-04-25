@@ -44,7 +44,7 @@ export function SectionCard({
         </div>
       </CardHeader>
 
-      <CardContent className="pt-4">{children}</CardContent>
+      <CardContent>{children}</CardContent>
     </Card>
   );
 }
