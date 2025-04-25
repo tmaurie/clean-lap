@@ -5,12 +5,12 @@ import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { getConstructorColor } from "@/components/ui/colors";
-import {nationalityToFlagEmoji} from "@/lib/utils/flags";
+import { nationalityToFlagEmoji } from "@/lib/utils/flags";
 
 type Season = {
   season: string;
   raceCount: number;
-  driverChampion?: { name: string, nationality: string };
+  driverChampion?: { name: string; nationality: string };
   constructorChampion?: string;
 };
 
@@ -42,11 +42,12 @@ export function ResultsPageClient({ seasons }: { seasons: Season[] }) {
                 </p>
               </div>
               <div className="text-right text-sm text-muted-foreground space-y-0.5">
-                  { s.driverChampion && (
-                      <p>
-                          🏆 {nationalityToFlagEmoji(s.driverChampion.nationality)} {s.driverChampion.name}
-                      </p>
-                  )}
+                {s.driverChampion && (
+                  <p>
+                    🏆 {nationalityToFlagEmoji(s.driverChampion.nationality)}{" "}
+                    {s.driverChampion.name}
+                  </p>
+                )}
                 {s.constructorChampion && (
                   <div className="flex justify-end items-center gap-1">
                     🚘

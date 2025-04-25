@@ -64,9 +64,18 @@ export async function fetchRaceResults(
   raceName: string;
   location: string;
   date: string;
+  time: string;
+  circuit: {
+    name: string;
+    locality: string;
+    country: string;
+    url: string;
+  };
   results: RaceResult[];
 }> {
-  const res = await fetch(API_ROUTES.results(season, round));
+  const res = await fetch(
+    `https://api.jolpi.ca/ergast/f1/${season}/${round}/results.json`,
+  );
   const json = await res.json();
 
   const race = json.MRData.RaceTable.Races[0];
@@ -76,6 +85,13 @@ export async function fetchRaceResults(
     raceName: race?.raceName ?? "Grand Prix inconnu",
     location: `${race?.Circuit?.Location?.locality}, ${race?.Circuit?.Location?.country}`,
     date: race?.date,
+    time: race?.time,
+    circuit: {
+      name: race?.Circuit?.circuitName,
+      locality: race?.Circuit?.Location?.locality,
+      country: race?.Circuit?.Location?.country,
+      url: race?.Circuit?.url,
+    },
     results: results.map(
       (r: any): RaceResult => ({
         position: r.position,
@@ -83,6 +99,14 @@ export async function fetchRaceResults(
         constructor: r.Constructor.name,
         time: r.Time?.time ?? "+ " + r.status,
         points: r.points,
+        fastestLap: {
+          rank: r.FastestLap?.rank,
+          lap: r.FastestLap?.lap,
+          time: r.FastestLap?.Time?.time,
+          averageSpeed: r.FastestLap?.AverageSpeed?.speed,
+        },
+        grid: r.grid,
+        laps: r.laps,
       }),
     ),
   };

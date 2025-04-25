@@ -4,7 +4,7 @@ import { SectionCard } from "@/components/ui/section-card";
 import { SeasonSelect } from "@/components/calendar/SeasonSelect";
 import { getTimeUntilLabel, isPastRace } from "@/lib/utils/date";
 import { countryToFlagEmoji } from "@/lib/utils/flags";
-import { Calendar } from "lucide-react";
+import { BadgeCheck, Calendar } from "lucide-react";
 import Link from "next/link";
 import { ViewToggle } from "@/components/calendar/ViewToggle";
 import { MiniRaceCard } from "@/components/calendar/MiniRaceCard";
@@ -51,11 +51,17 @@ export default async function CalendarPage({
                     {race.location}
                   </p>
                   {badge && (
-                    <div>
+                    <div className="flex items-center gap-2">
                       <span
-                        className={`text-xs px-2 py-1 rounded-full font-medium ${badge.className}`}
+                        className={`text-xs px-2 py-1 rounded-full flex justify-between font-medium ${badge.className}`}
                       >
-                        {badge.label}
+                        {badge.label}{" "}
+                        {isPastRace(race.date) && (
+                          <BadgeCheck
+                            size={16}
+                            className="ml-1 text-green-700"
+                          />
+                        )}
                       </span>
                       <span className="text-xs px-2 py-1 rounded-full font-medium">
                         {isPastRace(race.date) ? (

@@ -2,18 +2,21 @@ export async function fetchSeasonsDetails(): Promise<
   {
     season: string;
     raceCount: number;
-    driverChampion?: string;
+    driverChampion?: {
+      name: string;
+      nationality: string;
+    };
     constructorChampion?: string;
   }[]
 > {
   const res = await fetch(
-    `https://api.jolpi.ca/ergast/f1/seasons.json?limit=100`,
+    `https://api.jolpi.ca/ergast/f1/seasons.json?limit=10`,
   );
   const json = await res.json();
   const seasons = json?.MRData?.SeasonTable?.Seasons ?? [];
 
   return await Promise.all(
-    seasons.reverse().map(async (s: any) => {
+    seasons.map(async (s: any) => {
       const [raceRes, driverRes, constructorRes] = await Promise.all([
         fetch(`https://api.jolpi.ca/ergast/f1/${s.season}.json`),
         fetch(
@@ -39,12 +42,12 @@ export async function fetchSeasonsDetails(): Promise<
       return {
         season: s.season,
         raceCount: count,
-          driverChampion: driverChampion
-              ? {
-                  name: `${driverChampion.Driver.givenName} ${driverChampion.Driver.familyName}`,
-                  nationality: driverChampion.Driver.nationality,
-              }
-              : undefined,
+        driverChampion: driverChampion
+          ? {
+              name: `${driverChampion.Driver.givenName} ${driverChampion.Driver.familyName}`,
+              nationality: driverChampion.Driver.nationality,
+            }
+          : undefined,
         constructorChampion: constructorChampion?.Constructor?.name,
       };
     }),
