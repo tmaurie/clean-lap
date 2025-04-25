@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {ShineBorder} from "@/components/magicui/shine-border";
 
 type RaceCountdownProps = {
   date: string;
@@ -21,6 +23,7 @@ export function RaceCountdown({ date, time }: RaceCountdownProps) {
   }, [raceDate]);
 
   const isImminent = remaining.total < 1000 * 60 * 60 * 24; // 24h
+  const isThisWeekend = remaining.total < 1000 * 60 * 60 * 24 * 3; // 3 jours
 
   if (remaining.total <= 0) {
     return (
@@ -32,9 +35,15 @@ export function RaceCountdown({ date, time }: RaceCountdownProps) {
   }
 
   return (
-    <Card className="border-none bg-accent">
-      <div className="flex justify-center">
-        Compte à rebours avant la course
+
+    <Card className="border-none bg-accent relative overflow-hidden">
+
+        <ShineBorder shineColor={["#5d0c0c", "#FE8FB5", "#ff0000"]} />
+
+        <div className="flex justify-around">
+
+        <span>Compte à rebours avant la course</span>
+        {isThisWeekend && <Badge variant="destructive">Ce week-end</Badge>}
       </div>
       <div
         className={clsx(

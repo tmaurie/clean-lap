@@ -1,11 +1,11 @@
 "use client";
 
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { MapPin, Clock, CalendarDays } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useNextRace } from "@/features/nextRace/useNextRace";
 import { RaceCountdown } from "@/components/RaceCountdown";
 import { Skeleton } from "@/components/ui/skeleton";
+import { countryToFlagEmoji } from "@/lib/utils/flags";
 
 export function NextRaceCountdown() {
   const { data: race, isLoading, isError } = useNextRace();
@@ -19,49 +19,42 @@ export function NextRaceCountdown() {
         </div>
       </div>
     );
+
   if (isError || !race) return <p>Erreur lors du chargement.</p>;
 
   const raceDate = new Date(`${race.date}T${race.time}`);
-  const daysUntilRace = Math.floor(
-    (raceDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-  );
-
-  const isThisWeekend = daysUntilRace <= 3;
-
-  return (
-    <Card className="h-full relative">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-xl flex items-center gap-2">
-          🏁 Prochaine course
-        </CardTitle>
-        {isThisWeekend && <Badge variant="destructive">Ce week-end</Badge>}
-      </CardHeader>
-
-      <CardContent className="space-y-3 text-sm">
-        <div className="flex items-center gap-2">
-          <MapPin className="w-4 h-4 text-muted-foreground" />
-          <span>
-            <Badge>
-              <strong>{race.circuit}</strong>
-            </Badge>{" "}
-            — <span className="font-mono"> {race.location}</span>
+    Math.floor(
+        (raceDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+    );
+    return (
+    <div className="space-y-3 text-sm">
+      <div className="flex items-center gap-2">
+        <MapPin className="w-4 h-4 text-muted-foreground" />
+        <span>
+          <Badge>
+            <strong>{race.circuit}</strong>
+          </Badge>{" "}
+          —{" "}
+          <span className="font-mono">
+            {race.location}{" "}
+            {countryToFlagEmoji(race.location.split(", ").at(-1) || "")}
           </span>
-        </div>
+        </span>
+      </div>
 
-        <div className="flex items-center gap-2">
-          <CalendarDays className="w-4 h-4 text-muted-foreground" />
-          <span>
-            Le {raceDate.toLocaleDateString("fr-FR")} à{" "}
-            <Clock className="inline w-4 h-4 ml-1 mr-1 text-muted-foreground" />
-            {raceDate.toLocaleTimeString("fr-FR", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </span>
-        </div>
+      <div className="flex items-center gap-2">
+        <CalendarDays className="w-4 h-4 text-muted-foreground" />
+        <span>
+          Le {raceDate.toLocaleDateString("fr-FR")} à{" "}
+          <Clock className="inline w-4 h-4 ml-1 mr-1 text-muted-foreground" />
+          {raceDate.toLocaleTimeString("fr-FR", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </span>
+      </div>
 
-        <RaceCountdown date={race.date} time={race.time} />
-      </CardContent>
-    </Card>
+      <RaceCountdown date={race.date} time={race.time} />
+    </div>
   );
 }
