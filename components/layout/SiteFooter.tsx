@@ -3,7 +3,7 @@ import Link from "next/link";
 export function SiteFooter() {
   return (
     <footer className="w-full border-t mt-10">
-      <div className=" py-6 text-center text-xs text-muted-foreground ">
+      <div className=" py-6 text-center bg-background text-xs text-muted-foreground ">
         © {new Date().getFullYear()} CleanLap. Tous droits réservés.
         <br />
         Conçu et développé avec 🏎️ par

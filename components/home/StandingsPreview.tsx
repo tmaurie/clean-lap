@@ -11,10 +11,8 @@ import { Button } from "@/components/ui/button";
 import { StandingsTabs } from "@/components/standings/StandingsTabs";
 
 export function StandingsPreview() {
-  const {isLoading: loadingDrivers } =
-    useDriverStandings("current");
-  const {isLoading: loadingConstructors } =
-    useConstructorStandings("current");
+  const { isLoading: loadingDrivers } = useDriverStandings("current");
+  const { isLoading: loadingConstructors } = useConstructorStandings("current");
 
   if (loadingDrivers || loadingConstructors)
     return (

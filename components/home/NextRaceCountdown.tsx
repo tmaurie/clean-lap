@@ -23,10 +23,8 @@ export function NextRaceCountdown() {
   if (isError || !race) return <p>Erreur lors du chargement.</p>;
 
   const raceDate = new Date(`${race.date}T${race.time}`);
-    Math.floor(
-        (raceDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-    );
-    return (
+  Math.floor((raceDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+  return (
     <div className="space-y-3 text-sm">
       <div className="flex items-center gap-2">
         <MapPin className="w-4 h-4 text-muted-foreground" />
@@ -45,8 +43,14 @@ export function NextRaceCountdown() {
       <div className="flex items-center gap-2">
         <CalendarDays className="w-4 h-4 text-muted-foreground" />
         <span>
-          Le {raceDate.toLocaleDateString("fr-FR")} à{" "}
-          <Clock className="inline w-4 h-4 ml-1 mr-1 text-muted-foreground" />
+          Le{" "}
+          {raceDate.toLocaleDateString("fr-FR", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })}{" "}
+          à <Clock className="inline w-4 h-4 ml-1 mr-1 text-muted-foreground" />
           {raceDate.toLocaleTimeString("fr-FR", {
             hour: "2-digit",
             minute: "2-digit",

@@ -24,7 +24,7 @@ export function SectionCard({
   return (
     <Card
       className={cn(
-        "h-full",
+        "h-full relative overflow-hidden",
         variant === "subtle" && "bg-muted/40 border-muted",
         className,
       )}
