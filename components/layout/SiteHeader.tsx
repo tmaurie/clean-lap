@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { Github } from "lucide-react";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { LineShadowText } from "@/components/magicui/line-shadow-text";
 
 const navItems = [
   { name: "Accueil", href: "/" },
@@ -40,10 +41,15 @@ export function SiteHeader() {
             height={48}
             priority
           />
-          <span className="font-bold text-lg tracking-tight">CleanLap</span>
+          <h1 className="text-balance text-2xl font-semibold leading-none tracking-tighter">
+            Clean
+            <LineShadowText className="italic" shadowColor="white">
+              Lap
+            </LineShadowText>
+          </h1>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-4 text-sm font-medium">
+        <nav className="hidden md:flex items-center font-mono gap-4 text-sm font-medium">
           {navItems.map((item) => (
             <Link
               key={item.href}

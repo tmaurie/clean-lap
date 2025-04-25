@@ -32,7 +32,7 @@ export function SectionCard({
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-2 text-lg font-semibold">
+            <div className="flex items-center gap-2 text-xl font-semibold">
               {icon && <span className="text-muted-foreground">{icon}</span>}
               {title}
             </div>

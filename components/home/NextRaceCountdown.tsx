@@ -44,7 +44,7 @@ export function NextRaceCountdown() {
             <Badge>
               <strong>{race.circuit}</strong>
             </Badge>{" "}
-            — {race.location}
+            — <span className="font-mono"> {race.location}</span>
           </span>
         </div>
 

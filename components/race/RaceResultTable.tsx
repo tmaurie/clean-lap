@@ -80,7 +80,9 @@ export function RaceResultsTable({
               />
 
               <span>{r.driver}</span>
-              <div className="text-muted-foreground">{r.constructor}</div>
+              <div className="text-muted-foreground font-mono">
+                {r.constructor}
+              </div>
 
               {isWinner && (
                 <Badge
@@ -93,8 +95,10 @@ export function RaceResultsTable({
             </div>
 
             <div className="text-xs text-right space-y-1">
-              <div className="text-muted-foreground">{r.time}</div>
-              <div className="text-sm font-semibold">{r.points} pts</div>
+              <div className="text-muted-foreground font-mono">{r.time}</div>
+              <div className="text-sm font-semibold font-mono">
+                {r.points} pts
+              </div>
             </div>
           </div>
         );

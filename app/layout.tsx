@@ -1,15 +1,15 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Geist } from "next/font/google";
 import { ThemeProviders } from "@/providers/theme-providers";
 import { Shell } from "@/components/layout/Shell";
 import NextTopLoader from "nextjs-toploader";
 
-const inter = Inter({ subsets: ["latin"] });
+const geist = Geist({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "CleanLap",
-  description: "Refonte clean et typée d’une app F1",
+  description: "Une application pour les fans de Formule 1",
 };
 
 export default function RootLayout({
@@ -19,7 +19,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={geist.className}>
         <NextTopLoader color="#fff" height={2} showSpinner={false} />
         <ThemeProviders>
           <Shell>{children}</Shell>
