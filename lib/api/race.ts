@@ -92,7 +92,7 @@ export async function fetchRaceResults(
       country: race?.Circuit?.Location?.country,
       url: race?.Circuit?.url,
     },
-    results: results.map(
+    results: results.reverse().map(
       (r: any): RaceResult => ({
         position: r.position,
         driver: `${r.Driver.givenName} ${r.Driver.familyName}`,

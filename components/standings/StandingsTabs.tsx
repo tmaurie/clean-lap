@@ -33,14 +33,14 @@ export function StandingsTabs({
       </TabsList>
 
       <TabsContent value="drivers">
-        <ul className="space-y-2">
+        <ul className="space-y-2 ">
           {loadingDrivers ? (
             <p>Chargement...</p>
           ) : (
             drivers?.slice(0, limit).map((d) => (
               <li
                 key={d.position}
-                className={`flex justify-between items-center px-3 py-2 border rounded-md ${compact ? "text-xs" : "text-sm"}`}
+                className={`flex justify-between items-center px-3 py-2 border relative overflow-hidden bg-accent  rounded-md ${compact ? "text-xs" : "text-sm"}`}
               >
                 <div>
                   <p className="font-semibold flex items-center gap-2">
@@ -74,7 +74,7 @@ export function StandingsTabs({
             constructors?.slice(0, limit).map((c) => (
               <li
                 key={c.position}
-                className={`flex justify-between items-center px-3 py-2 border rounded-md ${compact ? "text-xs" : "text-sm"}`}
+                className={`flex justify-between items-center px-3 py-2 border relative overflow-hidden bg-accent rounded-md ${compact ? "text-xs" : "text-sm"}`}
               >
                 <div className="flex items-center gap-2">
                   <span

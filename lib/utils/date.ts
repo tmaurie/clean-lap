@@ -26,7 +26,7 @@ export function getTimeUntilLabel(
     };
   if (diffDays >= 30 && diffDays < 60)
     return { label: "Dans 1 mois", className: "bg-orange-100 text-orange-800" };
-  if (diffDays >= 60 && diffDays < 90)
+  if (diffDays >= 60 && diffDays <= 90)
     return { label: "Dans 2 mois", className: "bg-red-100 text-red-800" };
   if (diffDays > 90)
     return {
