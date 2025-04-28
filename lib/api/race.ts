@@ -172,7 +172,9 @@ export async function fetchQualifyingResults(
       driver: `${q.Driver.givenName} ${q.Driver.familyName}`,
       constructor: q.Constructor.name,
       grid: "-", // pas nécessaire en qualif
-      time: `${q.Q1 ?? ""} ${q.Q2 ?? ""} ${q.Q3 ?? ""}`.trim(),
+      q1: q.Q1,
+      q2: q.Q2,
+      q3: q.Q3,
       points: 0,
     })),
   };

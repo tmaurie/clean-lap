@@ -8,6 +8,7 @@ import { getRaceResults } from "@/features/results/hooks";
 import { ResultTable } from "@/app/results/ResultTable";
 import { fetchQualifyingResults, fetchSprintResults } from "@/lib/api/race";
 import { clsx } from "clsx";
+import { getConstructorColor } from "@/components/ui/colors";
 
 export default async function ResultsPage({
   params,
@@ -73,7 +74,7 @@ export default async function ResultsPage({
         </div>
       </div>
 
-      <Tabs defaultValue="results" className="">
+      <Tabs defaultValue="results">
         <TabsList
           className={clsx(
             sprintResults.results.length === 0 && "grid w-full grid-cols-2",
@@ -92,7 +93,85 @@ export default async function ResultsPage({
 
         <TabsContent className="flex flex-col gap-4" value="results">
           <PodiumBlock results={results} />
-          <ResultTable results={results} />
+          <ResultTable
+            data={results}
+            columns={[
+              { key: "position", label: "#" },
+              { key: "driver", label: "Pilote",
+                render : (driver, row) => (
+                    <div className="flex items-center gap-2">
+
+                      {driver}  {row.grid == "1" && (
+                        <Badge
+                            variant="secondary"
+                            className="text-xs bg-green-300 text-accent ml-2 animate-pulse cursor-pointer"
+                        >
+                          🏆 Vainqueur
+                        </Badge>
+                    )}
+                    </div>
+                )
+              },              {
+                key: "constructor",
+                label: "Écurie",
+                render: (constructor) => (
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="inline-block w-2 h-2 rounded-full"
+                      style={{
+                        backgroundColor: getConstructorColor(constructor),
+                      }}
+                    />
+                    {constructor}
+                  </div>
+                ),
+              },
+              {
+                key: "grid",
+                label: "Grille",
+                render: (grid, row) => {
+                  const diff = parseInt(grid) - parseInt(row.position);
+                  if (diff === 0) return grid;
+                  return (
+                    <div className="flex items-center gap-2">
+                      {grid}
+                      <span
+                        className={diff > 0 ? "text-green-400" : "text-red-400"}
+                      >
+                        ({diff > 0 ? "+" + diff : diff})
+                      </span>
+                    </div>
+                  );
+                },
+              },
+              { key: "laps", label: "Tours" },
+              { key: "time", label: "Temps" },
+              {
+                key: "points",
+                label: "Points",
+                render: (points) => (
+                  <span className="font-bold">{points}</span>
+                ),
+              },
+              {
+                key: "fastestLap",
+                label: "Meilleur tour",
+                render: (fastestLap, row) => {
+                  if (!fastestLap.time) return <span className="text-sm text-muted-foreground">N/A</span>;
+                  return (
+                    <span
+                      className={clsx(
+                        fastestLap?.rank == "1" && "text-purple-500 font-bold",
+                        "text-sm font-mono text-muted-foreground",
+                      )}
+                    >
+                      {row.fastestLap.time}
+                    </span>
+                  );
+                },
+              },
+            ]}
+          />
         </TabsContent>
         <TabsContent hidden={sprintResults.results.length === 0} value="sprint">
           {sprintResults.results.length === 0 ? (
@@ -100,7 +179,69 @@ export default async function ResultsPage({
               Pas de sprint pour ce Grand Prix.
             </p>
           ) : (
-            <ResultTable results={sprintResults.results} />
+            <ResultTable
+              data={sprintResults.results}
+              columns={[
+                { key: "position", label: "#" },
+                { key: "driver", label: "Pilote",
+                  render : (driver, row) => (
+                    <div className="flex items-center gap-2">
+
+                      {driver}  {row.grid == "1" && (
+                        <Badge
+                            variant="secondary"
+                            className="text-xs bg-green-300 text-accent ml-2 animate-pulse cursor-pointer"
+                        >
+                            🏆 Vainqueur
+                        </Badge>
+                        )}
+                    </div>
+                    )
+                },
+                {
+                  key: "constructor",
+                  label: "Écurie",
+                  render: (constructor) => (
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="inline-block w-2 h-2 rounded-full"
+                        style={{
+                          backgroundColor: getConstructorColor(constructor),
+                        }}
+                      />
+                      {constructor}
+                    </div>
+                  ),
+                },
+                {
+                  key: "grid",
+                  label: "Grille",
+                  render: (grid, row) => {
+                    const diff = parseInt(grid) - parseInt(row.position);
+                    if (diff === 0) return grid;
+                    return (
+                        <div className="flex items-center gap-2">
+                          {grid}
+                          <span
+                              className={diff > 0 ? "text-green-400" : "text-red-400"}
+                          >
+                        ({diff > 0 ? "+" + diff : diff})
+                      </span>
+                        </div>
+                    );
+                  },
+                },
+                { key: "laps", label: "Tours" },
+                { key: "time", label: "Temps" },
+                {
+                  key: "points",
+                  label: "Points",
+                  render: (points) => (
+                    <span className="font-bold">{points}</span>
+                  ),
+                },
+              ]}
+            />
           )}
         </TabsContent>
 
@@ -110,7 +251,31 @@ export default async function ResultsPage({
               Pas de qualifications disponibles.
             </p>
           ) : (
-            <ResultTable results={qualifyingResults.results} />
+            <ResultTable
+              data={qualifyingResults.results}
+              columns={[
+                { key: "position", label: "#" },
+                { key: "driver", label: "Pilote" },
+                {
+                  key: "constructor",
+                  label: "Écurie",
+                  render: (constructor) => (
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="inline-block w-2 h-2 rounded-full"
+                        style={{
+                          backgroundColor: getConstructorColor(constructor),
+                        }}
+                      />
+                      {constructor}
+                    </div>
+                  ),
+                },
+                { key: "q1", label: "Q1" },
+                { key: "q2", label: "Q2" },
+                { key: "q3", label: "Q3" },
+              ]}
+            />
           )}
         </TabsContent>
       </Tabs>
