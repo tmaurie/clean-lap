@@ -16,6 +16,7 @@ export function RaceResultsTable({
   title?: string;
 }) {
   const { data: results, isLoading, isError } = useRaceResults(season, round);
+  const reversedResults = [...(results?.results || [])].reverse();
 
   const handleConfetti = () => {
     const end = Date.now() + 3 * 1000; // 3 seconds
@@ -65,13 +66,13 @@ export function RaceResultsTable({
         delay={500}
         className="flex-1 overflow-hidden overflow-y-scroll"
       >
-        {results.results.reverse().map((r, i) => {
+        {reversedResults?.map((r, i) => {
           const isWinner = r.position === "1";
 
           return (
             <div
               key={i}
-              className={`flex justify-between items-center text-sm border-b p-2 last:border-none ${
+              className={`flex justify-between items-center text-sm border-b px-2 last:border-none ${
                 isWinner ? "font-bold text-primary" : ""
               }`}
             >

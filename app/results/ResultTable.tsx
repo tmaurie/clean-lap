@@ -1,8 +1,7 @@
-import { RaceResult } from "@/entities/race/model";
 import { getConstructorColor } from "@/components/ui/colors";
 import { clsx } from "clsx";
 
-export function ResultTable({ results }: { results: RaceResult[] }) {
+export function ResultTable({ results }: { results: any[] }) {
   if (!results || results.length === 0) {
     return <div className="text-center p-4">Aucun résultat disponible</div>;
   }

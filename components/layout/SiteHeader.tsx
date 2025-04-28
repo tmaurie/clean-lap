@@ -28,11 +28,11 @@ export function SiteHeader() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 w-full bg-background transition-all",
+        "flex h-16 items-center space-x-4 sm:justify-around sm:space-x-0",
         scrolled && "shadow-sm backdrop-blur-lg bg-background/80 border-b",
       )}
     >
-      <div className=" flex h-16 items-center justify-between px-4">
+      <div className=" container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0">
         <Link href="/" className="flex items-center gap-2">
           <Image
             src="/cleanlaplogo.png"
@@ -49,7 +49,7 @@ export function SiteHeader() {
           </h1>
         </Link>
 
-        <nav className="hidden md:flex items-center font-mono gap-4 text-sm font-medium">
+        <nav className="hidden md:flex items-center flex-1 px-6 font-mono gap-4 text-sm font-medium">
           {navItems.map((item) => (
             <Link
               key={item.href}
