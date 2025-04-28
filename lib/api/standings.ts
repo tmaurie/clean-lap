@@ -15,6 +15,7 @@ export async function fetchDriverStandings(
 
   return standings.map((s: any) => ({
     position: s.position,
+    wins: s.wins,
     points: s.points,
     driver: `${s.Driver.givenName} ${s.Driver.familyName}`,
     constructor: s.Constructors[0].name,

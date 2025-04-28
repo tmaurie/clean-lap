@@ -1,5 +1,6 @@
 export type DriverStanding = {
   position: string;
+  wins: number;
   driver: string;
   constructor: string;
   points: string;
