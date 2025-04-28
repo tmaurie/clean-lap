@@ -9,6 +9,7 @@ export type Race = {
 export type RaceResult = {
   position: string;
   driver: string;
+  driverNationality?: string;
   constructor: string;
   time: string;
   points: string;

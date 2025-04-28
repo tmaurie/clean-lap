@@ -96,6 +96,7 @@ export async function fetchRaceResults(
       (r: any): RaceResult => ({
         position: r.position,
         driver: `${r.Driver.givenName} ${r.Driver.familyName}`,
+        driverNationality: r.Driver.nationality,
         constructor: r.Constructor.name,
         time: r.Time?.time ?? "+ " + r.status,
         points: r.points,
