@@ -7,6 +7,7 @@ import { PodiumBlock } from "@/app/results/PodiumBlock";
 import { getRaceResults } from "@/features/results/hooks";
 import { ResultTable } from "@/app/results/ResultTable";
 import { fetchQualifyingResults, fetchSprintResults } from "@/lib/api/race";
+import { clsx } from "clsx";
 
 export default async function ResultsPage({
   params,
@@ -73,9 +74,19 @@ export default async function ResultsPage({
       </div>
 
       <Tabs defaultValue="results" className="">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList
+          className={clsx(
+            sprintResults.results.length === 0 && "grid w-full grid-cols-2",
+            sprintResults.results.length > 0 && "grid w-full grid-cols-3",
+          )}
+        >
           <TabsTrigger value="results">Résultats</TabsTrigger>
-          <TabsTrigger value="sprint">Sprint</TabsTrigger>
+          <TabsTrigger
+            hidden={sprintResults.results.length === 0}
+            value="sprint"
+          >
+            Sprint
+          </TabsTrigger>
           <TabsTrigger value="qualif">Qualifs</TabsTrigger>
         </TabsList>
 
@@ -83,8 +94,8 @@ export default async function ResultsPage({
           <PodiumBlock results={results} />
           <ResultTable results={results} />
         </TabsContent>
-        <TabsContent value="sprint">
-          {!sprintResults ? (
+        <TabsContent hidden={sprintResults.results.length === 0} value="sprint">
+          {sprintResults.results.length === 0 ? (
             <p className="text-sm text-muted-foreground">
               Pas de sprint pour ce Grand Prix.
             </p>

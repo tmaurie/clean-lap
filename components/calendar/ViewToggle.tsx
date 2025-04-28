@@ -17,6 +17,7 @@ export function ViewToggle({
       onValueChange={(v) => {
         if (v) action(v);
       }}
+      className="border border-muted rounded-md"
     >
       <ToggleGroupItem value="list" aria-label="Vue liste">
         <LayoutList className="w-4 h-4" />
