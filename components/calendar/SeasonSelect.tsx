@@ -25,7 +25,7 @@ export function SeasonSelect({
       <SelectTrigger className="w-[160px]">
         <SelectValue placeholder="Saison" />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="overflow-y-auto max-h-[300px]">
         {seasons.map((year) => (
           <SelectItem key={year} value={year}>
             {year}{" "}
