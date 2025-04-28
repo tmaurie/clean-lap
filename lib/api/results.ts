@@ -10,33 +10,32 @@ export async function fetchSeasonsDetails(): Promise<
   }[]
 > {
   const res = await fetch(
-    `https://api.jolpi.ca/ergast/f1/seasons.json?limit=10`,
+    `https://api.jolpi.ca/ergast/f1/seasons.json?limit=100`,
   );
   const json = await res.json();
-  const seasons = json?.MRData?.SeasonTable?.Seasons ?? [];
+  const seasons = json?.MRData?.SeasonTable?.Seasons.reverse() ?? [];
 
   return await Promise.all(
-    seasons.map(async (s: any) => {
-      const [raceRes, driverRes, constructorRes] = await Promise.all([
-        fetch(`https://api.jolpi.ca/ergast/f1/${s.season}.json`),
-        fetch(
-          `https://api.jolpi.ca/ergast/f1/${s.season}/driverStandings.json`,
-        ),
-        fetch(
-          `https://api.jolpi.ca/ergast/f1/${s.season}/constructorStandings.json`,
-        ),
-      ]);
-
-      const raceData = await raceRes.json();
-      const driverData = await driverRes.json();
-      const constructorData = await constructorRes.json();
-
-      const count = raceData.MRData.RaceTable?.Races?.length ?? 0;
+    seasons.slice(0, 5).map(async (s: any) => {
+      const raceRes = await fetch(
+        `https://api.jolpi.ca/ergast/f1/${s.season}.json`,
+      );
+      const driverRes = await fetch(
+        `https://api.jolpi.ca/ergast/f1/${s.season}/driverStandings.json`,
+      );
+      const json = await driverRes.json();
       const driverChampion =
-        driverData.MRData.StandingsTable?.StandingsLists?.[0]
-          ?.DriverStandings?.[0];
+        json?.MRData?.StandingsTable?.StandingsLists?.[0]?.DriverStandings?.[0];
+
+      const constructorRes = await fetch(
+        `https://api.jolpi.ca/ergast/f1/${s.season}/constructorStandings.json`,
+      );
+      const raceJson = await raceRes.json();
+      const count = raceJson.MRData.RaceTable?.Races?.length ?? 0;
+
+      const constructorJson = await constructorRes.json();
       const constructorChampion =
-        constructorData.MRData.StandingsTable?.StandingsLists?.[0]
+        constructorJson?.MRData?.StandingsTable?.StandingsLists?.[0]
           ?.ConstructorStandings?.[0];
 
       return {
