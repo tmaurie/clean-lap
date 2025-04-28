@@ -12,12 +12,12 @@ export type RaceResult = {
   constructor: string;
   time: string;
   points: string;
-  fastestLap: {
+  fastestLap?: {
     rank: string;
     lap: string;
     time: string;
     averageSpeed: string;
   };
   grid: string;
-  laps: string;
+  laps?: string;
 };
