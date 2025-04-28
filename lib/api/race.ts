@@ -92,7 +92,7 @@ export async function fetchRaceResults(
       country: race?.Circuit?.Location?.country,
       url: race?.Circuit?.url,
     },
-    results: results.reverse().map(
+    results: results.map(
       (r: any): RaceResult => ({
         position: r.position,
         driver: `${r.Driver.givenName} ${r.Driver.familyName}`,
@@ -109,5 +109,71 @@ export async function fetchRaceResults(
         laps: r.laps,
       }),
     ),
+  };
+}
+
+export async function fetchSprintResults(
+  season: string,
+  round: string,
+): Promise<{
+  results: {
+    position: string;
+    driver: string;
+    constructor: string;
+    laps: string;
+    grid: string;
+    time: string;
+    points: string;
+  }[];
+}> {
+  const res = await fetch(
+    `https://api.jolpi.ca/ergast/f1/${season}/${round}/sprint.json`,
+  );
+  const json = await res.json();
+  const race = json?.MRData?.RaceTable?.Races?.[0];
+  const results = race?.SprintResults ?? [];
+
+  return {
+    results: results.map((r: any) => ({
+      position: r.position,
+      driver: `${r.Driver.givenName} ${r.Driver.familyName}`,
+      constructor: r.Constructor.name,
+      laps: r.laps,
+      grid: r.grid,
+      time: r.Time?.time ?? "+ " + r.status,
+      points: r.points,
+    })),
+  };
+}
+
+export async function fetchQualifyingResults(
+  season: string,
+  round: string,
+): Promise<{
+  results: {
+    position: string;
+    driver: string;
+    constructor: string;
+    grid: string;
+    time: string;
+    points: string;
+  }[];
+}> {
+  const res = await fetch(
+    `https://api.jolpi.ca/ergast/f1/${season}/${round}/qualifying.json`,
+  );
+  const json = await res.json();
+  const race = json?.MRData?.RaceTable?.Races?.[0];
+  const results = race?.QualifyingResults ?? [];
+
+  return {
+    results: results.map((q: any) => ({
+      position: q.position,
+      driver: `${q.Driver.givenName} ${q.Driver.familyName}`,
+      constructor: q.Constructor.name,
+      grid: "-", // pas nécessaire en qualif
+      time: `${q.Q1 ?? ""} ${q.Q2 ?? ""} ${q.Q3 ?? ""}`.trim(),
+      points: 0,
+    })),
   };
 }

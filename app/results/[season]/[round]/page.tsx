@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PodiumBlock } from "@/app/results/PodiumBlock";
 import { getRaceResults } from "@/features/results/hooks";
 import { ResultTable } from "@/app/results/ResultTable";
+import { fetchQualifyingResults, fetchSprintResults } from "@/lib/api/race";
 
 export default async function ResultsPage({
   params,
@@ -18,6 +19,8 @@ export default async function ResultsPage({
 
   const country = location.split(", ").at(-1) || "";
   const flag = countryToFlagEmoji(country);
+  const sprintResults = await fetchSprintResults(season, round);
+  const qualifyingResults = await fetchQualifyingResults(season, round);
 
   return (
     <div className="space-y-6">
@@ -28,7 +31,7 @@ export default async function ResultsPage({
         }
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border rounded-md p-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border rounded-md p-4 bg-accent">
         {/* Bloc Course */}
         <div className="space-y-2 flex flex-col justify-evenly items-center md:items-start ">
           <h2 className="text-xl font-bold">
@@ -70,11 +73,10 @@ export default async function ResultsPage({
       </div>
 
       <Tabs defaultValue="results" className="">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="results">Résultats</TabsTrigger>
           <TabsTrigger value="sprint">Sprint</TabsTrigger>
           <TabsTrigger value="qualif">Qualifs</TabsTrigger>
-          <TabsTrigger value="laps">Tours</TabsTrigger>
         </TabsList>
 
         <TabsContent className="flex flex-col gap-4" value="results">
@@ -82,13 +84,23 @@ export default async function ResultsPage({
           <ResultTable results={results} />
         </TabsContent>
         <TabsContent value="sprint">
-          <p className="text-muted-foreground text-sm">À venir...</p>
+          {!sprintResults ? (
+            <p className="text-sm text-muted-foreground">
+              Pas de sprint pour ce Grand Prix.
+            </p>
+          ) : (
+            <ResultTable results={sprintResults.results} />
+          )}
         </TabsContent>
+
         <TabsContent value="qualif">
-          <p className="text-muted-foreground text-sm">À venir...</p>
-        </TabsContent>
-        <TabsContent value="laps">
-          <p className="text-muted-foreground text-sm">À venir...</p>
+          {!qualifyingResults ? (
+            <p className="text-sm text-muted-foreground">
+              Pas de qualifications disponibles.
+            </p>
+          ) : (
+            <ResultTable results={qualifyingResults.results} />
+          )}
         </TabsContent>
       </Tabs>
     </div>
