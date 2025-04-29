@@ -8,7 +8,11 @@ import { getRaceResults } from "@/features/results/hooks";
 import { ResultTable } from "@/app/results/ResultTable";
 import { fetchQualifyingResults, fetchSprintResults } from "@/lib/api/race";
 import { clsx } from "clsx";
-import {columnsQualif, columnsRace, columnsSprint} from "@/lib/config/columns";
+import {
+  columnsQualif,
+  columnsRace,
+  columnsSprint,
+} from "@/lib/config/columns";
 
 export default async function ResultsPage({
   params,
@@ -93,10 +97,7 @@ export default async function ResultsPage({
 
         <TabsContent className="flex flex-col gap-4" value="results">
           <PodiumBlock results={results} />
-          <ResultTable
-            data={results}
-            columns={columnsRace}
-          />
+          <ResultTable data={results} columns={columnsRace} />
         </TabsContent>
         <TabsContent hidden={sprintResults.results.length === 0} value="sprint">
           {sprintResults.results.length === 0 ? (
@@ -104,10 +105,7 @@ export default async function ResultsPage({
               Pas de sprint pour ce Grand Prix.
             </p>
           ) : (
-            <ResultTable
-              data={sprintResults.results}
-              columns={columnsSprint}
-            />
+            <ResultTable data={sprintResults.results} columns={columnsSprint} />
           )}
         </TabsContent>
 

@@ -1,19 +1,47 @@
 import { Race, RaceResult } from "@/entities/race/model";
 import { API_ROUTES } from "@/lib/config/api";
 
-export async function fetchNextRace(): Promise<Race | null> {
-  const res = await fetch(API_ROUTES.nextRace);
-  const json = await res.json();
+async function fetchJSON(url: string): Promise<any> {
+  const res = await fetch(url);
+  return await res.json();
+}
 
+function mapRace(race: any): Race {
+  return {
+    name: race.raceName,
+    date: race.date,
+    time: race.time,
+    circuit: race.Circuit.circuitName,
+    location: `${race.Circuit.Location.locality}, ${race.Circuit.Location.country}`,
+  };
+}
+
+function mapRaceResults(results: any[]): RaceResult[] {
+  return results.map(
+    (r: any): RaceResult => ({
+      position: r.position,
+      driver: `${r.Driver.givenName} ${r.Driver.familyName}`,
+      driverNationality: r.Driver.nationality,
+      constructor: r.Constructor.name,
+      time: r.Time?.time ?? "+ " + r.status,
+      points: r.points,
+      fastestLap: {
+        rank: r.FastestLap?.rank,
+        lap: r.FastestLap?.lap,
+        time: r.FastestLap?.Time?.time,
+        averageSpeed: r.FastestLap?.AverageSpeed?.speed,
+      },
+      grid: r.grid,
+      laps: r.laps,
+    }),
+  );
+}
+
+export async function fetchNextRace(): Promise<Race | null> {
   try {
+    const json = await fetchJSON(API_ROUTES.nextRace);
     const raceData = json.MRData.RaceTable.Races[0];
-    return {
-      name: raceData.raceName,
-      circuit: raceData.Circuit.circuitName,
-      date: raceData.date,
-      time: raceData.time,
-      location: `${raceData.Circuit.Location.locality}, ${raceData.Circuit.Location.country}`,
-    };
+    return mapRace(raceData);
   } catch (err) {
     console.error("[fetchNextRace] Failed to parse race data", err);
     return null;
@@ -21,40 +49,21 @@ export async function fetchNextRace(): Promise<Race | null> {
 }
 
 export async function fetchUpcomingRaces(): Promise<Race[]> {
-  const res = await fetch(
+  const json = await fetchJSON(
     API_ROUTES.races(new Date().getFullYear().toString()),
   );
-  const json = await res.json();
-
   const races = json.MRData.RaceTable.Races as any[];
-
   const now = new Date();
 
   return races
-    .map(
-      (race): Race => ({
-        name: race.raceName,
-        date: race.date,
-        time: race.time,
-        circuit: race.Circuit.circuitName,
-        location: `${race.Circuit.Location.locality}, ${race.Circuit.Location.country}`,
-      }),
-    )
+    .map(mapRace)
     .filter((race) => new Date(`${race.date}T${race.time}`) > now);
 }
 
 export async function fetchRaces(season: string): Promise<Race[]> {
-  const res = await fetch(API_ROUTES.races(season));
-  const json = await res.json();
+  const json = await fetchJSON(API_ROUTES.races(season));
   const rawRaces = json.MRData.RaceTable.Races;
-
-  return rawRaces.map((r: any) => ({
-    name: r.raceName,
-    date: r.date,
-    time: r.time,
-    circuit: r.Circuit.circuitName,
-    location: `${r.Circuit.Location.locality}, ${r.Circuit.Location.country}`,
-  }));
+  return rawRaces.map(mapRace);
 }
 
 export async function fetchRaceResults(
@@ -73,11 +82,9 @@ export async function fetchRaceResults(
   };
   results: RaceResult[];
 }> {
-  const res = await fetch(
+  const json = await fetchJSON(
     `https://api.jolpi.ca/ergast/f1/${season}/${round}/results.json`,
   );
-  const json = await res.json();
-
   const race = json.MRData.RaceTable.Races[0];
   const results = race?.Results ?? [];
 
@@ -92,24 +99,7 @@ export async function fetchRaceResults(
       country: race?.Circuit?.Location?.country,
       url: race?.Circuit?.url,
     },
-    results: results.map(
-      (r: any): RaceResult => ({
-        position: r.position,
-        driver: `${r.Driver.givenName} ${r.Driver.familyName}`,
-        driverNationality: r.Driver.nationality,
-        constructor: r.Constructor.name,
-        time: r.Time?.time ?? "+ " + r.status,
-        points: r.points,
-        fastestLap: {
-          rank: r.FastestLap?.rank,
-          lap: r.FastestLap?.lap,
-          time: r.FastestLap?.Time?.time,
-          averageSpeed: r.FastestLap?.AverageSpeed?.speed,
-        },
-        grid: r.grid,
-        laps: r.laps,
-      }),
-    ),
+    results: mapRaceResults(results),
   };
 }
 
@@ -127,10 +117,9 @@ export async function fetchSprintResults(
     points: string;
   }[];
 }> {
-  const res = await fetch(
+  const json = await fetchJSON(
     `https://api.jolpi.ca/ergast/f1/${season}/${round}/sprint.json`,
   );
-  const json = await res.json();
   const race = json?.MRData?.RaceTable?.Races?.[0];
   const results = race?.SprintResults ?? [];
 
@@ -160,10 +149,9 @@ export async function fetchQualifyingResults(
     points: string;
   }[];
 }> {
-  const res = await fetch(
+  const json = await fetchJSON(
     `https://api.jolpi.ca/ergast/f1/${season}/${round}/qualifying.json`,
   );
-  const json = await res.json();
   const race = json?.MRData?.RaceTable?.Races?.[0];
   const results = race?.QualifyingResults ?? [];
 
