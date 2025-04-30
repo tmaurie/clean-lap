@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
-import { getConstructorColor } from "@/components/ui/colors";
+import { getConstructorColor } from "@/lib/utils/colors";
 import { nationalityToFlagEmoji } from "@/lib/utils/flags";
 
 type Season = {

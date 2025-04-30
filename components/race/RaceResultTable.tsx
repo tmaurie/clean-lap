@@ -1,7 +1,7 @@
 "use client";
 
 import { useRaceResults } from "@/features/race/useRaceResults";
-import { getConstructorColor } from "@/components/ui/colors";
+import { getConstructorColor } from "@/lib/utils/colors";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import confetti from "canvas-confetti";
