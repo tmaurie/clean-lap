@@ -24,7 +24,7 @@ jobs:
         run: npm install
 
       - name: Prettier check
-        run: npm run prettier --check .
+        run: npx prettier . --check
 
       - name: Type check
         run: npm run tsc --noEmit
