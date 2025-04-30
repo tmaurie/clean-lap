@@ -11,56 +11,25 @@ Elle fournit en un clin d'œil toutes les informations essentielles : prochaine 
 - 🏁 **Résultats de la dernière course**
 - 📆 **Liste des prochaines courses à venir**
 - 📊 **Classement pilotes & constructeurs (top 5)**
-
-Le tout dans un layout **responsive, accessible et agréable à consulter**, même sur mobile.
-
+- 🏆 **Historique des résultats de la saison en cours et des saisons précédentes**
 ---
 
 ## 🧱 Tech Stack
 
-- **Next.js 14 App Router** + TypeScript
+- **Next.js 15** pour le rendu côté serveur et la génération de pages statiques
+- **TypeScript** pour la sécurité des types
+- **React 19** pour la construction d'interfaces utilisateur
 - **Shadcn/UI** pour les composants UI réutilisables
 - **React Query** (`@tanstack/react-query`) pour la gestion des données distantes
-- **Ergast API (via Jolpi)** pour les données F1 (courses, standings, résultats)
+- **Ergast API (via Jolpica)** pour les données F1 (courses, standings, résultats)
 - **Tailwind CSS** pour le style rapide et cohérent
-- **Architecture Clean & Typée** (lib/api, entities, features, components...)
-
----
-
-## 🚧 Roadmap
-
-> 📌 [Voir la version complète dans `/docs/roadmap.md`](./docs/roadmap.md)
-
-### V1 – ✅ Terminé
-
-- Page d'accueil avec layout bento :
-  - `NextRaceCard`
-  - `RaceResultsCard`
-  - `UpcomingRaces`
-  - `StandingsPreview`
-
-### V2 – À venir
-
-- ✅ Routing complet avec pages :
-  - `/standings`
-  - `/results/[round]`
-  - `/calendar`
-- ✅ Affichage détaillé des classements
-- ✅ Résultats complets d’une course
-
-### V3 – Améliorations UI/UX
-
-- ✅ Animations (Framer Motion)
-- ✅ Dark/Light toggle
-- ✅ Réutilisation de composants type `SectionCard`
-
----
+- **ESLint** et **Prettier** pour le linting et le formatage du code
 
 ## 🚀 Démarrer le projet
 
 ```bash
-pnpm install
-pnpm dev
+npm install
+npm dev
 ```
 
 Architecture de fichiers :
@@ -78,6 +47,14 @@ src/
 ├── styles/               # Tailwind config & global CSS
 └── public/               # Assets statiques
 ```
+
+---
+
+## 🚧 Roadmap
+
+> 📌 [Voir la version complète dans `/docs/roadmap.md`](./docs/roadmap.md)
+
+---
 
 ## 📜 License
 
