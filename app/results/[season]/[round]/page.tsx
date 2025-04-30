@@ -81,7 +81,7 @@ export default async function ResultsPage({ params }: any) {
             sprintResults.results.length > 0 && "grid w-full grid-cols-3",
           )}
         >
-          <TabsTrigger value="results">Résultats</TabsTrigger>
+          <TabsTrigger value="results">Course</TabsTrigger>
           <TabsTrigger
             hidden={sprintResults.results.length === 0}
             value="sprint"

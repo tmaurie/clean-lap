@@ -10,11 +10,11 @@ export const columnsRace = [
     label: "Pilote",
     render: (
       driver: string,
-      row: { driverNationality: string; grid: string },
+      row: { driverNationality: string; position: string },
     ) => (
       <div className="flex items-center gap-2">
         {nationalityToFlagEmoji(row.driverNationality)} {driver}
-        {row.grid == "1" && (
+        {row.position == "1" && (
           <Badge
             variant="secondary"
             className="text-xs bg-green-300 text-accent ml-2 animate-pulse cursor-pointer"
