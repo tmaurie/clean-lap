@@ -6,6 +6,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import confetti from "canvas-confetti";
 import { AnimatedList } from "@/components/magicui/animated-list";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, ChartLine } from "lucide-react";
+import Link from "next/link";
 
 export function RaceResultsTable({
   season,
@@ -60,11 +63,11 @@ export function RaceResultsTable({
   if (isError || !results) return <p>Erreur lors du chargement.</p>;
 
   return (
-    <div className="relative flex h-[300px] w-full flex-col overflow-hidden">
+    <div className="relative flex h-[300px] w-full flex-col overflow-hidden md:h-[530px] space-y-4">
       <span className="text-sm font-semibold mb-2">{results.raceName}</span>
       <AnimatedList
         delay={500}
-        className="flex-1 overflow-hidden overflow-y-scroll"
+        className="flex-1 overflow-hidden overflow-y-scroll rounded-md border bg-accent p-2"
       >
         {reversedResults?.map((r, i) => {
           const isWinner = r.position === "1";
@@ -77,7 +80,7 @@ export function RaceResultsTable({
               }`}
             >
               <div className="flex gap-2 items-center">
-                <span className="w-5">{r.position}.</span>
+                <span className="w-5 font-mono">{r.position}.</span>
                 <div
                   className="w-2 h-2 rounded-full"
                   style={{
@@ -110,7 +113,13 @@ export function RaceResultsTable({
           );
         })}
       </AnimatedList>
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-card to-transparent"></div>
+      <div className="flex justify-between items-center">
+        <Button variant="outline" size="sm">
+          <ChartLine />
+          <Link href="/standings">Voir le résultat détaillé</Link>
+          <ArrowRight />
+        </Button>
+      </div>
     </div>
   );
 }
