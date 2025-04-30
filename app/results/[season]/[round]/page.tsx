@@ -14,11 +14,7 @@ import {
   columnsSprint,
 } from "@/lib/config/columns";
 
-export default async function ResultsPage({
-  params,
-}: {
-  params: { season: string; round: string };
-}) {
+export default async function ResultsPage({ params }: any) {
   const { season, round } = await params;
   const { raceName, location, date, results, time, circuit } =
     await getRaceResults(season, round);
