@@ -1,34 +1,39 @@
 import { UpcomingRaces } from "@/components/home/UpcomingRaces";
 import { NextRaceCountdown } from "@/components/home/NextRaceCountdown";
-import { RaceResultsTable } from "@/components/race/RaceResultTable";
+import { RaceResultsTable } from "@/components/home/RaceResultTable";
 import { StandingsPreview } from "@/components/home/StandingsPreview";
 import { SectionCard } from "@/components/ui/section-card";
-import { ChartNoAxesColumn, Flag, SquareChevronRight } from "lucide-react";
 
 export default function HomePage() {
   return (
     <section className="grid grid-cols-1 md:grid-cols-2 grid-flow-row-dense auto-rows-auto gap-6">
       <SectionCard
         title="Prochaine course"
-        icon={<SquareChevronRight className="w-4 h-4" />}
+        icon="⏳"
         description="Prochaine course de la saison"
-        actions=""
       >
         <NextRaceCountdown />
       </SectionCard>
       <SectionCard
-        title="Résultats dernière course"
-        icon={<Flag className="w-4 h-4" />}
+        title="Dernière course"
+        description="Résultats de la dernière course"
+        icon="🏁"
       >
         <RaceResultsTable
           season={new Date().getFullYear().toString()}
           round="last"
         />
       </SectionCard>
-      <UpcomingRaces />
+      <SectionCard
+        title="Courses à venir"
+        icon="📆"
+        description="Calendrier des courses de la saison"
+      >
+        <UpcomingRaces />
+      </SectionCard>
       <SectionCard
         title="Classement"
-        icon={<ChartNoAxesColumn className="w-4 h-4" />}
+        icon="🏆"
         description={`Classement pilotes et écuries de la saison ${new Date().getFullYear()}`}
       >
         <StandingsPreview />

@@ -1,6 +1,5 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useUpcomingRaces } from "@/features/upcomingRaces/useUpcomingRaces";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getTimeUntilLabel } from "@/lib/utils/date";
@@ -36,87 +35,82 @@ export function UpcomingRaces() {
   const visibleRaces = expanded ? races.slice(1, 11) : races.slice(1, 6);
 
   return (
-    <Card className="relative overflow-hidden flex flex-col justify-between">
-      <CardHeader>
-        <CardTitle>📆 Prochaines courses</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {visibleRaces.map((race, i) => {
-          const timeUntilLabel = getTimeUntilLabel(race.date);
+    <div className="space-y-4">
+      {visibleRaces.map((race, i) => {
+        const timeUntilLabel = getTimeUntilLabel(race.date);
 
-          return (
-            <div
-              key={i}
-              className="text-sm border-b pb-2 last:border-none flex justify-between items-center"
-            >
-              <div>
-                <Badge variant="secondary" className="font-semibold">
-                  {countryToFlagEmoji(race.location.split(", ").at(-1) || "")}{" "}
-                  {race.name}
-                </Badge>
-                <p className="text-muted-foreground text-xs">{race.circuit}</p>
-                <p className="text-xs md:hidden">
-                  {new Date(race.date).toLocaleDateString("fr-FR", {
-                    day: "2-digit",
-                    month: "long",
-                    year: "numeric",
-                  })}{" "}
-                </p>
-              </div>
-
-              {timeUntilLabel && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Badge
-                        className={clsx(
-                          timeUntilLabel.className,
-                          "text-xs",
-                          "cursor-pointer",
-                        )}
-                      >
-                        {timeUntilLabel.label}
-                      </Badge>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="text-xs">
-                        {new Date(race.date).toLocaleDateString("fr-FR", {
-                          day: "2-digit",
-                          month: "long",
-                          year: "numeric",
-                        })}{" "}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-            </div>
-          );
-        })}
-        <div className="flex justify-between items-center">
-          <Button
-            className="cursor-pointer"
-            variant="outline"
-            size="sm"
-            onClick={() => setExpanded(!expanded)}
+        return (
+          <div
+            key={i}
+            className="text-sm border-b pb-2 last:border-none flex justify-between items-center"
           >
-            {expanded ? (
-              <>
-                <ArrowUp /> Réduire
-              </>
-            ) : (
-              <>
-                <ArrowDown /> Voir plus
-              </>
+            <div>
+              <Badge variant="secondary" className="font-semibold">
+                {countryToFlagEmoji(race.location.split(", ").at(-1) || "")}{" "}
+                {race.name}
+              </Badge>
+              <p className="text-muted-foreground text-xs">{race.circuit}</p>
+              <p className="text-xs md:hidden">
+                {new Date(race.date).toLocaleDateString("fr-FR", {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                })}{" "}
+              </p>
+            </div>
+
+            {timeUntilLabel && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge
+                      className={clsx(
+                        timeUntilLabel.className,
+                        "text-xs",
+                        "cursor-pointer",
+                      )}
+                    >
+                      {timeUntilLabel.label}
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-xs">
+                      {new Date(race.date).toLocaleDateString("fr-FR", {
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric",
+                      })}{" "}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
-          </Button>
-          <Button hidden={!expanded} variant="outline" size="sm">
-            <Calendar />
-            <Link href="/calendar">Voir le calendrier complet</Link>
-            <ArrowRight />
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+          </div>
+        );
+      })}
+      <div className="flex justify-between items-center">
+        <Button
+          className="cursor-pointer"
+          variant="outline"
+          size="sm"
+          onClick={() => setExpanded(!expanded)}
+        >
+          {expanded ? (
+            <>
+              <ArrowUp /> Réduire
+            </>
+          ) : (
+            <>
+              <ArrowDown /> Voir plus
+            </>
+          )}
+        </Button>
+        <Button hidden={!expanded} variant="outline" size="sm">
+          <Calendar />
+          <Link href="/calendar">Voir le calendrier complet</Link>
+          <ArrowRight />
+        </Button>
+      </div>
+    </div>
   );
 }
