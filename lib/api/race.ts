@@ -23,7 +23,7 @@ function mapRaceResults(results: any[]): RaceResult[] {
       driver: `${r.Driver.givenName} ${r.Driver.familyName}`,
       driverNationality: r.Driver.nationality,
       constructor: r.Constructor.name,
-      time: r.Time?.time ?? "+ " + r.status,
+      time: r.Time?.time ?? r.status,
       points: r.points,
       fastestLap: {
         rank: r.FastestLap?.rank,

@@ -8,6 +8,7 @@ export default function HomePage() {
   return (
     <section className="grid grid-cols-1 md:grid-cols-2 grid-flow-row-dense auto-rows-auto gap-6">
       <SectionCard
+        className="row-span-1"
         title="Prochaine course"
         icon="⏳"
         description="Prochaine course de la saison"
@@ -15,6 +16,7 @@ export default function HomePage() {
         <NextRaceCountdown />
       </SectionCard>
       <SectionCard
+        className="row-span-2"
         title="Dernière course"
         description="Résultats de la dernière course"
         icon="🏁"
@@ -25,6 +27,7 @@ export default function HomePage() {
         />
       </SectionCard>
       <SectionCard
+        className="row-span-2"
         title="Courses à venir"
         icon="📆"
         description="Calendrier des courses de la saison"
@@ -32,6 +35,7 @@ export default function HomePage() {
         <UpcomingRaces />
       </SectionCard>
       <SectionCard
+        className="row-span-1"
         title="Classement"
         icon="🏆"
         description={`Classement pilotes et écuries de la saison ${new Date().getFullYear()}`}

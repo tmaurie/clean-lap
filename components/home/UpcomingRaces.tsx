@@ -15,10 +15,27 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowDown, ArrowRight, ArrowUp, Calendar } from "lucide-react";
 import { countryToFlagEmoji } from "@/lib/utils/flags";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function UpcomingRaces() {
   const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768) {
+        setExpanded(true);
+      } else {
+        setExpanded(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    handleResize(); // Call it once on mount
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   const { data: races, isLoading, isError } = useUpcomingRaces();
 
@@ -90,7 +107,7 @@ export function UpcomingRaces() {
       })}
       <div className="flex justify-between items-center">
         <Button
-          className="cursor-pointer"
+          className="md:hidden cursor-pointer"
           variant="outline"
           size="sm"
           onClick={() => setExpanded(!expanded)}

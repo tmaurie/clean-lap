@@ -5,7 +5,7 @@ import {
   useDriverStandings,
 } from "@/features/standings/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChartNoAxesColumn } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { StandingsTabs } from "@/components/standings/StandingsTabs";
@@ -30,6 +30,7 @@ export function StandingsPreview() {
 
       <div className="flex justify-between items-center">
         <Button variant="outline" size="sm">
+          <ChartNoAxesColumn />
           <Link href="/standings">Voir le classement complet</Link>
           <ArrowRight />
         </Button>
