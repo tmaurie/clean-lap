@@ -7,6 +7,7 @@ import { Github } from "lucide-react";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { LineShadowText } from "@/components/magicui/line-shadow-text";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 const navItems = [
   { name: "Accueil", href: "/" },
@@ -63,14 +64,18 @@ export function SiteHeader() {
             </Link>
           ))}
         </nav>
-        <Link
-          href="https://github.com/tmaurie/clean-lap"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-muted-foreground hover:text-primary transition-colors"
-        >
-          <Github className="h-5 w-5" />
-        </Link>
+
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <Link
+            href="https://github.com/tmaurie/clean-lap"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-muted-foreground hover:text-primary transition-colors"
+          >
+            <Github className="h-5 w-5" />
+          </Link>
+        </div>
       </div>
     </header>
   );

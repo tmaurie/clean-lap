@@ -12,6 +12,7 @@ Elle fournit en un clin d'œil toutes les informations essentielles : prochaine 
 - 📆 **Liste des prochaines courses à venir**
 - 📊 **Classement pilotes & constructeurs (top 5)**
 - 🏆 **Historique des résultats de la saison en cours et des saisons précédentes**
+
 ---
 
 ## 🧱 Tech Stack
