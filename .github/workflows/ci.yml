@@ -27,7 +27,7 @@ jobs:
         run: npx prettier . --check
 
       - name: Type check
-        run: npm run tsc --noEmit
+        run: npx tsc --noEmit
 
       - name: Build (Next.js)
         run: npm run build
