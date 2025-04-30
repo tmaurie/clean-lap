@@ -1,5 +1,5 @@
 import { nationalityToFlagEmoji } from "@/lib/utils/flags";
-import { getConstructorColor } from "@/components/ui/colors";
+import { getConstructorColor } from "@/lib/utils/colors";
 import { Badge } from "@/components/ui/badge";
 import { clsx } from "clsx";
 

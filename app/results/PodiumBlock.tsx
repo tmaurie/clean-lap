@@ -1,4 +1,4 @@
-import { getConstructorColor } from "@/components/ui/colors";
+import { getConstructorColor } from "@/lib/utils/colors";
 import { RaceResult } from "@/entities/race/model";
 
 type Props = {

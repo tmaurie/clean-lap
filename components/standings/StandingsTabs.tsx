@@ -6,7 +6,7 @@ import {
   useConstructorStandings,
   useDriverStandings,
 } from "@/features/standings/hooks";
-import { getConstructorColor } from "@/components/ui/colors";
+import { getConstructorColor } from "@/lib/utils/colors";
 import { clsx } from "clsx";
 
 export function StandingsTabs({
