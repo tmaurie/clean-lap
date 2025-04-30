@@ -8,15 +8,16 @@ import NextTopLoader from "nextjs-toploader";
 const geist = Geist({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'CleanLap',
-  description: 'Résultats et statistiques F1.',
+  title: "CleanLap",
+  description: "Résultats et statistiques F1.",
   openGraph: {
-    title: 'CleanLap',
-    description: 'Une application pour les fans de Formule 1. Votre tableau de bord F1 clair, rapide et accessible.',
-    url: 'https://cleanlap.vercel.app',
-    siteName: 'CleanLap',
-    locale: 'fr_FR',
-    type: 'website',
+    title: "CleanLap",
+    description:
+      "Une application pour les fans de Formule 1. Votre tableau de bord F1 clair, rapide et accessible.",
+    url: "https://cleanlap.vercel.app",
+    siteName: "CleanLap",
+    locale: "fr_FR",
+    type: "website",
   },
 };
 
