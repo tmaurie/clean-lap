@@ -1,19 +1,35 @@
+"use client";
+
 import { PageHeader } from "@/components/ui/page-header";
 import Link from "next/link";
 import { countryToFlagEmoji } from "@/lib/utils/flags";
 import { useRacesWithWinner } from "@/features/results/hooks";
+import React, { useEffect, useState } from "react";
 
-export default async function SeasonResultsPage({
+export default function SeasonResultsPage({
   params,
 }: {
-  params: { season: string };
+  params: Promise<{ season: string }>;
 }) {
-  const races = await useRacesWithWinner(params.season);
+  const { season } = React.use(params);
+  const [races, setRaces] = useState<any[] | null>(null);
+
+  useEffect(() => {
+    async function fetchRaces() {
+      const data = await useRacesWithWinner(season);
+      setRaces(data);
+    }
+    fetchRaces();
+  }, [season]);
+
+  if (!races) {
+    return <div>Chargement des résultats...</div>;
+  }
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title={`Résultats ${params.season}`}
+        title={`Résultats ${season}`}
         description="Cliquez sur une course pour voir les détails"
       />
 
@@ -26,7 +42,7 @@ export default async function SeasonResultsPage({
           return (
             <li key={race.round}>
               <Link
-                href={`/results/${params.season}/${race.round}`}
+                href={`/results/${season}/${race.round}`}
                 className="flex flex-col md:flex-row md:items-center justify-between px-4 py-3 rounded-md border hover:bg-muted transition"
               >
                 <div>

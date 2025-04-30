@@ -1,4 +1,16 @@
-export async function fetchSeasonsDetails(): Promise<
+type Race = {
+  round: string;
+  raceName: string;
+  date: string;
+  Circuit: {
+    Location: {
+      locality: string;
+      country: string;
+    };
+  };
+};
+
+export async function fetchSeasonDetails(): Promise<
   {
     season: string;
     raceCount: number;
@@ -9,14 +21,15 @@ export async function fetchSeasonsDetails(): Promise<
     constructorChampion?: string;
   }[]
 > {
-  const res = await fetch(
-    `https://api.jolpi.ca/ergast/f1/seasons.json?limit=100`,
-  );
-  const json = await res.json();
-  const seasons = json?.MRData?.SeasonTable?.Seasons.reverse() ?? [];
+  const seasons = Array.from(
+    { length: new Date().getFullYear() - 1950 + 1 },
+    (_, i) => (new Date().getFullYear() - i).toString(),
+  ).map((year) => ({
+    season: year,
+  }));
 
   return await Promise.all(
-    seasons.slice(0, 5).map(async (s: any) => {
+    seasons.map(async (s: any) => {
       const raceRes = await fetch(
         `https://api.jolpi.ca/ergast/f1/${s.season}.json`,
       );
@@ -66,22 +79,20 @@ export async function fetchRacesWithWinner(season: string): Promise<
   const json = await res.json();
   const races = json.MRData.RaceTable?.Races ?? [];
 
-  return await Promise.all(
-    races.map(async (r: any) => {
+  return Promise.all(
+    races.map(async (race: Race) => {
       const winnerRes = await fetch(
-        `https://api.jolpi.ca/ergast/f1/${season}/${r.round}/results.json`,
+        `https://api.jolpi.ca/ergast/f1/${season}/${race.round}/results.json`,
       );
       const winnerJson = await winnerRes.json();
-      const result = winnerJson?.MRData?.RaceTable?.Races?.[0]?.Results?.[0];
-
+      const winner =
+        winnerJson.MRData.RaceTable?.Races[0]?.Results[0]?.Driver?.familyName;
       return {
-        round: r.round,
-        name: r.raceName,
-        date: r.date,
-        location: `${r.Circuit.Location.locality}, ${r.Circuit.Location.country}`,
-        winner: result
-          ? `${result.Driver.givenName} ${result.Driver.familyName}`
-          : undefined,
+        round: race.round,
+        name: race.raceName,
+        date: race.date,
+        location: `${race.Circuit.Location.locality}, ${race.Circuit.Location.country}`,
+        winner: winner,
       };
     }),
   );
