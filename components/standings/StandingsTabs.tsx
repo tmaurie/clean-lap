@@ -92,7 +92,12 @@ export function StandingsTabs({
                     {c.position}. {c.constructor}
                   </p>
                 </div>
-                <span className="font-bold">{c.points} pts</span>
+                <div className="flex flex-col items-end">
+                  <span className="font-bold">{c.points} pts</span>
+                  <span className="text-xs text-muted-foreground">
+                    {c.wins > 0 ? ` ${c.wins} 🏆` : ""}
+                  </span>
+                </div>
               </li>
             ))
           )}
