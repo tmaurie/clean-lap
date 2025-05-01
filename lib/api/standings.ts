@@ -36,6 +36,7 @@ export async function fetchConstructorStandings(
   return standings.map((s: any) => ({
     position: s.position,
     points: s.points,
+    wins: s.wins,
     constructor: s.Constructor.name,
     nationality: s.Constructor.nationality,
   }));
