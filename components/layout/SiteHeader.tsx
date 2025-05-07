@@ -50,7 +50,7 @@ export function SiteHeader() {
           </h1>
         </Link>
 
-        <nav className="hidden md:flex items-center flex-1 px-6 font-mono gap-4 text-sm font-medium">
+        <nav className="hidden md:flex items-center flex-1 px-6 gap-4 text-sm font-medium font-sans">
           {navItems.map((item) => (
             <Link
               key={item.href}
