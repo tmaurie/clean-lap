@@ -4,6 +4,7 @@ import { Geist } from "next/font/google";
 import { ThemeProviders } from "@/providers/theme-providers";
 import { Shell } from "@/components/layout/Shell";
 import NextTopLoader from "nextjs-toploader";
+import React from "react";
 
 const geist = Geist({ subsets: ["latin"] });
 
