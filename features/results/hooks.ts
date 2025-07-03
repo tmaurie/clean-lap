@@ -1,8 +1,11 @@
-import { fetchRacesWithWinner, fetchSeasonDetails } from "@/lib/api/results";
+import {
+  fetchRacesWithWinner,
+  fetchSeasonDetailsPage,
+} from "@/lib/api/results";
 import { fetchRaceResults } from "@/lib/api/race";
 
-export function useSeasonWithRaceCount() {
-  return fetchSeasonDetails();
+export async function useSeasonWithRaceCount(page: number | undefined) {
+  return fetchSeasonDetailsPage(page);
 }
 
 export async function useRacesWithWinner(season: string) {
