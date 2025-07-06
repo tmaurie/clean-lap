@@ -6,13 +6,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { getConstructorColor } from "@/lib/utils/colors";
 import { nationalityToFlagEmoji } from "@/lib/utils/flags";
-
-type Season = {
-  season: string;
-  raceCount: number;
-  driverChampion?: { name: string; nationality: string };
-  constructorChampion?: string;
-};
+import { Season } from "@/entities/season/model";
 
 export function ResultsPageClient({ seasons }: { seasons: Season[] }) {
   const [visible, setVisible] = useState(10);

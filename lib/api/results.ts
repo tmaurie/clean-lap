@@ -10,58 +10,59 @@ type Race = {
   };
 };
 
-export async function fetchSeasonDetails(): Promise<
-  {
-    season: string;
-    raceCount: number;
-    driverChampion?: {
-      name: string;
-      nationality: string;
-    };
-    constructorChampion?: string;
-  }[]
-> {
-  const seasons = Array.from(
-    { length: new Date().getFullYear() - 1950 + 1 },
-    (_, i) => (new Date().getFullYear() - i).toString(),
-  ).map((year) => ({
-    season: year,
-  }));
+export async function fetchSeasonDetailsPage(page = 1, pageSize = 10) {
+  const currentYear = new Date().getFullYear();
+  const start = currentYear - (page - 1) * pageSize;
+  const end = start - pageSize + 1;
+
+  const seasons = Array.from({ length: pageSize }, (_, i) =>
+    (start - i).toString(),
+  );
 
   return await Promise.all(
-    seasons.map(async (s: any) => {
-      const raceRes = await fetch(
-        `https://api.jolpi.ca/ergast/f1/${s.season}.json`,
-      );
-      const driverRes = await fetch(
-        `https://api.jolpi.ca/ergast/f1/${s.season}/driverStandings.json`,
-      );
-      const json = await driverRes.json();
-      const driverChampion =
-        json?.MRData?.StandingsTable?.StandingsLists?.[0]?.DriverStandings?.[0];
+    seasons.map(async (season) => {
+      try {
+        const [raceRes, driverRes, constructorRes] = await Promise.all([
+          fetch(`https://api.jolpi.ca/ergast/f1/${season}.json`),
+          fetch(
+            `https://api.jolpi.ca/ergast/f1/${season}/driverStandings.json`,
+          ),
+          fetch(
+            `https://api.jolpi.ca/ergast/f1/${season}/constructorStandings.json`,
+          ),
+        ]);
 
-      const constructorRes = await fetch(
-        `https://api.jolpi.ca/ergast/f1/${s.season}/constructorStandings.json`,
-      );
-      const raceJson = await raceRes.json();
-      const count = raceJson.MRData.RaceTable?.Races?.length ?? 0;
+        const raceJson = await raceRes.json();
+        const driverJson = await driverRes.json();
+        const constructorJson = await constructorRes.json();
 
-      const constructorJson = await constructorRes.json();
-      const constructorChampion =
-        constructorJson?.MRData?.StandingsTable?.StandingsLists?.[0]
-          ?.ConstructorStandings?.[0];
+        const count = raceJson.MRData.RaceTable?.Races?.length ?? 0;
+        const driverChampion =
+          driverJson?.MRData?.StandingsTable?.StandingsLists?.[0]
+            ?.DriverStandings?.[0];
+        const constructorChampion =
+          constructorJson?.MRData?.StandingsTable?.StandingsLists?.[0]
+            ?.ConstructorStandings?.[0];
 
-      return {
-        season: s.season,
-        raceCount: count,
-        driverChampion: driverChampion
-          ? {
-              name: `${driverChampion.Driver.givenName} ${driverChampion.Driver.familyName}`,
-              nationality: driverChampion.Driver.nationality,
-            }
-          : undefined,
-        constructorChampion: constructorChampion?.Constructor?.name,
-      };
+        return {
+          season,
+          raceCount: count,
+          driverChampion: driverChampion
+            ? {
+                name: `${driverChampion.Driver.givenName} ${driverChampion.Driver.familyName}`,
+                nationality: driverChampion.Driver.nationality,
+              }
+            : undefined,
+          constructorChampion: constructorChampion?.Constructor?.name,
+        };
+      } catch {
+        return {
+          season,
+          raceCount: 0,
+          driverChampion: undefined,
+          constructorChampion: undefined,
+        };
+      }
     }),
   );
 }
