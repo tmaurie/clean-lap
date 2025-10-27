@@ -2,6 +2,7 @@ import Link from "next/link";
 import {
   CalendarClock,
   Check,
+  FlagCheckered,
   Gauge,
   LineChart,
   Trophy,
@@ -9,6 +10,7 @@ import {
 } from "lucide-react";
 
 import { NextRaceCountdown } from "@/components/home/NextRaceCountdown";
+import { RaceResultsTable } from "@/components/home/RaceResultTable";
 import { DotPattern } from "@/components/magicui/dot-pattern";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -126,23 +128,45 @@ export default function HomePage() {
             </div>
           </div>
 
-          <Card className="border-primary/20 bg-background/80 backdrop-blur">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Gauge className="h-5 w-5 text-primary" aria-hidden />
-                Prochaine course
-              </CardTitle>
-              <CardDescription>
-                Préparez-vous avec le compte à rebours officiel et les infos circuit.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <NextRaceCountdown />
-              <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-4 text-sm text-muted-foreground">
-                Utilisez CleanLap pour activer un rappel personnalisé et ne plus manquer un départ.
-              </div>
-            </CardContent>
-          </Card>
+          <div className="space-y-6">
+            <Card className="border-primary/20 bg-background/80 backdrop-blur">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Gauge className="h-5 w-5 text-primary" aria-hidden />
+                  Prochaine course
+                </CardTitle>
+                <CardDescription>
+                  Préparez-vous avec le compte à rebours officiel et les infos circuit.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <NextRaceCountdown />
+                <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-4 text-sm text-muted-foreground">
+                  Utilisez CleanLap pour activer un rappel personnalisé et ne plus manquer un départ.
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-primary/20 bg-background/80 backdrop-blur">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <FlagCheckered className="h-5 w-5 text-primary" aria-hidden />
+                  Résultat de la dernière course
+                </CardTitle>
+                <CardDescription>
+                  Revivez l&apos;arrivée et les points marqués avant de plonger dans les classements complets.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <RaceResultsTable
+                  season="current"
+                  round="last"
+                  ctaHref="/results/current/last"
+                  ctaLabel="Analyser le Grand Prix"
+                />
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </section>
 

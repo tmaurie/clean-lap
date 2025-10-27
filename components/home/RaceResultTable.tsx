@@ -13,10 +13,14 @@ import Link from "next/link";
 export function RaceResultsTable({
   season,
   round,
+  ctaHref = "/results",
+  ctaLabel = "Voir le résultat détaillé",
 }: {
   season: string;
   round: string | "last";
   title?: string;
+  ctaHref?: string;
+  ctaLabel?: string;
 }) {
   const { data: results, isLoading, isError } = useRaceResults(season, round);
   const reversedResults = [...(results?.results || [])].reverse();
@@ -114,10 +118,12 @@ export function RaceResultsTable({
         })}
       </AnimatedList>
       <div className="flex justify-between items-center">
-        <Button variant="outline" size="sm">
-          <ChartLine />
-          <Link href="/standings">Voir le résultat détaillé</Link>
-          <ArrowRight />
+        <Button asChild variant="outline" size="sm">
+          <Link href={ctaHref} className="inline-flex items-center gap-2">
+            <ChartLine />
+            {ctaLabel}
+            <ArrowRight />
+          </Link>
         </Button>
       </div>
     </div>
