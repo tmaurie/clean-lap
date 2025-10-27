@@ -12,4 +12,5 @@ export type ConstructorStanding = {
   constructor: string;
   points: string;
   wins: number;
+  nationality: string;
 };
