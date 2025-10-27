@@ -2,7 +2,7 @@ import Link from "next/link";
 import {
   CalendarClock,
   Check,
-  FlagCheckered,
+  Flag,
   Gauge,
   LineChart,
   Trophy,
@@ -11,6 +11,8 @@ import {
 
 import { NextRaceCountdown } from "@/components/home/NextRaceCountdown";
 import { RaceResultsTable } from "@/components/home/RaceResultTable";
+import { StandingsPreview } from "@/components/home/StandingsPreview";
+import { UpcomingRaces } from "@/components/home/UpcomingRaces";
 import { DotPattern } from "@/components/magicui/dot-pattern";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -146,27 +148,79 @@ export default function HomePage() {
                 </div>
               </CardContent>
             </Card>
-
-            <Card className="border-primary/20 bg-background/80 backdrop-blur">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <FlagCheckered className="h-5 w-5 text-primary" aria-hidden />
-                  Résultat de la dernière course
-                </CardTitle>
-                <CardDescription>
-                  Revivez l&apos;arrivée et les points marqués avant de plonger dans les classements complets.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <RaceResultsTable
-                  season="current"
-                  round="last"
-                  ctaHref="/results/current/last"
-                  ctaLabel="Analyser le Grand Prix"
-                />
-              </CardContent>
-            </Card>
           </div>
+        </div>
+      </section>
+
+      <section
+        className="space-y-8"
+        aria-label="Accès rapide aux informations clés"
+      >
+        <div className="space-y-3">
+          <Badge variant="secondary" className="w-fit">
+            Toujours à jour
+          </Badge>
+          <div className="space-y-2">
+            <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+              L&apos;essentiel du championnat en un clin d&apos;œil
+            </h2>
+            <p className="max-w-2xl text-muted-foreground">
+              Un trio de tableaux condensés pour revivre la dernière arrivée, surveiller les prochaines étapes et suivre la bataille aux classements.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-3">
+          <Card className="border-primary/20 bg-background/80 backdrop-blur">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Flag className="h-5 w-5 text-primary" aria-hidden />
+                Résultat de la dernière course
+              </CardTitle>
+              <CardDescription>
+                Les trois premiers du Grand Prix précédent et leurs points marqués.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <RaceResultsTable
+                season="current"
+                round="last"
+                limit={3}
+                ctaHref="/results/current/last"
+                ctaLabel="Analyser le Grand Prix"
+              />
+            </CardContent>
+          </Card>
+
+          <Card className="border-primary/20 bg-background/80 backdrop-blur">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <CalendarClock className="h-5 w-5 text-primary" aria-hidden />
+                Courses à suivre
+              </CardTitle>
+              <CardDescription>
+                Anticipez les prochaines manches du calendrier officiel.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <UpcomingRaces limit={4} />
+            </CardContent>
+          </Card>
+
+          <Card className="border-primary/20 bg-background/80 backdrop-blur">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <LineChart className="h-5 w-5 text-primary" aria-hidden />
+                Classement courant
+              </CardTitle>
+              <CardDescription>
+                Les leaders pilotes et constructeurs, en attendant le prochain drapeau à damier.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <StandingsPreview driverLimit={5} constructorLimit={5} />
+            </CardContent>
+          </Card>
         </div>
       </section>
 

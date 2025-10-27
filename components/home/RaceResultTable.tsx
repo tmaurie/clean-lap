@@ -1,32 +1,36 @@
 "use client";
 
-import { useRaceResults } from "@/features/race/useRaceResults";
-import { getConstructorColor } from "@/lib/utils/colors";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import confetti from "canvas-confetti";
-import { AnimatedList } from "@/components/magicui/animated-list";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, ChartLine } from "lucide-react";
 import Link from "next/link";
+import confetti from "canvas-confetti";
+import { ArrowRight, ChartLine, Trophy } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useRaceResults } from "@/features/race/useRaceResults";
+import { cn } from "@/lib/utils";
+import { getConstructorColor } from "@/lib/utils/colors";
+import { nationalityToFlagEmoji } from "@/lib/utils/flags";
+
+type RaceResultsTableProps = {
+  season: string;
+  round: string | "last";
+  ctaHref?: string;
+  ctaLabel?: string;
+  limit?: number;
+};
 
 export function RaceResultsTable({
   season,
   round,
   ctaHref = "/results",
   ctaLabel = "Voir le résultat détaillé",
-}: {
-  season: string;
-  round: string | "last";
-  title?: string;
-  ctaHref?: string;
-  ctaLabel?: string;
-}) {
+  limit = 5,
+}: RaceResultsTableProps) {
   const { data: results, isLoading, isError } = useRaceResults(season, round);
-  const reversedResults = [...(results?.results || [])].reverse();
 
   const handleConfetti = () => {
-    const end = Date.now() + 3 * 1000; // 3 seconds
+    const end = Date.now() + 3 * 1000;
     const colors = ["#a786ff", "#fd8bbc", "#eca184", "#f8deb1"];
 
     const frame = () => {
@@ -38,7 +42,7 @@ export function RaceResultsTable({
         spread: 55,
         startVelocity: 60,
         origin: { x: 0, y: 0.5 },
-        colors: colors,
+        colors,
       });
       confetti({
         particleCount: 2,
@@ -46,7 +50,7 @@ export function RaceResultsTable({
         spread: 55,
         startVelocity: 60,
         origin: { x: 1, y: 0.5 },
-        colors: colors,
+        colors,
       });
 
       requestAnimationFrame(frame);
@@ -66,63 +70,102 @@ export function RaceResultsTable({
     );
   if (isError || !results) return <p>Erreur lors du chargement.</p>;
 
+  const topResults = (results.results ?? []).slice(0, limit);
+  const raceDate = results.date
+    ? new Date(`${results.date}T${results.time ?? "00:00:00Z"}`)
+    : null;
+
   return (
-    <div className="relative flex h-[300px] w-full flex-col overflow-hidden md:h-[530px] space-y-4">
-      <span className="text-sm font-semibold mb-2">{results.raceName}</span>
-      <AnimatedList
-        delay={500}
-        className="flex-1 overflow-hidden overflow-y-scroll rounded-md border bg-accent p-2"
-      >
-        {reversedResults?.map((r, i) => {
+    <div className="space-y-5">
+      <div className="space-y-1">
+        <p className="text-xs uppercase tracking-wide text-muted-foreground">
+          {raceDate
+            ? `${raceDate.toLocaleDateString("fr-FR", {
+                day: "2-digit",
+                month: "long",
+              })} · ${results.location}`
+            : results.location}
+        </p>
+        <p className="text-lg font-semibold leading-tight">
+          {results.raceName}
+        </p>
+      </div>
+
+      <div className="space-y-3">
+        {topResults.length === 0 && (
+          <div className="rounded-2xl border border-dashed border-muted-foreground/20 bg-muted/20 p-4 text-sm text-muted-foreground">
+            Les résultats ne sont pas encore disponibles.
+          </div>
+        )}
+
+        {topResults.map((r) => {
           const isWinner = r.position === "1";
+          const driverFlag = r.driverNationality
+            ? nationalityToFlagEmoji(r.driverNationality)
+            : "";
 
           return (
             <div
-              key={i}
-              className={`flex justify-between items-center text-sm border-b px-2 last:border-none ${
-                isWinner ? "font-bold text-primary" : ""
-              }`}
+              key={`${results.raceName}-${r.position}`}
+              className={cn(
+                "relative flex items-center justify-between gap-4 rounded-2xl border bg-card/60 p-4",
+                "transition-colors hover:border-primary/50",
+                isWinner &&
+                  "border-primary/60 bg-gradient-to-r from-primary/10 via-background to-background",
+              )}
             >
-              <div className="flex gap-2 items-center">
-                <span className="w-5 font-mono">{r.position}.</span>
+              <div className="flex items-center gap-3">
                 <div
-                  className="w-2 h-2 rounded-full"
-                  style={{
-                    backgroundColor: getConstructorColor(r.constructor),
-                  }}
-                />
-
-                <span>{r.driver}</span>
-                <div className="text-muted-foreground font-mono">
-                  {r.constructor}
+                  className={cn(
+                    "flex h-10 w-10 items-center justify-center rounded-xl bg-muted font-semibold",
+                    isWinner &&
+                      "bg-primary text-primary-foreground shadow-sm shadow-primary/30",
+                  )}
+                >
+                  {r.position}
                 </div>
-
-                {isWinner && (
-                  <Badge
-                    onClick={handleConfetti}
-                    className="text-xs bg-green-300 text-accent ml-2 animate-pulse cursor-pointer"
-                  >
-                    🏆 Vainqueur
-                  </Badge>
-                )}
+                <div className="space-y-1">
+                  <p className="text-sm font-medium leading-tight">
+                    {r.driver}
+                    {driverFlag && <span className="ml-2 text-base">{driverFlag}</span>}
+                  </p>
+                  <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span
+                      className="h-2 w-2 rounded-full"
+                      style={{ backgroundColor: getConstructorColor(r.constructor) }}
+                    />
+                    {r.constructor}
+                  </p>
+                </div>
               </div>
 
-              <div className="text-xs text-right space-y-1">
-                <div className="text-muted-foreground font-mono">{r.time}</div>
-                <div className="text-sm font-semibold font-mono">
+              <div className="flex flex-col items-end text-xs text-muted-foreground">
+                <span className="text-sm font-semibold text-foreground">
                   {r.points} pts
-                </div>
+                </span>
+                <span>{r.time}</span>
               </div>
+
+              {isWinner && (
+                <Badge
+                  onClick={handleConfetti}
+                  className="absolute -top-3 right-4 flex items-center gap-1 bg-primary text-primary-foreground shadow-sm"
+                >
+                  <Trophy className="h-3 w-3" aria-hidden />
+                  Vainqueur
+                </Badge>
+              )}
             </div>
           );
         })}
-      </AnimatedList>
-      <div className="flex justify-between items-center">
-        <Button asChild variant="outline" size="sm">
-          <Link href={ctaHref} className="inline-flex items-center gap-2">
-            <ChartLine />
+      </div>
+
+      <div className="flex justify-end">
+        <Button asChild variant="ghost" size="sm" className="gap-2">
+          <Link href={ctaHref}>
+            <ChartLine className="h-4 w-4" aria-hidden />
             {ctaLabel}
-            <ArrowRight />
+            <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
         </Button>
       </div>
