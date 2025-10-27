@@ -36,7 +36,6 @@ export function RaceCountdown({ date, time }: RaceCountdownProps) {
 
   return (
     <Card className="border-none bg-accent relative overflow-hidden">
-
       <div className="flex justify-around">
         <span>Compte à rebours avant la course</span>
         {isThisWeekend && <Badge variant="destructive">Ce week-end</Badge>}
