@@ -37,7 +37,6 @@ export function RaceCountdown({ date, time }: RaceCountdownProps) {
 
   return (
     <Card className="border-none bg-accent relative overflow-hidden">
-      <ShineBorder shineColor={["#A07CFE", "#FE8FB5", "#935353"]} />
 
       <div className="flex justify-around">
         <span>Compte à rebours avant la course</span>

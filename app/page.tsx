@@ -61,12 +61,14 @@ export default function HomePage() {
     {
       value: "< 2 s",
       label: "pour charger les résultats",
-      description: "Un accès immédiat aux classements détaillés après chaque drapeau à damier.",
+      description:
+        "Un accès immédiat aux classements détaillés après chaque drapeau à damier.",
     },
     {
       value: "100 %",
       label: "compatible mobile",
-      description: "Consultez CleanLap depuis le paddock, le canapé ou le métro.",
+      description:
+        "Consultez CleanLap depuis le paddock, le canapé ou le métro.",
     },
   ];
 
@@ -82,7 +84,7 @@ export default function HomePage() {
         "Passez du classement pilotes aux constructeurs, filtrez par saison et suivez les points clés.",
     },
     {
-      title: "Passez à l&apos;action",
+      title: "Passez à l\'action",
       description:
         "Activez vos rappels et partagez vos statistiques favorites avec vos amis fans de F1.",
     },
@@ -91,14 +93,13 @@ export default function HomePage() {
   return (
     <div className="space-y-24">
       <section className="relative overflow-hidden rounded-3xl border bg-gradient-to-br from-primary/10 via-background to-transparent">
-        <DotPattern
-          className="text-primary/40 [mask-image:radial-gradient(circle_at_top,white,transparent_65%)]"
-          glow
-        />
+        <DotPattern className="text-primary/40 [mask-image:radial-gradient(circle_at_top,white,transparent_65%)]" />
 
         <div className="relative grid gap-12 px-6 py-16 md:grid-cols-[3fr_2fr] md:px-12 lg:px-16">
           <div className="space-y-8">
-            <Badge variant="secondary" className="w-fit">Tableau de bord F1</Badge>
+            <Badge variant="secondary" className="w-fit">
+              Tableau de bord F1
+            </Badge>
             <div className="space-y-4">
               <h1 className="text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
                 La façon la plus claire de suivre la Formule 1 est
@@ -107,13 +108,24 @@ export default function HomePage() {
                 </span>
               </h1>
               <p className="text-balance text-muted-foreground">
-                Données officielles, insights limpides et une interface pensée pour aller à l&apos;essentiel. Que vous soyez fan du dimanche ou analyste invétéré, CleanLap vous accompagne tout au long de la saison.
+                Données officielles, insights limpides et une interface pensée
+                pour aller à l&apos;essentiel. Que vous soyez fan du dimanche ou
+                analyste invétéré, CleanLap vous accompagne tout au long de la
+                saison.
               </p>
             </div>
 
             <div className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
-              {["Alertes avant chaque départ", "Comparaison des pilotes en temps réel", "Mode sombre pour les sessions de nuit", "Historique des saisons depuis 2014"].map((item) => (
-                <div key={item} className="flex items-start gap-2 rounded-xl border bg-card/60 p-4 backdrop-blur">
+              {[
+                "Alertes avant chaque départ",
+                "Comparaison des pilotes en temps réel",
+                "Mode sombre pour les sessions de nuit",
+                "Historique des saisons depuis 2014",
+              ].map((item) => (
+                <div
+                  key={item}
+                  className="flex items-start gap-2 rounded-xl border bg-card/60 p-4 backdrop-blur"
+                >
                   <Check className="mt-0.5 h-4 w-4 text-primary" aria-hidden />
                   <span>{item}</span>
                 </div>
@@ -122,10 +134,17 @@ export default function HomePage() {
 
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg">
-                <Link href="/calendar">Explorer la saison 2024</Link>
+                <Link href="/calendar">Explorer la saison </Link>
               </Button>
-              <Button asChild variant="ghost" size="lg" className="text-muted-foreground hover:text-foreground">
-                <Link href="#fonctionnalites">Découvrir les fonctionnalités</Link>
+              <Button
+                asChild
+                variant="ghost"
+                size="lg"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <Link href="#fonctionnalites">
+                  Découvrir les fonctionnalités
+                </Link>
               </Button>
             </div>
           </div>
@@ -138,13 +157,15 @@ export default function HomePage() {
                   Prochaine course
                 </CardTitle>
                 <CardDescription>
-                  Préparez-vous avec le compte à rebours officiel et les infos circuit.
+                  Préparez-vous avec le compte à rebours officiel et les infos
+                  circuit.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <NextRaceCountdown />
                 <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-4 text-sm text-muted-foreground">
-                  Utilisez CleanLap pour activer un rappel personnalisé et ne plus manquer un départ.
+                  Utilisez CleanLap pour activer un rappel personnalisé et ne
+                  plus manquer un départ.
                 </div>
               </CardContent>
             </Card>
@@ -165,7 +186,9 @@ export default function HomePage() {
               L&apos;essentiel du championnat en un clin d&apos;œil
             </h2>
             <p className="max-w-2xl text-muted-foreground">
-              Un trio de tableaux condensés pour revivre la dernière arrivée, surveiller les prochaines étapes et suivre la bataille aux classements.
+              Un trio de tableaux condensés pour revivre la dernière arrivée,
+              surveiller les prochaines étapes et suivre la bataille aux
+              classements.
             </p>
           </div>
         </div>
@@ -178,14 +201,15 @@ export default function HomePage() {
                 Résultat de la dernière course
               </CardTitle>
               <CardDescription>
-                Les trois premiers du Grand Prix précédent et leurs points marqués.
+                Les trois premiers du Grand Prix précédent et leurs points
+                marqués.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <RaceResultsTable
                 season="current"
                 round="last"
-                limit={3}
+                limit={4}
                 ctaHref="/results/current/last"
                 ctaLabel="Analyser le Grand Prix"
               />
@@ -214,11 +238,12 @@ export default function HomePage() {
                 Classement courant
               </CardTitle>
               <CardDescription>
-                Les leaders pilotes et constructeurs, en attendant le prochain drapeau à damier.
+                Les leaders pilotes et constructeurs, en attendant le prochain
+                drapeau à damier.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <StandingsPreview driverLimit={5} constructorLimit={5} />
+              <StandingsPreview driverLimit={4} constructorLimit={4} />
             </CardContent>
           </Card>
         </div>
@@ -251,13 +276,18 @@ export default function HomePage() {
             Tout ce dont vous avez besoin pour vivre la saison à 360°
           </h2>
           <p className="mx-auto max-w-2xl text-balance text-muted-foreground">
-            CleanLap rassemble calendrier, classements et statistiques avancées dans un seul espace pour rester informé avant, pendant et après chaque Grand Prix.
+            CleanLap rassemble calendrier, classements et statistiques avancées
+            dans un seul espace pour rester informé avant, pendant et après
+            chaque Grand Prix.
           </p>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
           {features.map((feature) => (
-            <Card key={feature.title} className="bg-card/80 backdrop-blur transition hover:-translate-y-1 hover:shadow-lg">
+            <Card
+              key={feature.title}
+              className="bg-card/80 backdrop-blur transition hover:-translate-y-1 hover:shadow-lg"
+            >
               <CardHeader className="flex flex-row items-start gap-4">
                 <div className="rounded-full bg-primary/10 p-3 text-primary">
                   {feature.icon}
@@ -274,7 +304,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="grid gap-6 md:grid-cols-3" aria-label="Comment utiliser CleanLap">
+      <section
+        className="grid gap-6 md:grid-cols-3"
+        aria-label="Comment utiliser CleanLap"
+      >
         {steps.map((step, index) => (
           <Card key={step.title} className="bg-background/80 backdrop-blur">
             <CardHeader className="space-y-4">
@@ -291,22 +324,36 @@ export default function HomePage() {
       </section>
 
       <section className="relative overflow-hidden rounded-3xl border bg-gradient-to-br from-background via-primary/10 to-primary/20 p-10 text-center">
-        <DotPattern className="text-primary/30" width={24} height={24} cx={2} cy={2} cr={1} />
+        <DotPattern
+          className="text-primary/30"
+          width={24}
+          height={24}
+          cx={2}
+          cy={2}
+          cr={1}
+        />
         <div className="relative mx-auto flex max-w-2xl flex-col items-center gap-6">
           <Badge variant="secondary" className="w-fit">
             Prêt à prendre le départ ?
           </Badge>
           <h2 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
-            Rejoignez la communauté CleanLap et vivez chaque tour comme si vous étiez sur le muret.
+            Rejoignez la communauté CleanLap et vivez chaque tour comme si vous
+            étiez sur le muret.
           </h2>
           <p className="text-balance text-muted-foreground">
-            Renseignez-vous sur les prochaines courses, revivez les résultats et partagez vos analyses. CleanLap est gratuit et accessible partout.
+            Renseignez-vous sur les prochaines courses, revivez les résultats et
+            partagez vos analyses. CleanLap est gratuit et accessible partout.
           </p>
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button asChild size="lg">
               <Link href="/standings">Consulter les classements en direct</Link>
             </Button>
-            <Button asChild variant="ghost" size="lg" className="text-muted-foreground hover:text-foreground">
+            <Button
+              asChild
+              variant="ghost"
+              size="lg"
+              className="text-muted-foreground hover:text-foreground"
+            >
               <Link href="/results">Voir les derniers résultats</Link>
             </Button>
           </div>

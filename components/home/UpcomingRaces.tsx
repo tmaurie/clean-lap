@@ -28,7 +28,7 @@ export function UpcomingRaces({ limit = 4 }: UpcomingRacesProps) {
     );
   if (isError || !races) return <p>Erreur lors du chargement.</p>;
 
-  const upcomingRaces = races.slice(1, limit + 1);
+  const upcomingRaces = races.slice(0, limit + 1);
 
   return (
     <div className="space-y-4">

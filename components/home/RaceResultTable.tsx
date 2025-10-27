@@ -127,12 +127,16 @@ export function RaceResultsTable({
                 <div className="space-y-1">
                   <p className="text-sm font-medium leading-tight">
                     {r.driver}
-                    {driverFlag && <span className="ml-2 text-base">{driverFlag}</span>}
+                    {driverFlag && (
+                      <span className="ml-2 text-base">{driverFlag}</span>
+                    )}
                   </p>
                   <p className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span
                       className="h-2 w-2 rounded-full"
-                      style={{ backgroundColor: getConstructorColor(r.constructor) }}
+                      style={{
+                        backgroundColor: getConstructorColor(r.constructor),
+                      }}
                     />
                     {r.constructor}
                   </p>
