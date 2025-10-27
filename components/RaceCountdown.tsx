@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ShineBorder } from "@/components/magicui/shine-border";
 import { AnimatePresence, motion } from "framer-motion";
 
 type RaceCountdownProps = {
@@ -37,8 +36,6 @@ export function RaceCountdown({ date, time }: RaceCountdownProps) {
 
   return (
     <Card className="border-none bg-accent relative overflow-hidden">
-      <ShineBorder shineColor={["#A07CFE", "#FE8FB5", "#935353"]} />
-
       <div className="flex justify-around">
         <span>Compte à rebours avant la course</span>
         {isThisWeekend && <Badge variant="destructive">Ce week-end</Badge>}
