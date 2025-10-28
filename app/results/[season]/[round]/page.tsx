@@ -67,13 +67,13 @@ export default async function ResultsPage({ params }: any) {
           <div className="space-y-6">
             <div className="flex flex-wrap items-center gap-3">
               <Badge variant="secondary" className="bg-primary/10 text-primary">
-                Saison {season}
+                Saison {season === "current" ? "en cours" : season}
               </Badge>
               <Badge
                 variant="outline"
                 className="border-primary/40 text-primary"
               >
-                Manche {round}
+                Manche {round === "last" ? "précédente" : round}
               </Badge>
               {isPastRace(date) && (
                 <Badge
