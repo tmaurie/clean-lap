@@ -1,4 +1,11 @@
-import { ArrowUpRight, CalendarClock, Flag, MapPin, Timer, Trophy } from "lucide-react";
+import {
+  ArrowUpRight,
+  CalendarClock,
+  Flag,
+  MapPin,
+  Timer,
+  Trophy,
+} from "lucide-react";
 
 import { DotPattern } from "@/components/magicui/dot-pattern";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +22,11 @@ import { PodiumBlock } from "@/app/results/PodiumBlock";
 import { ResultTable } from "@/app/results/ResultTable";
 import { getRaceResults } from "@/features/results/hooks";
 import { fetchQualifyingResults, fetchSprintResults } from "@/lib/api/race";
-import { columnsQualif, columnsRace, columnsSprint } from "@/lib/config/columns";
+import {
+  columnsQualif,
+  columnsRace,
+  columnsSprint,
+} from "@/lib/config/columns";
 import { isPastRace } from "@/lib/utils/date";
 import { countryToFlagEmoji } from "@/lib/utils/flags";
 import { clsx } from "clsx";
@@ -37,10 +48,13 @@ export default async function ResultsPage({ params }: any) {
     year: "numeric",
   });
 
-  const formattedTime = new Date(`${date}T${time}`).toLocaleTimeString("fr-FR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const formattedTime = new Date(`${date}T${time}`).toLocaleTimeString(
+    "fr-FR",
+    {
+      hour: "2-digit",
+      minute: "2-digit",
+    },
+  );
 
   const hasSprint = sprintResults.results.length > 0;
 
@@ -55,11 +69,17 @@ export default async function ResultsPage({ params }: any) {
               <Badge variant="secondary" className="bg-primary/10 text-primary">
                 Saison {season}
               </Badge>
-              <Badge variant="outline" className="border-primary/40 text-primary">
+              <Badge
+                variant="outline"
+                className="border-primary/40 text-primary"
+              >
                 Manche {round}
               </Badge>
               {isPastRace(date) && (
-                <Badge variant="outline" className="border-green-500/40 text-green-500">
+                <Badge
+                  variant="outline"
+                  className="border-green-500/40 text-green-500"
+                >
                   Course passée
                 </Badge>
               )}
@@ -165,7 +185,10 @@ export default async function ResultsPage({ params }: any) {
                   hasSprint ? "grid-cols-3" : "grid-cols-2",
                 )}
               >
-                <TabsTrigger value="results" className="data-[state=active]:bg-background">
+                <TabsTrigger
+                  value="results"
+                  className="data-[state=active]:bg-background"
+                >
                   Course
                 </TabsTrigger>
                 <TabsTrigger
@@ -175,7 +198,10 @@ export default async function ResultsPage({ params }: any) {
                 >
                   Sprint
                 </TabsTrigger>
-                <TabsTrigger value="qualif" className="data-[state=active]:bg-background">
+                <TabsTrigger
+                  value="qualif"
+                  className="data-[state=active]:bg-background"
+                >
                   Qualifs
                 </TabsTrigger>
               </TabsList>
@@ -190,7 +216,10 @@ export default async function ResultsPage({ params }: any) {
                     Pas de sprint pour ce Grand Prix.
                   </div>
                 ) : (
-                  <ResultTable data={sprintResults.results} columns={columnsSprint} />
+                  <ResultTable
+                    data={sprintResults.results}
+                    columns={columnsSprint}
+                  />
                 )}
               </TabsContent>
 

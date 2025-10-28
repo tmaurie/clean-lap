@@ -22,12 +22,12 @@ export function ResultTable({ data, columns }: ResultTableProps) {
         </thead>
         <tbody className="divide-y divide-border">
           {data.map((row, idx) => (
-            <tr
-              key={idx}
-              className="transition-colors hover:bg-primary/5"
-            >
+            <tr key={idx} className="transition-colors hover:bg-primary/5">
               {columns.map((col) => (
-                <td key={col.key} className="px-4 py-3 align-middle text-foreground">
+                <td
+                  key={col.key}
+                  className="px-4 py-3 align-middle text-foreground"
+                >
                   {col.render
                     ? col.render(row[col.key], row)
                     : (row[col.key] ?? "-")}
