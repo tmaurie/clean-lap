@@ -2,53 +2,19 @@ import {
   DriverStanding,
   ConstructorStanding,
 } from "@/entities/standings/model";
-import { API_ROUTES } from "@/lib/config/api";
-
-type DriverStandingsResponse = {
-  drivers_championship?: Array<{
-    position?: number | string;
-    wins?: number | null;
-    points?: number | string;
-    driver?: {
-      name?: string;
-      surname?: string;
-      nationality?: string;
-    };
-    team?: {
-      teamName?: string;
-    };
-  }>;
-};
-
-type ConstructorStandingsResponse = {
-  constructors_championship?: Array<{
-    position?: number | string;
-    wins?: number | null;
-    points?: number | string;
-    team?: {
-      teamName?: string;
-      country?: string;
-    };
-  }>;
-};
-
-async function fetchJSON<T>(url: string): Promise<T> {
-  const res = await fetch(url, { headers: { Accept: "application/json" } });
-
-  if (!res.ok) {
-    throw new Error(`Failed to fetch ${url}`);
-  }
-
-  return (await res.json()) as T;
-}
+import type {
+  ConstructorStandingsApiResponse,
+  DriverStandingsApiResponse,
+} from "@f1api/sdk";
+import { getF1Api } from "@/lib/services/f1api";
 
 export async function fetchDriverStandings(
   season: string,
 ): Promise<DriverStanding[]> {
-  const json = await fetchJSON<DriverStandingsResponse>(
-    API_ROUTES.driverStandings(season),
-  );
-  const standings = json.drivers_championship ?? [];
+  const json = await getF1Api().getDriverStandings({
+    year: Number(season),
+  });
+  const standings = (json as DriverStandingsApiResponse).drivers_championship ?? [];
 
   return standings.map((s) => ({
     position: String(s.position ?? ""),
@@ -63,10 +29,11 @@ export async function fetchDriverStandings(
 export async function fetchConstructorStandings(
   season: string,
 ): Promise<ConstructorStanding[]> {
-  const json = await fetchJSON<ConstructorStandingsResponse>(
-    API_ROUTES.constructorStandings(season),
-  );
-  const standings = json.constructors_championship ?? [];
+  const json = await getF1Api().getConstructorStandings({
+    year: Number(season),
+  });
+  const standings =
+    (json as ConstructorStandingsApiResponse).constructors_championship ?? [];
 
   return standings.map((s) => ({
     position: String(s.position ?? ""),
