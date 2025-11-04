@@ -33,12 +33,15 @@ export function StandingsTabs({ season, compact = false }: StandingsTabsProps) {
   const constructorStandings = (constructors ?? []).slice(0, limit);
   const placeholderCount = Math.min(limit ?? 10, 10);
 
-  const driverPoints = driverStandings.map((driver) => Number(driver.points) || 0);
+  const driverPoints = driverStandings.map(
+    (driver) => Number(driver.points) || 0,
+  );
   const constructorPoints = constructorStandings.map(
     (constructor) => Number(constructor.points) || 0,
   );
 
-  const maxDriverPoints = driverPoints.length > 0 ? Math.max(...driverPoints) : 1;
+  const maxDriverPoints =
+    driverPoints.length > 0 ? Math.max(...driverPoints) : 1;
   const maxConstructorPoints =
     constructorPoints.length > 0 ? Math.max(...constructorPoints) : 1;
 

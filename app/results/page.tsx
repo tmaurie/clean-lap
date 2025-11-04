@@ -195,9 +195,9 @@ export default function ResultsIndexPage() {
                 Résultats de Formule 1, saison par saison
               </h1>
               <p className="text-muted-foreground">
-                Remontez le temps et redécouvrez chaque Grand Prix disputé depuis 1950.
-                Les champions pilotes et constructeurs vous guident pour comprendre
-                les enjeux de chaque saison.
+                Remontez le temps et redécouvrez chaque Grand Prix disputé
+                depuis 1950. Les champions pilotes et constructeurs vous guident
+                pour comprendre les enjeux de chaque saison.
               </p>
             </div>
 
@@ -246,7 +246,9 @@ export default function ResultsIndexPage() {
 
               <div className="grid gap-3">
                 <div className="flex items-center justify-between rounded-xl border border-muted-foreground/20 bg-card/60 px-4 py-3 backdrop-blur">
-                  <span className="text-muted-foreground">Saisons chargées</span>
+                  <span className="text-muted-foreground">
+                    Saisons chargées
+                  </span>
                   {isInitialLoading ? (
                     <Skeleton className="h-4 w-10" />
                   ) : (
@@ -256,7 +258,9 @@ export default function ResultsIndexPage() {
                   )}
                 </div>
                 <div className="flex items-center justify-between rounded-xl border border-muted-foreground/20 bg-card/60 px-4 py-3 backdrop-blur">
-                  <span className="text-muted-foreground">Période couverte</span>
+                  <span className="text-muted-foreground">
+                    Période couverte
+                  </span>
                   {isInitialLoading ? (
                     <Skeleton className="h-4 w-24" />
                   ) : (
@@ -266,7 +270,9 @@ export default function ResultsIndexPage() {
                   )}
                 </div>
                 <div className="flex items-center justify-between rounded-xl border border-muted-foreground/20 bg-card/60 px-4 py-3 backdrop-blur">
-                  <span className="text-muted-foreground">Grands Prix cumulés</span>
+                  <span className="text-muted-foreground">
+                    Grands Prix cumulés
+                  </span>
                   {isInitialLoading ? (
                     <Skeleton className="h-4 w-14" />
                   ) : (
@@ -288,8 +294,8 @@ export default function ResultsIndexPage() {
               Sélectionnez une saison
             </h2>
             <p className="text-sm text-muted-foreground">
-              Accédez aux résultats officiels de chaque Grand Prix, avec podiums,
-              classements complets et détails du circuit.
+              Accédez aux résultats officiels de chaque Grand Prix, avec
+              podiums, classements complets et détails du circuit.
             </p>
           </div>
           {!isInitialLoading && (

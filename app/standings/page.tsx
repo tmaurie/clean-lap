@@ -32,7 +32,9 @@ export default function StandingsPage() {
                 Saison {season}
               </h1>
               <p className="text-muted-foreground">
-                Suivez l&apos;évolution du championnat pilote et constructeur, course après course. Choisissez une saison pour revoir les batailles qui ont marqué l&apos;histoire de la F1.
+                Suivez l&apos;évolution du championnat pilote et constructeur,
+                course après course. Choisissez une saison pour revoir les
+                batailles qui ont marqué l&apos;histoire de la F1.
               </p>
             </div>
           </div>
@@ -48,7 +50,8 @@ export default function StandingsPage() {
               />
             </div>
             <p className="text-xs text-muted-foreground">
-              Données mises à jour en continu dès la publication officielle des classements par la FIA.
+              Données mises à jour en continu dès la publication officielle des
+              classements par la FIA.
             </p>
           </div>
         </div>
@@ -61,7 +64,8 @@ export default function StandingsPage() {
               Classements en direct
             </h2>
             <p className="text-sm text-muted-foreground">
-              Passez d&apos;un onglet à l&apos;autre pour comparer les pilotes et les écuries d&apos;un simple coup d&apos;œil.
+              Passez d&apos;un onglet à l&apos;autre pour comparer les pilotes
+              et les écuries d&apos;un simple coup d&apos;œil.
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -80,7 +84,8 @@ export default function StandingsPage() {
           <CardHeader className="space-y-1">
             <CardTitle className="text-xl">Analyse interactive</CardTitle>
             <CardDescription>
-              Visualisez les écarts de points et les dynamiques du championnat pour la saison sélectionnée.
+              Visualisez les écarts de points et les dynamiques du championnat
+              pour la saison sélectionnée.
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-0">

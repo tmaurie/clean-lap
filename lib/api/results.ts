@@ -77,10 +77,9 @@ async function fetchSeasonSnapshot(
   season: string,
   signal?: AbortSignal,
 ): Promise<Season> {
-  const raceJson = await fetchJsonSafe<{ MRData: { RaceTable?: { Races?: Race[] } } }>(
-    `${API_BASE_URL}/${season}.json?limit=200`,
-    signal,
-  );
+  const raceJson = await fetchJsonSafe<{
+    MRData: { RaceTable?: { Races?: Race[] } };
+  }>(`${API_BASE_URL}/${season}.json?limit=200`, signal);
 
   const [driverJson, constructorJson] = await Promise.all([
     fetchJsonSafe<DriverStandingsResponse>(
@@ -95,9 +94,11 @@ async function fetchSeasonSnapshot(
 
   const raceCount = raceJson?.MRData.RaceTable?.Races?.length ?? 0;
   const driverChampion =
-    driverJson?.MRData.StandingsTable?.StandingsLists?.[0]?.DriverStandings?.[0];
+    driverJson?.MRData.StandingsTable?.StandingsLists?.[0]
+      ?.DriverStandings?.[0];
   const constructorChampion =
-    constructorJson?.MRData.StandingsTable?.StandingsLists?.[0]?.ConstructorStandings?.[0];
+    constructorJson?.MRData.StandingsTable?.StandingsLists?.[0]
+      ?.ConstructorStandings?.[0];
 
   return {
     season,
@@ -154,9 +155,9 @@ export async function fetchRacesWithWinner(season: string): Promise<
     winner?: string;
   }[]
 > {
-  const racesJson = await fetchJson<{ MRData: { RaceTable?: { Races?: Race[] } } }>(
-    `${API_BASE_URL}/${season}.json?limit=200`,
-  );
+  const racesJson = await fetchJson<{
+    MRData: { RaceTable?: { Races?: Race[] } };
+  }>(`${API_BASE_URL}/${season}.json?limit=200`);
   const winnersJson = await fetchJson<{
     MRData: {
       RaceTable?: {
