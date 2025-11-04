@@ -173,7 +173,8 @@ export function CalendarPageClient({ initialView }: { initialView: string }) {
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">
-              Dès que les informations seront disponibles, elles apparaîtront ici.
+              Dès que les informations seront disponibles, elles apparaîtront
+              ici.
             </p>
           )}
         </SectionCard>
