@@ -4,8 +4,12 @@ import {
 } from "@/lib/api/results";
 import { fetchRaceResults } from "@/lib/api/race";
 
-export async function useSeasonWithRaceCount(page: number | undefined) {
-  return fetchSeasonDetailsPage(page);
+export async function getSeasonsWithRaceCount(
+  page: number | undefined,
+  pageSize?: number,
+  signal?: AbortSignal,
+) {
+  return fetchSeasonDetailsPage(page, pageSize, signal);
 }
 
 export async function useRacesWithWinner(season: string) {

@@ -15,7 +15,7 @@ export function useDriverStandings(season: string) {
 
 export function useConstructorStandings(season: string) {
   return useQuery({
-    queryKey: ["constructorStandings"],
+    queryKey: ["constructorStandings", season],
     queryFn: () => fetchConstructorStandings(season),
     enabled: !!season,
     staleTime: 1000 * 60 * 30,
