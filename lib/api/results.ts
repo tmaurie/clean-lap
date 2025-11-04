@@ -1,19 +1,33 @@
 import { Season } from "@/entities/season/model";
+import { API_ROUTES } from "@/lib/config/api";
 
-type Race = {
-  round: string;
-  raceName: string;
-  date: string;
-  Circuit: {
-    Location: {
-      locality: string;
-      country: string;
-    };
-  };
+const EARLIEST_SEASON = 1950;
+
+type RaceSchedule = {
+  race?: { date?: string; time?: string };
 };
 
-const API_BASE_URL = "https://api.jolpi.ca/ergast/f1";
-const EARLIEST_SEASON = 1950;
+type RaceCircuit = {
+  circuitName?: string;
+  country?: string;
+  city?: string;
+  Location?: { locality?: string; country?: string };
+};
+
+type RaceWinner = {
+  name?: string;
+  surname?: string;
+} | null;
+
+type Race = {
+  round?: number | string;
+  raceName?: string;
+  schedule?: RaceSchedule;
+  date?: string;
+  circuit?: RaceCircuit;
+  Circuit?: RaceCircuit;
+  winner?: RaceWinner;
+};
 
 async function fetchJson<T>(url: string, signal?: AbortSignal): Promise<T> {
   const response = await fetch(url, {
@@ -46,70 +60,80 @@ async function fetchJsonSafe<T>(
 }
 
 type DriverStandingsResponse = {
-  MRData: {
-    StandingsTable?: {
-      StandingsLists?: Array<{
-        DriverStandings?: Array<{
-          Driver: {
-            givenName: string;
-            familyName: string;
-            nationality: string;
-          };
-        }>;
-      }>;
-    };
-  };
+  drivers_championship?: Array<{
+    driver?: { name?: string; surname?: string; nationality?: string };
+  }>;
 };
 
 type ConstructorStandingsResponse = {
-  MRData: {
-    StandingsTable?: {
-      StandingsLists?: Array<{
-        ConstructorStandings?: Array<{
-          Constructor?: { name: string };
-        }>;
-      }>;
-    };
-  };
+  constructors_championship?: Array<{
+    team?: { teamName?: string };
+  }>;
 };
+
+function formatLocation(race: Race): string {
+  const city = race.circuit?.city ?? race.Circuit?.Location?.locality ?? "";
+  const country =
+    race.circuit?.country ?? race.Circuit?.Location?.country ?? "";
+
+  if (city && country) {
+    return `${city}, ${country}`;
+  }
+
+  return city || country || "";
+}
+
+function formatWinner(winner: RaceWinner): string | undefined {
+  if (!winner) {
+    return undefined;
+  }
+
+  const name = [winner.name, winner.surname].filter(Boolean).join(" ");
+  return name || undefined;
+}
 
 async function fetchSeasonSnapshot(
   season: string,
   signal?: AbortSignal,
 ): Promise<Season> {
-  const raceJson = await fetchJsonSafe<{
-    MRData: { RaceTable?: { Races?: Race[] } };
-  }>(`${API_BASE_URL}/${season}.json?limit=200`, signal);
+  const raceJson = await fetchJsonSafe<{ races?: Race[] }>(
+    API_ROUTES.races(season, { limit: 200 }),
+    signal,
+  );
 
   const [driverJson, constructorJson] = await Promise.all([
     fetchJsonSafe<DriverStandingsResponse>(
-      `${API_BASE_URL}/${season}/driverStandings.json?limit=1`,
+      API_ROUTES.driverStandings(season),
       signal,
     ),
     fetchJsonSafe<ConstructorStandingsResponse>(
-      `${API_BASE_URL}/${season}/constructorStandings.json?limit=1`,
+      API_ROUTES.constructorStandings(season),
       signal,
     ),
   ]);
 
-  const raceCount = raceJson?.MRData.RaceTable?.Races?.length ?? 0;
-  const driverChampion =
-    driverJson?.MRData.StandingsTable?.StandingsLists?.[0]
-      ?.DriverStandings?.[0];
-  const constructorChampion =
-    constructorJson?.MRData.StandingsTable?.StandingsLists?.[0]
-      ?.ConstructorStandings?.[0];
+  const raceCount = raceJson?.races?.length ?? 0;
+  const driverChampion = driverJson?.drivers_championship?.[0];
+  const constructorChampion = constructorJson?.constructors_championship?.[0];
+
+  const driverName = [
+    driverChampion?.driver?.name,
+    driverChampion?.driver?.surname,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return {
     season,
     raceCount,
-    driverChampion: driverChampion
-      ? {
-          name: `${driverChampion.Driver.givenName} ${driverChampion.Driver.familyName}`,
-          nationality: driverChampion.Driver.nationality,
-        }
-      : undefined,
-    constructorChampion: constructorChampion?.Constructor?.name,
+    driverChampion:
+      driverName && driverChampion?.driver?.nationality
+        ? {
+            name: driverName,
+            nationality: driverChampion.driver.nationality,
+          }
+        : undefined,
+    constructorChampion: constructorChampion?.team?.teamName ?? undefined,
   } satisfies Season;
 }
 
@@ -155,37 +179,17 @@ export async function fetchRacesWithWinner(season: string): Promise<
     winner?: string;
   }[]
 > {
-  const racesJson = await fetchJson<{
-    MRData: { RaceTable?: { Races?: Race[] } };
-  }>(`${API_BASE_URL}/${season}.json?limit=200`);
-  const winnersJson = await fetchJson<{
-    MRData: {
-      RaceTable?: {
-        Races?: Array<
-          Race & {
-            Results?: Array<{
-              Driver?: { givenName: string; familyName: string };
-            }>;
-          }
-        >;
-      };
-    };
-  }>(`${API_BASE_URL}/${season}/results/1.json?limit=200`);
-
-  const winnersByRound = new Map(
-    (winnersJson.MRData.RaceTable?.Races ?? []).map((race) => [
-      race.round,
-      race.Results?.[0]?.Driver
-        ? `${race.Results[0].Driver.givenName} ${race.Results[0].Driver.familyName}`
-        : undefined,
-    ]),
+  const racesJson = await fetchJson<{ races?: Race[] }>(
+    API_ROUTES.races(season, { limit: 200 }),
   );
 
-  return (racesJson.MRData.RaceTable?.Races ?? []).map((race) => ({
-    round: race.round,
-    name: race.raceName,
-    date: race.date,
-    location: `${race.Circuit.Location.locality}, ${race.Circuit.Location.country}`,
-    winner: winnersByRound.get(race.round),
+  return (racesJson.races ?? []).map((race) => ({
+    round: String(race.round ?? ""),
+    name: race.raceName ?? "",
+    date:
+      race.schedule?.race?.date ??
+      (typeof race.date === "string" ? race.date : ""),
+    location: formatLocation(race),
+    winner: formatWinner(race.winner ?? null),
   }));
 }

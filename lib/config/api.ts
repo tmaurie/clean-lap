@@ -1,18 +1,41 @@
-export const API_BASE_URL = "https://api.jolpi.ca/ergast/f1";
+export const API_BASE_URL = "https://f1api.dev/api";
+
+const withQuery = (
+  path: string,
+  params?: Record<string, string | number | undefined>,
+) => {
+  const url = new URL(path, `${API_BASE_URL}/`);
+
+  if (params) {
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        url.searchParams.set(key, String(value));
+      }
+    });
+  }
+
+  return url.toString();
+};
 
 export const API_ROUTES = {
-  season: `${API_BASE_URL}/seasons`,
-  circuit: `${API_BASE_URL}/circuits`,
-  races: (year: string) => `${API_BASE_URL}/${year}/races`,
-  results: (year = "2025", round: string | "last") =>
-    `${API_BASE_URL}/${year}/${round}/results`,
-  nextRace: `${API_BASE_URL}/current/next.json`,
-  drivers: (year = "2025") => `${API_BASE_URL}/${year}/drivers`,
-  driverStandings: (year = "2025") => `${API_BASE_URL}/${year}/driverstandings`,
-  constructorStandings: (year = "2025") =>
-    `${API_BASE_URL}/${year}/constructorstandings`,
-  pitstops: (year = "2025", round: number) =>
-    `${API_BASE_URL}/${year}/${round}/pitstops`,
-  laps: (year = "2025", round: number) =>
-    `${API_BASE_URL}/${year}/${round}/laps`,
+  seasons: (params?: { limit?: number; offset?: number }) =>
+    withQuery("seasons", params),
+  circuits: (params?: { limit?: number; offset?: number }) =>
+    withQuery("circuits", params),
+  races: (year: string | number, params?: { limit?: number; offset?: number }) =>
+    withQuery("races", { year, ...params }),
+  nextRace: `${API_BASE_URL}/races/next`,
+  lastRace: `${API_BASE_URL}/races/last`,
+  raceInfo: (year: string | number, round: string | number) =>
+    `${API_BASE_URL}/races/${year}/${round}`,
+  raceResults: (year: string | number, round: string | number) =>
+    withQuery("results/race", { year, round }),
+  sprintRaceResults: (year: string | number, round: string | number) =>
+    withQuery("results/sprint-race", { year, round }),
+  qualifyingResults: (year: string | number, round: string | number) =>
+    withQuery("results/qualy", { year, round }),
+  driverStandings: (year: string | number) =>
+    withQuery("standings/drivers", { year }),
+  constructorStandings: (year: string | number) =>
+    withQuery("standings/constructors", { year }),
 };

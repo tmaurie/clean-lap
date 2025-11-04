@@ -2,42 +2,77 @@ import {
   DriverStanding,
   ConstructorStanding,
 } from "@/entities/standings/model";
+import { API_ROUTES } from "@/lib/config/api";
+
+type DriverStandingsResponse = {
+  drivers_championship?: Array<{
+    position?: number | string;
+    wins?: number | null;
+    points?: number | string;
+    driver?: {
+      name?: string;
+      surname?: string;
+      nationality?: string;
+    };
+    team?: {
+      teamName?: string;
+    };
+  }>;
+};
+
+type ConstructorStandingsResponse = {
+  constructors_championship?: Array<{
+    position?: number | string;
+    wins?: number | null;
+    points?: number | string;
+    team?: {
+      teamName?: string;
+      country?: string;
+    };
+  }>;
+};
+
+async function fetchJSON<T>(url: string): Promise<T> {
+  const res = await fetch(url, { headers: { Accept: "application/json" } });
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch ${url}`);
+  }
+
+  return (await res.json()) as T;
+}
 
 export async function fetchDriverStandings(
   season: string,
 ): Promise<DriverStanding[]> {
-  const res = await fetch(
-    `https://api.jolpi.ca/ergast/f1/${season}/driverStandings.json`,
+  const json = await fetchJSON<DriverStandingsResponse>(
+    API_ROUTES.driverStandings(season),
   );
-  const json = await res.json();
-  const standings =
-    json.MRData.StandingsTable.StandingsLists[0]?.DriverStandings ?? [];
+  const standings = json.drivers_championship ?? [];
 
-  return standings.map((s: any) => ({
-    position: s.position,
-    wins: s.wins,
-    points: s.points,
-    driver: `${s.Driver.givenName} ${s.Driver.familyName}`,
-    constructor: s.Constructors[0].name,
-    nationality: s.Driver.nationality,
+  return standings.map((s) => ({
+    position: String(s.position ?? ""),
+    wins: s.wins ?? 0,
+    points: String(s.points ?? 0),
+    driver: [s.driver?.name, s.driver?.surname].filter(Boolean).join(" "),
+    constructor: s.team?.teamName ?? "",
+    nationality: s.driver?.nationality ?? "",
   }));
 }
 
 export async function fetchConstructorStandings(
   season: string,
 ): Promise<ConstructorStanding[]> {
-  const res = await fetch(
-    `https://api.jolpi.ca/ergast/f1/${season}/constructorStandings.json`,
+  const json = await fetchJSON<ConstructorStandingsResponse>(
+    API_ROUTES.constructorStandings(season),
   );
-  const json = await res.json();
-  const standings =
-    json.MRData.StandingsTable.StandingsLists[0]?.ConstructorStandings ?? [];
+  const standings = json.constructors_championship ?? [];
 
-  return standings.map((s: any) => ({
-    position: s.position,
-    points: s.points,
-    wins: s.wins,
-    constructor: s.Constructor.name,
-    nationality: s.Constructor.nationality,
+  return standings.map((s) => ({
+    position: String(s.position ?? ""),
+    points: String(s.points ?? 0),
+    wins: s.wins ?? 0,
+    constructor: s.team?.teamName ?? "",
+    nationality: s.team?.country ?? "",
   }));
 }
