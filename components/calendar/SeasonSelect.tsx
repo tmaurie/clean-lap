@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 const seasons = Array.from(
   { length: new Date().getFullYear() - 1950 + 1 },
@@ -16,13 +17,20 @@ const seasons = Array.from(
 export function SeasonSelect({
   value,
   action,
+  triggerClassName,
 }: {
   value: string;
   action: (season: string) => void;
+  triggerClassName?: string;
 }) {
   return (
     <Select value={value} onValueChange={action}>
-      <SelectTrigger className="w-[160px] border border-muted rounded-md">
+      <SelectTrigger
+        className={cn(
+          "w-[160px] rounded-xl border border-primary/20 bg-background/80 backdrop-blur transition-colors hover:border-primary/40 focus:ring-2 focus:ring-primary/30",
+          triggerClassName,
+        )}
+      >
         <SelectValue placeholder="Saison" />
       </SelectTrigger>
       <SelectContent className="overflow-y-auto max-h-[300px]">
