@@ -12,7 +12,7 @@ export async function getSeasonsWithRaceCount(
   return fetchSeasonDetailsPage(page, pageSize, signal);
 }
 
-export async function useRacesWithWinner(season: string) {
+export async function getRacesWithWinner(season: string) {
   return await fetchRacesWithWinner(season);
 }
 
