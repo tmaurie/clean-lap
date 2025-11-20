@@ -124,7 +124,9 @@ export default function SeasonResultsPage({
                 Revivez chaque manche de la saison
               </h1>
               <p className="text-base text-muted-foreground sm:max-w-xl">
-                Explorez les résultats course par course, découvrez les vainqueurs et replongez dans les moments forts de la saison {season}.
+                Explorez les résultats course par course, découvrez les
+                vainqueurs et replongez dans les moments forts de la saison{" "}
+                {season}.
               </p>
             </div>
 
@@ -135,14 +137,18 @@ export default function SeasonResultsPage({
                 </dt>
                 <dd className="mt-2 text-2xl font-semibold">
                   {completedRaces}
-                  <span className="text-base font-medium text-muted-foreground">/{totalRaces}</span>
+                  <span className="text-base font-medium text-muted-foreground">
+                    /{totalRaces}
+                  </span>
                 </dd>
               </div>
               <div className="rounded-2xl border border-primary/10 bg-background/70 p-4 shadow-sm">
                 <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   Vainqueurs différents
                 </dt>
-                <dd className="mt-2 text-2xl font-semibold">{uniqueWinnerCount}</dd>
+                <dd className="mt-2 text-2xl font-semibold">
+                  {uniqueWinnerCount}
+                </dd>
               </div>
               <div className="rounded-2xl border border-primary/10 bg-background/70 p-4 shadow-sm">
                 <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -158,7 +164,10 @@ export default function SeasonResultsPage({
           {highlightRace && (
             <div className="rounded-2xl border border-primary/20 bg-background/80 p-6 shadow-md backdrop-blur">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <Badge variant="secondary" className="bg-primary/15 text-primary">
+                <Badge
+                  variant="secondary"
+                  className="bg-primary/15 text-primary"
+                >
                   {highlightLabel}
                 </Badge>
                 <span className="text-sm font-medium text-muted-foreground">
@@ -267,7 +276,9 @@ export default function SeasonResultsPage({
                         Statut
                       </span>
                       <span className="font-medium">
-                        {isCompleted ? `🏆 ${race.winner}` : "En attente de départ"}
+                        {isCompleted
+                          ? `🏆 ${race.winner}`
+                          : "En attente de départ"}
                       </span>
                     </div>
                   </CardContent>
