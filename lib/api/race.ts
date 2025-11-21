@@ -23,26 +23,6 @@ function mapRace(race: any): Race {
   };
 }
 
-function mapRaceResults(results: any[]): RaceResult[] {
-  return results.map(
-    (r: any): RaceResult => ({
-      position: r.position,
-      driver: `${r.Driver.givenName} ${r.Driver.familyName}`,
-      driverNationality: r.Driver.nationality,
-      constructor: r.Constructor.name,
-      time: r.Time?.time ?? r.status,
-      points: r.points,
-      fastestLap: {
-        rank: r.FastestLap?.rank,
-        lap: r.FastestLap?.lap,
-        time: r.FastestLap?.Time?.time,
-        averageSpeed: r.FastestLap?.AverageSpeed?.speed,
-      },
-      grid: r.grid,
-      laps: r.laps,
-    }),
-  );
-}
 
 export async function fetchNextRace(): Promise<Race | null> {
   try {
@@ -103,24 +83,57 @@ export async function fetchRaceResults(
   };
   results: RaceResult[];
 }> {
-  const json = await fetchJSON(
-    `https://api.jolpi.ca/ergast/f1/${season}/${round}/results.json`,
-  );
-  const race = json.MRData.RaceTable.Races[0];
-  const results = race?.Results ?? [];
+  const json = await fetchJSON(`https://f1api.dev/api/${season}/${round}/race`);
+  const race = json?.races;
+  const results = race?.results ?? [];
+  const fastestLapValue = (time: string | null | undefined) => {
+    if (!time) return null;
+    const numeric = Number(time.replace(/[:.]/g, ""));
+    return Number.isNaN(numeric) ? null : numeric;
+  };
+  const bestFastestLap = results.reduce((best: number | null, r: any) => {
+    const lapTime = fastestLapValue(r.fastLap);
+    if (lapTime === null) return best;
+    if (best === null || lapTime < best) return lapTime;
+    return best;
+  }, null);
 
   return {
     raceName: race?.raceName ?? "Grand Prix inconnu",
-    location: `${race?.Circuit?.Location?.locality}, ${race?.Circuit?.Location?.country}`,
+    location: race?.circuit
+      ? `${race.circuit.city}, ${race.circuit.country}`
+      : "Lieu inconnu",
     date: race?.date,
     time: race?.time,
     circuit: {
-      name: race?.Circuit?.circuitName,
-      locality: race?.Circuit?.Location?.locality,
-      country: race?.Circuit?.Location?.country,
-      url: race?.Circuit?.url,
+      name: race?.circuit?.circuitName,
+      locality: race?.circuit?.city,
+      country: race?.circuit?.country,
+      url: race?.circuit?.url,
     },
-    results: mapRaceResults(results),
+    results: results.map(
+      (r: any): RaceResult => ({
+        position: r.position?.toString(),
+        driver: `${r.driver?.name ?? ""} ${r.driver?.surname ?? ""}`.trim(),
+        driverNationality: r.driver?.nationality,
+        constructor: r.team?.teamName,
+        time: r.time ?? r.retired ?? "N/A",
+        points: r.points?.toString() ?? "0",
+        fastestLap: r.fastLap
+          ? {
+              rank:
+                bestFastestLap !== null &&
+                fastestLapValue(r.fastLap) === bestFastestLap
+                  ? "1"
+                  : (r.fastestLapRank?.toString() ?? "-"),
+              lap: r.fastestLapLap?.toString() ?? "-",
+              time: r.fastLap,
+              averageSpeed: r.fastLapSpeed,
+            }
+          : undefined,
+        grid: r.grid?.toString() ?? "-",
+      }),
+    ),
   };
 }
 

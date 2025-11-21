@@ -11,7 +11,7 @@ export function countryToFlagEmoji(country: string): string {
     USA: "US",
     Canada: "CA",
     Australia: "AU",
-    UK: "GB",
+    "Great Britain": "GB",
     Austria: "AT",
     Netherlands: "NL",
     Mexico: "MX",
