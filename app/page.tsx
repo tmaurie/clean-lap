@@ -193,7 +193,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid gap-6 lg:grid-cols-2">
           <Card className="border-primary/20 bg-background/80 backdrop-blur">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
@@ -209,25 +209,10 @@ export default function HomePage() {
               <RaceResultsTable
                 season="current"
                 round="last"
-                limit={4}
+                limit={6}
                 ctaHref="/results/current/last"
                 ctaLabel="Analyser le Grand Prix"
               />
-            </CardContent>
-          </Card>
-
-          <Card className="border-primary/20 bg-background/80 backdrop-blur">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <CalendarClock className="h-5 w-5 text-primary" aria-hidden />
-                Courses à suivre
-              </CardTitle>
-              <CardDescription>
-                Anticipez les prochaines manches du calendrier officiel.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <UpcomingRaces limit={4} />
             </CardContent>
           </Card>
 
@@ -243,10 +228,24 @@ export default function HomePage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <StandingsPreview driverLimit={4} constructorLimit={4} />
+              <StandingsPreview driverLimit={5} constructorLimit={5} />
             </CardContent>
           </Card>
         </div>
+        <Card className="border-primary/20 bg-background/80 backdrop-blur">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <CalendarClock className="h-5 w-5 text-primary" aria-hidden />
+              Courses à suivre
+            </CardTitle>
+            <CardDescription>
+              Anticipez les prochaines manches du calendrier officiel.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <UpcomingRaces limit={4} />
+          </CardContent>
+        </Card>
       </section>
 
       <section className="grid gap-6 md:grid-cols-3" aria-label="Chiffres clés">

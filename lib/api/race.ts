@@ -1,18 +1,25 @@
 import { Race, RaceResult } from "@/entities/race/model";
-import { API_ROUTES } from "@/lib/config/api";
 
 async function fetchJSON(url: string): Promise<any> {
   const res = await fetch(url);
+  console.log(`[fetchJSON] fetching URL: ${url}`, res);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch ${url}: ${res.status} ${res.statusText}`);
+  }
   return await res.json();
 }
 
 function mapRace(race: any): Race {
+  const location = [race.circuit?.city, race.circuit?.country]
+    .filter(Boolean)
+    .join(", ");
+
   return {
     name: race.raceName,
-    date: race.date,
-    time: race.time,
-    circuit: race.Circuit.circuitName,
-    location: `${race.Circuit.Location.locality}, ${race.Circuit.Location.country}`,
+    date: race.schedule?.race?.date ?? race.date,
+    time: race.schedule?.race?.time ?? race.time,
+    circuit: race.circuit?.circuitName,
+    location,
   };
 }
 
@@ -39,9 +46,16 @@ function mapRaceResults(results: any[]): RaceResult[] {
 
 export async function fetchNextRace(): Promise<Race | null> {
   try {
-    const json = await fetchJSON(API_ROUTES.nextRace);
-    const raceData = json.MRData.RaceTable.Races[0];
-    return mapRace(raceData);
+    const json = await fetchJSON("https://f1api.dev/api/current/next");
+    console.log(json.race[0]);
+    const raceData = json.race[0];
+    return {
+      name: raceData.raceName,
+      date: raceData.schedule.race.date,
+      time: raceData.schedule.race.time,
+      circuit: raceData.circuit.circuitName,
+      location: `${raceData.circuit.city}, ${raceData.circuit.country}`,
+    };
   } catch (err) {
     console.error("[fetchNextRace] Failed to parse race data", err);
     return null;
@@ -49,20 +63,27 @@ export async function fetchNextRace(): Promise<Race | null> {
 }
 
 export async function fetchUpcomingRaces(): Promise<Race[]> {
-  const json = await fetchJSON(
-    API_ROUTES.races(new Date().getFullYear().toString()),
-  );
-  const races = json.MRData.RaceTable.Races as any[];
+  const json = await fetchJSON("https://f1api.dev/api/current");
+  const races = json.races;
   const now = new Date();
 
   return races
-    .map(mapRace)
-    .filter((race) => new Date(`${race.date}T${race.time}`) > now);
+    .map((raceData: any) => ({
+      name: raceData.raceName,
+      date: raceData.schedule.race.date,
+      time: raceData.schedule.race.time,
+      circuit: raceData.circuit.circuitName,
+      location: `${raceData.circuit.city}, ${raceData.circuit.country}`,
+    }))
+    .filter((race: Race) => {
+      const raceDateTime = new Date(`${race.date}T${race.time}`);
+      return raceDateTime > now;
+    });
 }
 
 export async function fetchRaces(season: string): Promise<Race[]> {
-  const json = await fetchJSON(API_ROUTES.races(season));
-  const rawRaces = json.MRData.RaceTable.Races;
+  const json = await fetchJSON(`https://f1api.dev/api/${season}`);
+  const rawRaces = json.races ?? [];
   return rawRaces.map(mapRace);
 }
 
