@@ -1,5 +1,26 @@
 import { Race, RaceResult } from "@/entities/race/model";
 
+export type QualifyingResult = {
+  position: string;
+  driver: string;
+  driverNationality?: string;
+  constructor: string;
+  grid: string;
+  points: string;
+  q1?: string;
+  q2?: string;
+  q3?: string;
+  bestTimes?: { q1: number | null; q2: number | null; q3: number | null };
+};
+
+export type QualifyingSession = {
+  raceName: string;
+  location: string;
+  date: string | null;
+  time: string | null;
+  results: QualifyingResult[];
+};
+
 async function fetchJSON(url: string): Promise<any> {
   const res = await fetch(url);
   console.log(`[fetchJSON] fetching URL: ${url}`, res);
@@ -21,6 +42,48 @@ function mapRace(race: any): Race {
     circuit: race.circuit?.circuitName,
     location,
   };
+}
+
+function fastest(value?: string | null) {
+  if (!value) return null;
+  const numeric = Number(value.replace(/[:.]/g, ""));
+  return Number.isNaN(numeric) ? null : numeric;
+}
+
+function mapQualifyingResults(results: any[]): QualifyingResult[] {
+  const bestTimes = results.reduce(
+    (
+      acc: { q1: number | null; q2: number | null; q3: number | null },
+      r: any,
+    ) => ({
+      q1:
+        fastest(r.q1) !== null && (acc.q1 === null || fastest(r.q1)! < acc.q1)
+          ? fastest(r.q1)
+          : acc.q1,
+      q2:
+        fastest(r.q2) !== null && (acc.q2 === null || fastest(r.q2)! < acc.q2)
+          ? fastest(r.q2)
+          : acc.q2,
+      q3:
+        fastest(r.q3) !== null && (acc.q3 === null || fastest(r.q3)! < acc.q3)
+          ? fastest(r.q3)
+          : acc.q3,
+    }),
+    { q1: null, q2: null, q3: null },
+  );
+
+  return results.map((q: any) => ({
+    position: q.gridPosition?.toString() ?? q.position?.toString() ?? "-",
+    driver: `${q.driver?.name ?? ""} ${q.driver?.surname ?? ""}`.trim(),
+    driverNationality: q.driver?.nationality,
+    constructor: q.team?.teamName ?? "N/A",
+    grid: "-", // pas nécessaire en qualif
+    q1: q.q1 ?? undefined,
+    q2: q.q2 ?? undefined,
+    q3: q.q3 ?? undefined,
+    points: "0",
+    bestTimes,
+  }));
 }
 
 export async function fetchNextRace(): Promise<Race | null> {
@@ -179,59 +242,37 @@ export async function fetchQualifyingResults(
   season: string,
   round: string,
 ): Promise<{
-  results: Array<{
-    position: string;
-    driver: string;
-    constructor: string;
-    grid: string;
-    points: string;
-    q1?: string;
-    q2?: string;
-    q3?: string;
-    bestTimes?: { q1: number | null; q2: number | null; q3: number | null };
-  }>;
+  results: QualifyingResult[];
 }> {
   const json = await fetchJSON(
     `https://f1api.dev/api/${season}/${round}/qualy`,
   );
   const results = json?.races?.qualyResults ?? [];
-  const fastest = (value?: string | null) => {
-    if (!value) return null;
-    const numeric = Number(value.replace(/[:.]/g, ""));
-    return Number.isNaN(numeric) ? null : numeric;
-  };
-  const bestTimes = results.reduce(
-    (
-      acc: { q1: number | null; q2: number | null; q3: number | null },
-      r: any,
-    ) => ({
-      q1:
-        fastest(r.q1) !== null && (acc.q1 === null || fastest(r.q1)! < acc.q1)
-          ? fastest(r.q1)
-          : acc.q1,
-      q2:
-        fastest(r.q2) !== null && (acc.q2 === null || fastest(r.q2)! < acc.q2)
-          ? fastest(r.q2)
-          : acc.q2,
-      q3:
-        fastest(r.q3) !== null && (acc.q3 === null || fastest(r.q3)! < acc.q3)
-          ? fastest(r.q3)
-          : acc.q3,
-    }),
-    { q1: null, q2: null, q3: null },
-  );
 
   return {
-    results: results.map((q: any) => ({
-      position: q.gridPosition?.toString() ?? q.position?.toString() ?? "-",
-      driver: `${q.driver?.name ?? ""} ${q.driver?.surname ?? ""}`.trim(),
-      constructor: q.team?.teamName ?? "N/A",
-      grid: "-", // pas nécessaire en qualif
-      q1: q.q1 ?? undefined,
-      q2: q.q2 ?? undefined,
-      q3: q.q3 ?? undefined,
-      points: "0",
-      bestTimes,
-    })),
+    results: mapQualifyingResults(results),
   };
+}
+
+export async function fetchLastQualifying(): Promise<QualifyingSession | null> {
+  try {
+    const json = await fetchJSON("https://f1api.dev/api/current/last/qualy");
+    const race = json?.races;
+    if (!race) return null;
+
+    return {
+      raceName: race?.raceName ?? "Qualifications",
+      location: race?.circuit
+        ? `${race.circuit.city}, ${race.circuit.country}`
+        : "Lieu inconnu",
+      date:
+        race?.schedule?.qualy?.date ?? race?.qualyTime ?? race?.date ?? null,
+      time:
+        race?.schedule?.qualy?.time ?? race?.qualytDate ?? race?.time ?? null,
+      results: mapQualifyingResults(race?.qualyResults ?? []),
+    };
+  } catch (error) {
+    console.error("[fetchLastQualifying] Failed to fetch data", error);
+    return null;
+  }
 }
