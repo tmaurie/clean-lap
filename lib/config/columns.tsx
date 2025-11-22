@@ -3,8 +3,40 @@ import { getConstructorColor } from "@/lib/utils/colors";
 import { Badge } from "@/components/ui/badge";
 import { clsx } from "clsx";
 
+const renderPositionPodium = (position: string | number) => {
+  if (position === undefined || position === null) {
+    return (
+      <span className="inline-flex min-w-[2.5rem] items-center justify-center rounded-full border border-border/60 bg-muted/40 px-3 py-1 text-xs font-semibold text-muted-foreground">
+        -
+      </span>
+    );
+  }
+
+  const posNum = Number(position);
+
+  const podiumStyle =
+    posNum === 1
+      ? "bg-gradient-to-r from-amber-300 via-orange-300 to-amber-200 text-amber-950 shadow-[0_0_0_1px_rgba(255,255,255,0.65)]"
+      : posNum === 2
+        ? "bg-gradient-to-r from-slate-200 via-slate-100 to-white text-slate-900 shadow-[0_0_0_1px_rgba(255,255,255,0.65)]"
+        : posNum === 3
+          ? "bg-gradient-to-r from-amber-200 via-orange-200 to-yellow-100 text-amber-900 shadow-[0_0_0_1px_rgba(255,255,255,0.6)]"
+          : "border border-border/60 bg-background/60 text-muted-foreground";
+
+  return (
+    <span
+      className={clsx(
+        "inline-flex min-w-[2.5rem] items-center justify-center rounded-full px-3 py-1 text-xs font-semibold shadow-inner",
+        podiumStyle,
+      )}
+    >
+      {position}
+    </span>
+  );
+};
+
 export const columnsRace = [
-  { key: "position", label: "#" },
+  { key: "position", label: "#", render: (position: string) => renderPositionPodium(position) },
   {
     key: "driver",
     label: "Pilote",
@@ -17,7 +49,7 @@ export const columnsRace = [
         {row.position == "1" && (
           <Badge
             variant="secondary"
-            className="text-xs bg-green-300 text-accent ml-2 animate-pulse cursor-pointer"
+            className="ml-2 border border-amber-200 bg-amber-100/90 px-2 py-0.5 text-[0.7rem] font-semibold text-amber-900 shadow-[0_2px_12px_-4px_rgba(251,191,36,0.45)]"
           >
             🏆 Vainqueur
           </Badge>
@@ -52,7 +84,6 @@ export const columnsRace = [
         return <span className="text-muted-foreground">N/A</span>;
       const diff = gridNum - posNum;
       if (diff === 0) return String(gridNum);
-      if (diff === 0) return grid;
       return (
         <div className="flex items-center gap-2">
           {grid}
@@ -91,7 +122,7 @@ export const columnsRace = [
 ];
 
 export const columnsQualif = [
-  { key: "position", label: "#" },
+  { key: "position", label: "#", render: (position: string) => renderPositionPodium(position) },
   { key: "driver", label: "Pilote" },
   {
     key: "constructor",
@@ -177,7 +208,7 @@ export const columnsQualif = [
 ];
 
 export const columnsFreePractice = [
-  { key: "position", label: "#" },
+  { key: "position", label: "#", render: (position: string) => renderPositionPodium(position) },
   {
     key: "driver",
     label: "Pilote",
@@ -212,17 +243,17 @@ export const columnsFreePractice = [
 ];
 
 export const columnsSprint = [
-  { key: "position", label: "#" },
+  { key: "position", label: "#", render: (position: string) => renderPositionPodium(position) },
   {
     key: "driver",
     label: "Pilote",
-    render: (driver: string, row: { grid: string }) => (
+    render: (driver: string, row: { grid: string; position: string }) => (
       <div className="flex items-center gap-2">
         {driver}{" "}
-        {row.grid == "1" && (
+        {row.position === "1" && (
           <Badge
             variant="secondary"
-            className="text-xs bg-green-300 text-accent ml-2 animate-pulse cursor-pointer"
+            className="ml-2 border border-amber-200 bg-amber-100/90 px-2 py-0.5 text-[0.7rem] font-semibold text-amber-900 shadow-[0_2px_12px_-4px_rgba(251,191,36,0.45)]"
           >
             🏆 Vainqueur
           </Badge>
@@ -257,7 +288,6 @@ export const columnsSprint = [
         return <span className="text-muted-foreground">N/A</span>;
       const diff = gridNum - posNum;
       if (diff === 0) return String(gridNum);
-      if (diff === 0) return grid;
       return (
         <div className="flex items-center gap-2">
           {grid}
