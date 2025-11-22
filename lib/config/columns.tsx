@@ -111,23 +111,68 @@ export const columnsQualif = [
   {
     key: "q1",
     label: "Q1",
-    render: (q1: string) => (
-      <span className="font-mono text-sm text-muted-foreground">{q1}</span>
-    ),
+    render: (q1: string, row: { bestTimes?: { q1: number | null } }) => {
+      const normalize = (val?: string) =>
+        val ? Number(val.replace(/[:.]/g, "")) : null;
+      const isBest =
+        row.bestTimes?.q1 !== null &&
+        row.bestTimes?.q1 !== undefined &&
+        normalize(q1) === row.bestTimes.q1;
+      return (
+        <span
+          className={clsx(
+            "font-mono text-sm text-muted-foreground",
+            isBest && "text-purple-500 font-bold",
+          )}
+        >
+          {q1 ?? "N/A"}
+        </span>
+      );
+    },
   },
   {
     key: "q2",
     label: "Q2",
-    render: (q2: string) => (
-      <span className="font-mono text-sm text-muted-foreground">{q2}</span>
-    ),
+    render: (q2: string, row: { bestTimes?: { q2: number | null } }) => {
+      const normalize = (val?: string) =>
+        val ? Number(val.replace(/[:.]/g, "")) : null;
+      const isBest =
+        row.bestTimes?.q2 !== null &&
+        row.bestTimes?.q2 !== undefined &&
+        normalize(q2) === row.bestTimes.q2;
+      return (
+        <span
+          className={clsx(
+            "font-mono text-sm text-muted-foreground",
+            isBest && "text-purple-500 font-bold",
+          )}
+        >
+          {q2 ?? "N/A"}
+        </span>
+      );
+    },
   },
   {
     key: "q3",
     label: "Q3",
-    render: (q3: string) => (
-      <span className="font-mono text-sm text-muted-foreground">{q3}</span>
-    ),
+    render: (q3: string, row: { bestTimes?: { q3: number | null } }) => {
+      const normalize = (val?: string) =>
+        val ? Number(val.replace(/[:.]/g, "")) : null;
+      const isBest =
+        row.bestTimes?.q3 !== null &&
+        row.bestTimes?.q3 !== undefined &&
+        normalize(q3) === row.bestTimes.q3;
+      return (
+        <span
+          className={clsx(
+            "font-mono text-sm text-muted-foreground",
+            isBest && "text-purple-500 font-bold",
+          )}
+        >
+          {q3 ?? "N/A"}
+        </span>
+      );
+    },
   },
 ];
 
