@@ -10,7 +10,7 @@ import {
   useDriverStandings,
 } from "@/features/standings/hooks";
 import { getConstructorColor } from "@/lib/utils/colors";
-import { nationalityToFlagEmoji } from "@/lib/utils/flags";
+import { countryToFlagEmoji, nationalityToFlagEmoji } from "@/lib/utils/flags";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type StandingsPreviewProps = {
@@ -154,7 +154,8 @@ export function StandingsPreview({
                           {constructor.constructor}
                         </p>
                         <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                          {constructor.nationality}
+                          {constructor.nationality}{" "}
+                          {countryToFlagEmoji(constructor.nationality)}
                         </p>
                       </div>
                     </div>

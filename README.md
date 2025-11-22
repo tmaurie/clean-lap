@@ -22,7 +22,7 @@ Elle fournit en un clin d'œil toutes les informations essentielles : prochaine 
 - **React 19** pour la construction d'interfaces utilisateur
 - **Shadcn/UI** pour les composants UI réutilisables
 - **React Query** (`@tanstack/react-query`) pour la gestion des données distantes
-- **Ergast API (via Jolpica)** pour les données F1 (courses, standings, résultats)
+- **f1api.dev** pour les données F1 (courses, standings, résultats)
 - **Tailwind CSS** pour le style rapide et cohérent
 - **ESLint** et **Prettier** pour le linting et le formatage du code
 
@@ -42,7 +42,7 @@ src/
 ├── features/             # Hooks React + logique liée à l'affichage
 ├── entities/             # Types & logique métier pure
 ├── lib/
-│   ├── api/              # Appels API externes (jolpica (Ergast API))
+│   ├── api/              # Appels API externes (f1api.dev)
 │   └── ui/               # Helpers visuels (ex: getConstructorColor)
 ├── providers/            # Contexts globaux (theme, query)
 ├── styles/               # Tailwind config & global CSS

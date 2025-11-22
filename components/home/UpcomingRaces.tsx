@@ -51,43 +51,48 @@ export function UpcomingRaces({ limit = 4 }: UpcomingRacesProps) {
             key={race.name}
             className="flex items-center justify-between gap-4 rounded-2xl border bg-card/60 p-4"
           >
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 flex-col items-center justify-center rounded-xl bg-primary/10 text-sm font-semibold text-primary">
-                <span>{day}</span>
-                <span className="text-[10px] uppercase tracking-wide text-primary/70">
-                  {month}
-                </span>
-              </div>
-              <div className="space-y-1 text-sm">
-                <p className="font-medium leading-tight">
-                  {countryToFlagEmoji(country)} {race.name}
-                </p>
-                <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <CalendarDays className="h-3 w-3" aria-hidden />
-                  {isValidDate
-                    ? date.toLocaleDateString("fr-FR", {
-                        weekday: "short",
-                        day: "2-digit",
-                        month: "long",
-                      })
-                    : race.date}
-                </p>
-                <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Clock3 className="h-3 w-3" aria-hidden />
-                  {isValidDate
-                    ? date.toLocaleTimeString("fr-FR", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
-                    : "--:--"}
-                  · {race.circuit}
-                </p>
+            <div className="flex flex-1 flex-col gap-2">
+              {timeUntil && (
+                <Badge
+                  className={`${timeUntil.className} self-start mb-2 text-xs`}
+                >
+                  {timeUntil.label}
+                </Badge>
+              )}
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 flex-col items-center justify-center rounded-xl bg-primary/10 text-sm font-semibold text-primary">
+                  <span>{day}</span>
+                  <span className="text-[10px] uppercase tracking-wide text-primary/70">
+                    {month}
+                  </span>
+                </div>
+                <div className="space-y-1 text-sm">
+                  <p className="font-medium leading-tight">
+                    {countryToFlagEmoji(country)} {race.name}
+                  </p>
+                  <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <CalendarDays className="h-3 w-3" aria-hidden />
+                    {isValidDate
+                      ? date.toLocaleDateString("fr-FR", {
+                          weekday: "short",
+                          day: "2-digit",
+                          month: "long",
+                        })
+                      : race.date}
+                  </p>
+                  <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Clock3 className="h-3 w-3" aria-hidden />
+                    {isValidDate
+                      ? date.toLocaleTimeString("fr-FR", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "--:--"}
+                    · {race.circuit}
+                  </p>
+                </div>
               </div>
             </div>
-
-            {timeUntil && (
-              <Badge className={timeUntil.className}>{timeUntil.label}</Badge>
-            )}
           </div>
         );
       })}

@@ -11,7 +11,7 @@ export function countryToFlagEmoji(country: string): string {
     USA: "US",
     Canada: "CA",
     Australia: "AU",
-    UK: "GB",
+    "Great Britain": "GB",
     Austria: "AT",
     Netherlands: "NL",
     Mexico: "MX",
@@ -29,7 +29,7 @@ export function countryToFlagEmoji(country: string): string {
     Qatar: "QA",
     Portugal: "PT",
     "South Africa": "ZA",
-    UAE: "AE",
+    "United Arab Emirates": "AE",
   };
 
   const code = countryCodes[country];
@@ -43,18 +43,23 @@ export function countryToFlagEmoji(country: string): string {
 
 export function nationalityToFlagEmoji(nationality: string): string {
   const map: Record<string, string> = {
-    Dutch: "🇳🇱",
-    British: "🇬🇧",
-    Monegasque: "🇲🇨",
-    Spanish: "🇪🇸",
-    German: "🇩🇪",
-    Finnish: "🇫🇮",
-    French: "🇫🇷",
-    Australian: "🇦🇺",
-    Mexican: "🇲🇽",
-    Canadian: "🇨🇦",
-    Brazilian: "🇧🇷",
-    Japanese: "🇯🇵",
+    Netherlands: "🇳🇱",
+    "Great Britain": "🇬🇧",
+    Monaco: "🇲🇨",
+    Spain: "🇪🇸",
+    Germany: "🇩🇪",
+    Finland: "🇫🇮",
+    France: "🇫🇷",
+    Australia: "🇦🇺",
+    Mexico: "🇲🇽",
+    Canada: "🇨🇦",
+    Brazil: "🇧🇷",
+    Japan: "🇯🇵",
+    Thailand: "🇹🇭",
+    Italy: "🇮🇹",
+    "United States": "🇺🇸",
+    "New Zealand": "🇳🇿",
+    Argentina: "🇦🇷",
   };
 
   return map[nationality] ?? "";

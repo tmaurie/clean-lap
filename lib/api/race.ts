@@ -1,47 +1,40 @@
 import { Race, RaceResult } from "@/entities/race/model";
-import { API_ROUTES } from "@/lib/config/api";
 
 async function fetchJSON(url: string): Promise<any> {
   const res = await fetch(url);
+  console.log(`[fetchJSON] fetching URL: ${url}`, res);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch ${url}: ${res.status} ${res.statusText}`);
+  }
   return await res.json();
 }
 
 function mapRace(race: any): Race {
+  const location = [race.circuit?.city, race.circuit?.country]
+    .filter(Boolean)
+    .join(", ");
+
   return {
     name: race.raceName,
-    date: race.date,
-    time: race.time,
-    circuit: race.Circuit.circuitName,
-    location: `${race.Circuit.Location.locality}, ${race.Circuit.Location.country}`,
+    date: race.schedule?.race?.date ?? race.date,
+    time: race.schedule?.race?.time ?? race.time,
+    circuit: race.circuit?.circuitName,
+    location,
   };
-}
-
-function mapRaceResults(results: any[]): RaceResult[] {
-  return results.map(
-    (r: any): RaceResult => ({
-      position: r.position,
-      driver: `${r.Driver.givenName} ${r.Driver.familyName}`,
-      driverNationality: r.Driver.nationality,
-      constructor: r.Constructor.name,
-      time: r.Time?.time ?? r.status,
-      points: r.points,
-      fastestLap: {
-        rank: r.FastestLap?.rank,
-        lap: r.FastestLap?.lap,
-        time: r.FastestLap?.Time?.time,
-        averageSpeed: r.FastestLap?.AverageSpeed?.speed,
-      },
-      grid: r.grid,
-      laps: r.laps,
-    }),
-  );
 }
 
 export async function fetchNextRace(): Promise<Race | null> {
   try {
-    const json = await fetchJSON(API_ROUTES.nextRace);
-    const raceData = json.MRData.RaceTable.Races[0];
-    return mapRace(raceData);
+    const json = await fetchJSON("https://f1api.dev/api/current/next");
+    console.log(json.race[0]);
+    const raceData = json.race[0];
+    return {
+      name: raceData.raceName,
+      date: raceData.schedule.race.date,
+      time: raceData.schedule.race.time,
+      circuit: raceData.circuit.circuitName,
+      location: `${raceData.circuit.city}, ${raceData.circuit.country}`,
+    };
   } catch (err) {
     console.error("[fetchNextRace] Failed to parse race data", err);
     return null;
@@ -49,20 +42,27 @@ export async function fetchNextRace(): Promise<Race | null> {
 }
 
 export async function fetchUpcomingRaces(): Promise<Race[]> {
-  const json = await fetchJSON(
-    API_ROUTES.races(new Date().getFullYear().toString()),
-  );
-  const races = json.MRData.RaceTable.Races as any[];
+  const json = await fetchJSON("https://f1api.dev/api/current");
+  const races = json.races;
   const now = new Date();
 
   return races
-    .map(mapRace)
-    .filter((race) => new Date(`${race.date}T${race.time}`) > now);
+    .map((raceData: any) => ({
+      name: raceData.raceName,
+      date: raceData.schedule.race.date,
+      time: raceData.schedule.race.time,
+      circuit: raceData.circuit.circuitName,
+      location: `${raceData.circuit.city}, ${raceData.circuit.country}`,
+    }))
+    .filter((race: Race) => {
+      const raceDateTime = new Date(`${race.date}T${race.time}`);
+      return raceDateTime > now;
+    });
 }
 
 export async function fetchRaces(season: string): Promise<Race[]> {
-  const json = await fetchJSON(API_ROUTES.races(season));
-  const rawRaces = json.MRData.RaceTable.Races;
+  const json = await fetchJSON(`https://f1api.dev/api/${season}`);
+  const rawRaces = json.races ?? [];
   return rawRaces.map(mapRace);
 }
 
@@ -82,24 +82,57 @@ export async function fetchRaceResults(
   };
   results: RaceResult[];
 }> {
-  const json = await fetchJSON(
-    `https://api.jolpi.ca/ergast/f1/${season}/${round}/results.json`,
-  );
-  const race = json.MRData.RaceTable.Races[0];
-  const results = race?.Results ?? [];
+  const json = await fetchJSON(`https://f1api.dev/api/${season}/${round}/race`);
+  const race = json?.races;
+  const results = race?.results ?? [];
+  const fastestLapValue = (time: string | null | undefined) => {
+    if (!time) return null;
+    const numeric = Number(time.replace(/[:.]/g, ""));
+    return Number.isNaN(numeric) ? null : numeric;
+  };
+  const bestFastestLap = results.reduce((best: number | null, r: any) => {
+    const lapTime = fastestLapValue(r.fastLap);
+    if (lapTime === null) return best;
+    if (best === null || lapTime < best) return lapTime;
+    return best;
+  }, null);
 
   return {
     raceName: race?.raceName ?? "Grand Prix inconnu",
-    location: `${race?.Circuit?.Location?.locality}, ${race?.Circuit?.Location?.country}`,
+    location: race?.circuit
+      ? `${race.circuit.city}, ${race.circuit.country}`
+      : "Lieu inconnu",
     date: race?.date,
     time: race?.time,
     circuit: {
-      name: race?.Circuit?.circuitName,
-      locality: race?.Circuit?.Location?.locality,
-      country: race?.Circuit?.Location?.country,
-      url: race?.Circuit?.url,
+      name: race?.circuit?.circuitName,
+      locality: race?.circuit?.city,
+      country: race?.circuit?.country,
+      url: race?.circuit?.url,
     },
-    results: mapRaceResults(results),
+    results: results.map(
+      (r: any): RaceResult => ({
+        position: r.position?.toString(),
+        driver: `${r.driver?.name ?? ""} ${r.driver?.surname ?? ""}`.trim(),
+        driverNationality: r.driver?.nationality,
+        constructor: r.team?.teamName,
+        time: r.time ?? r.retired ?? "N/A",
+        points: r.points?.toString() ?? "0",
+        fastestLap: r.fastLap
+          ? {
+              rank:
+                bestFastestLap !== null &&
+                fastestLapValue(r.fastLap) === bestFastestLap
+                  ? "1"
+                  : (r.fastestLapRank?.toString() ?? "-"),
+              lap: r.fastestLapLap?.toString() ?? "-",
+              time: r.fastLap,
+              averageSpeed: r.fastLapSpeed,
+            }
+          : undefined,
+        grid: r.grid?.toString() ?? "-",
+      }),
+    ),
   };
 }
 
@@ -117,21 +150,27 @@ export async function fetchSprintResults(
     points: string;
   }[];
 }> {
-  const json = await fetchJSON(
-    `https://api.jolpi.ca/ergast/f1/${season}/${round}/sprint.json`,
-  );
-  const race = json?.MRData?.RaceTable?.Races?.[0];
-  const results = race?.SprintResults ?? [];
+  const url = `https://f1api.dev/api/${season}/${round}/sprint/race`;
+  const res = await fetch(url);
+  if (res.status === 404) {
+    return { results: [] };
+  }
+  if (!res.ok) {
+    throw new Error(`Failed to fetch ${url}: ${res.status} ${res.statusText}`);
+  }
+
+  const json = await res.json();
+  const results = json?.races?.sprintRaceResults ?? [];
 
   return {
     results: results.map((r: any) => ({
-      position: r.position,
-      driver: `${r.Driver.givenName} ${r.Driver.familyName}`,
-      constructor: r.Constructor.name,
-      laps: r.laps,
-      grid: r.grid,
-      time: r.Time?.time ?? "+ " + r.status,
-      points: r.points,
+      position: r.position?.toString() ?? "-",
+      driver: `${r.driver?.name ?? ""} ${r.driver?.surname ?? ""}`.trim(),
+      constructor: r.team?.teamName ?? "N/A",
+      laps: "-", // non fourni par la nouvelle API sprint
+      grid: r.gridPosition?.toString() ?? "-",
+      time: r.time ?? r.retired ?? "N/A",
+      points: r.points?.toString() ?? "0",
     })),
   };
 }
@@ -140,31 +179,59 @@ export async function fetchQualifyingResults(
   season: string,
   round: string,
 ): Promise<{
-  results: {
+  results: Array<{
     position: string;
     driver: string;
     constructor: string;
     grid: string;
-    time: string;
     points: string;
-  }[];
+    q1?: string;
+    q2?: string;
+    q3?: string;
+    bestTimes?: { q1: number | null; q2: number | null; q3: number | null };
+  }>;
 }> {
   const json = await fetchJSON(
-    `https://api.jolpi.ca/ergast/f1/${season}/${round}/qualifying.json`,
+    `https://f1api.dev/api/${season}/${round}/qualy`,
   );
-  const race = json?.MRData?.RaceTable?.Races?.[0];
-  const results = race?.QualifyingResults ?? [];
+  const results = json?.races?.qualyResults ?? [];
+  const fastest = (value?: string | null) => {
+    if (!value) return null;
+    const numeric = Number(value.replace(/[:.]/g, ""));
+    return Number.isNaN(numeric) ? null : numeric;
+  };
+  const bestTimes = results.reduce(
+    (
+      acc: { q1: number | null; q2: number | null; q3: number | null },
+      r: any,
+    ) => ({
+      q1:
+        fastest(r.q1) !== null && (acc.q1 === null || fastest(r.q1)! < acc.q1)
+          ? fastest(r.q1)
+          : acc.q1,
+      q2:
+        fastest(r.q2) !== null && (acc.q2 === null || fastest(r.q2)! < acc.q2)
+          ? fastest(r.q2)
+          : acc.q2,
+      q3:
+        fastest(r.q3) !== null && (acc.q3 === null || fastest(r.q3)! < acc.q3)
+          ? fastest(r.q3)
+          : acc.q3,
+    }),
+    { q1: null, q2: null, q3: null },
+  );
 
   return {
     results: results.map((q: any) => ({
-      position: q.position,
-      driver: `${q.Driver.givenName} ${q.Driver.familyName}`,
-      constructor: q.Constructor.name,
+      position: q.gridPosition?.toString() ?? q.position?.toString() ?? "-",
+      driver: `${q.driver?.name ?? ""} ${q.driver?.surname ?? ""}`.trim(),
+      constructor: q.team?.teamName ?? "N/A",
       grid: "-", // pas nécessaire en qualif
-      q1: q.Q1,
-      q2: q.Q2,
-      q3: q.Q3,
-      points: 0,
+      q1: q.q1 ?? undefined,
+      q2: q.q2 ?? undefined,
+      q3: q.q3 ?? undefined,
+      points: "0",
+      bestTimes,
     })),
   };
 }
