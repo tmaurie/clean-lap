@@ -1,4 +1,4 @@
-import { nationalityToFlagEmoji } from "@/lib/utils/flags";
+import { countryToFlagEmoji } from "@/lib/utils/flags";
 import { getConstructorColor } from "@/lib/utils/colors";
 import { Badge } from "@/components/ui/badge";
 import { clsx } from "clsx";
@@ -13,7 +13,7 @@ export const columnsRace = [
       row: { driverNationality: string; position: string },
     ) => (
       <div className="flex items-center gap-2">
-        {nationalityToFlagEmoji(row.driverNationality)} {driver}
+        {countryToFlagEmoji(row.driverNationality)} {driver}
         {row.position == "1" && (
           <Badge
             variant="secondary"

@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Season } from "@/entities/season/model";
 import { getConstructorColor } from "@/lib/utils/colors";
-import { nationalityToFlagEmoji } from "@/lib/utils/flags";
+import { countryToFlagEmoji } from "@/lib/utils/flags";
 
 type ResultsPageClientProps = {
   seasons: Season[];
@@ -56,7 +56,7 @@ function SeasonCard({ season }: { season: Season }) {
   const driverChampion = season.driverChampion;
   const constructorChampion = season.constructorChampion;
   const driverFlag = driverChampion
-    ? nationalityToFlagEmoji(driverChampion.nationality)
+    ? countryToFlagEmoji(driverChampion.nationality)
     : null;
   const isCurrentSeason = season.season === new Date().getFullYear().toString();
 

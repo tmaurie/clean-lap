@@ -10,7 +10,7 @@ import {
   useDriverStandings,
 } from "@/features/standings/hooks";
 import { getConstructorColor } from "@/lib/utils/colors";
-import { countryToFlagEmoji, nationalityToFlagEmoji } from "@/lib/utils/flags";
+import { countryToFlagEmoji } from "@/lib/utils/flags";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type StandingsPreviewProps = {
@@ -75,7 +75,7 @@ export function StandingsPreview({
               const points = Number(driver.points) || 0;
               const wins = Number(driver.wins) || 0;
               const progress = Math.round((points / maxDriverPoints) * 100);
-              const flag = nationalityToFlagEmoji(driver.nationality);
+              const flag = countryToFlagEmoji(driver.nationality);
 
               return (
                 <li

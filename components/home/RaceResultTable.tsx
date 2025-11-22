@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useRaceResults } from "@/features/race/useRaceResults";
 import { cn } from "@/lib/utils";
 import { getConstructorColor } from "@/lib/utils/colors";
-import { nationalityToFlagEmoji } from "@/lib/utils/flags";
+import { countryToFlagEmoji } from "@/lib/utils/flags";
 
 type RaceResultsTableProps = {
   season: string;
@@ -101,7 +101,7 @@ export function RaceResultsTable({
         {topResults.map((r) => {
           const isWinner = r.position === "1";
           const driverFlag = r.driverNationality
-            ? nationalityToFlagEmoji(r.driverNationality)
+            ? countryToFlagEmoji(r.driverNationality)
             : "";
 
           return (
