@@ -176,6 +176,41 @@ export const columnsQualif = [
   },
 ];
 
+export const columnsFreePractice = [
+  { key: "position", label: "#" },
+  {
+    key: "driver",
+    label: "Pilote",
+    render: (
+      driver: string,
+      row: { driverNationality?: string; constructor: string },
+    ) => (
+      <div className="flex items-center gap-2">
+        {row.driverNationality
+          ? countryToFlagEmoji(row.driverNationality)
+          : null}{" "}
+        {driver}
+        <span
+          className="inline-block h-2 w-2 rounded-full"
+          style={{
+            backgroundColor: getConstructorColor(row.constructor),
+          }}
+        />
+      </div>
+    ),
+  },
+  { key: "constructor", label: "Écurie" },
+  {
+    key: "time",
+    label: "Temps",
+    render: (time: string) => (
+      <span className="font-mono text-sm text-muted-foreground">
+        {time ?? "N/A"}
+      </span>
+    ),
+  },
+];
+
 export const columnsSprint = [
   { key: "position", label: "#" },
   {
