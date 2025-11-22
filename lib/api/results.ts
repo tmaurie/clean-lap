@@ -1,18 +1,5 @@
 import { Season } from "@/entities/season/model";
 
-type Race = {
-  round: string;
-  raceName: string;
-  date: string;
-  Circuit: {
-    Location: {
-      locality: string;
-      country: string;
-    };
-  };
-};
-
-const LEGACY_API_BASE_URL = "https://api.jolpi.ca/ergast/f1";
 const NEW_API_BASE_URL = "https://f1api.dev/api";
 const EARLIEST_SEASON = 1950;
 
@@ -183,37 +170,22 @@ export async function fetchRacesWithWinner(season: string): Promise<
     winner?: string;
   }[]
 > {
-  const racesJson = await fetchJson<{
-    MRData: { RaceTable?: { Races?: Race[] } };
-  }>(`${LEGACY_API_BASE_URL}/${season}.json?limit=200`);
-  const winnersJson = await fetchJson<{
-    MRData: {
-      RaceTable?: {
-        Races?: Array<
-          Race & {
-            Results?: Array<{
-              Driver?: { givenName: string; familyName: string };
-            }>;
-          }
-        >;
-      };
-    };
-  }>(`${LEGACY_API_BASE_URL}/${season}/results/1.json?limit=200`);
-
-  const winnersByRound = new Map(
-    (winnersJson.MRData.RaceTable?.Races ?? []).map((race) => [
-      race.round,
-      race.Results?.[0]?.Driver
-        ? `${race.Results[0].Driver.givenName} ${race.Results[0].Driver.familyName}`
-        : undefined,
-    ]),
+  const json = await fetchJson<{ races?: any[] }>(
+    `${NEW_API_BASE_URL}/${season}`,
   );
-
-  return (racesJson.MRData.RaceTable?.Races ?? []).map((race) => ({
-    round: race.round,
-    name: race.raceName,
-    date: race.date,
-    location: `${race.Circuit.Location.locality}, ${race.Circuit.Location.country}`,
-    winner: winnersByRound.get(race.round),
-  }));
+  const races = json?.races ?? [];
+  return races.map((race) => {
+    const winnerName = race?.winner
+      ? `${race.winner.name ?? ""} ${race.winner.surname ?? ""}`.trim()
+      : undefined;
+    return {
+      round: race.round?.toString() ?? "-",
+      name: race.raceName ?? "Grand Prix",
+      date: race.schedule?.race?.date ?? race.date ?? "",
+      location: race.circuit
+        ? `${race.circuit.city}, ${race.circuit.country}`
+        : "Lieu inconnu",
+      winner: winnerName || undefined,
+    };
+  });
 }
