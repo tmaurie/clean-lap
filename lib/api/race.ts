@@ -201,7 +201,10 @@ export async function fetchQualifyingResults(
     return Number.isNaN(numeric) ? null : numeric;
   };
   const bestTimes = results.reduce(
-    (acc: { q1: number | null; q2: number | null; q3: number | null }, r: any) => ({
+    (
+      acc: { q1: number | null; q2: number | null; q3: number | null },
+      r: any,
+    ) => ({
       q1:
         fastest(r.q1) !== null && (acc.q1 === null || fastest(r.q1)! < acc.q1)
           ? fastest(r.q1)
