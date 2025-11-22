@@ -44,7 +44,14 @@ export const columnsRace = [
     key: "grid",
     label: "Grille",
     render: (grid: string, row: { position: string }) => {
-      const diff = parseInt(grid) - parseInt(row.position);
+      const gridNum = Number.isFinite(Number(grid)) ? parseInt(grid, 10) : NaN;
+      const posNum = Number.isFinite(Number(row.position))
+        ? parseInt(row.position, 10)
+        : NaN;
+      if (isNaN(gridNum) || isNaN(posNum))
+        return <span className="text-muted-foreground">N/A</span>;
+      const diff = gridNum - posNum;
+      if (diff === 0) return String(gridNum);
       if (diff === 0) return grid;
       return (
         <div className="flex items-center gap-2">
@@ -56,7 +63,6 @@ export const columnsRace = [
       );
     },
   },
-  { key: "laps", label: "Tours" },
   { key: "time", label: "Temps" },
   {
     key: "points",
@@ -66,11 +72,9 @@ export const columnsRace = [
   {
     key: "fastestLap",
     label: "Meilleur tour",
-    render: (
-      fastestLap: { time?: string; rank?: string },
-      row: { fastestLap: { time: string } },
-    ) => {
-      if (!fastestLap.time)
+    render: (fastestLap: { time?: string; rank?: string }) => {
+      const time = fastestLap?.time;
+      if (!time)
         return <span className="text-sm text-muted-foreground">N/A</span>;
       return (
         <span
@@ -79,7 +83,7 @@ export const columnsRace = [
             "text-sm font-mono text-muted-foreground",
           )}
         >
-          {row.fastestLap.time}
+          {time}
         </span>
       );
     },
@@ -107,23 +111,68 @@ export const columnsQualif = [
   {
     key: "q1",
     label: "Q1",
-    render: (q1: string) => (
-      <span className="font-mono text-sm text-muted-foreground">{q1}</span>
-    ),
+    render: (q1: string, row: { bestTimes?: { q1: number | null } }) => {
+      const normalize = (val?: string) =>
+        val ? Number(val.replace(/[:.]/g, "")) : null;
+      const isBest =
+        row.bestTimes?.q1 !== null &&
+        row.bestTimes?.q1 !== undefined &&
+        normalize(q1) === row.bestTimes.q1;
+      return (
+        <span
+          className={clsx(
+            "font-mono text-sm text-muted-foreground",
+            isBest && "text-purple-500 font-bold",
+          )}
+        >
+          {q1 ?? "N/A"}
+        </span>
+      );
+    },
   },
   {
     key: "q2",
     label: "Q2",
-    render: (q2: string) => (
-      <span className="font-mono text-sm text-muted-foreground">{q2}</span>
-    ),
+    render: (q2: string, row: { bestTimes?: { q2: number | null } }) => {
+      const normalize = (val?: string) =>
+        val ? Number(val.replace(/[:.]/g, "")) : null;
+      const isBest =
+        row.bestTimes?.q2 !== null &&
+        row.bestTimes?.q2 !== undefined &&
+        normalize(q2) === row.bestTimes.q2;
+      return (
+        <span
+          className={clsx(
+            "font-mono text-sm text-muted-foreground",
+            isBest && "text-purple-500 font-bold",
+          )}
+        >
+          {q2 ?? "N/A"}
+        </span>
+      );
+    },
   },
   {
     key: "q3",
     label: "Q3",
-    render: (q3: string) => (
-      <span className="font-mono text-sm text-muted-foreground">{q3}</span>
-    ),
+    render: (q3: string, row: { bestTimes?: { q3: number | null } }) => {
+      const normalize = (val?: string) =>
+        val ? Number(val.replace(/[:.]/g, "")) : null;
+      const isBest =
+        row.bestTimes?.q3 !== null &&
+        row.bestTimes?.q3 !== undefined &&
+        normalize(q3) === row.bestTimes.q3;
+      return (
+        <span
+          className={clsx(
+            "font-mono text-sm text-muted-foreground",
+            isBest && "text-purple-500 font-bold",
+          )}
+        >
+          {q3 ?? "N/A"}
+        </span>
+      );
+    },
   },
 ];
 
@@ -165,7 +214,14 @@ export const columnsSprint = [
     key: "grid",
     label: "Grille",
     render: (grid: string, row: { position: string }) => {
-      const diff = parseInt(grid) - parseInt(row.position);
+      const gridNum = Number.isFinite(Number(grid)) ? parseInt(grid, 10) : NaN;
+      const posNum = Number.isFinite(Number(row.position))
+        ? parseInt(row.position, 10)
+        : NaN;
+      if (isNaN(gridNum) || isNaN(posNum))
+        return <span className="text-muted-foreground">N/A</span>;
+      const diff = gridNum - posNum;
+      if (diff === 0) return String(gridNum);
       if (diff === 0) return grid;
       return (
         <div className="flex items-center gap-2">
@@ -177,7 +233,6 @@ export const columnsSprint = [
       );
     },
   },
-  { key: "laps", label: "Tours" },
   { key: "time", label: "Temps" },
   {
     key: "points",

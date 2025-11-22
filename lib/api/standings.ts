@@ -7,37 +7,48 @@ export async function fetchDriverStandings(
   season: string,
 ): Promise<DriverStanding[]> {
   const res = await fetch(
-    `https://api.jolpi.ca/ergast/f1/${season}/driverStandings.json`,
+    `https://f1api.dev/api/${season}/drivers-championship`,
   );
-  const json = await res.json();
-  const standings =
-    json.MRData.StandingsTable.StandingsLists[0]?.DriverStandings ?? [];
+  if (!res.ok) {
+    throw new Error(`Failed to fetch driver standings for ${season}`);
+  }
 
-  return standings.map((s: any) => ({
-    position: s.position,
-    wins: s.wins,
-    points: s.points,
-    driver: `${s.Driver.givenName} ${s.Driver.familyName}`,
-    constructor: s.Constructors[0].name,
-    nationality: s.Driver.nationality,
-  }));
+  const json = await res.json();
+  const standings = json?.drivers_championship ?? [];
+
+  return standings.map(
+    (entry: any): DriverStanding => ({
+      position: entry.position?.toString() ?? "-",
+      wins: entry.wins ?? 0,
+      points: entry.points?.toString() ?? "0",
+      driver:
+        `${entry.driver?.name ?? ""} ${entry.driver?.surname ?? ""}`.trim(),
+      constructor: entry.team?.teamName ?? "N/A",
+      nationality: entry.driver?.nationality ?? entry.driver?.country ?? "N/A",
+    }),
+  );
 }
 
 export async function fetchConstructorStandings(
   season: string,
 ): Promise<ConstructorStanding[]> {
   const res = await fetch(
-    `https://api.jolpi.ca/ergast/f1/${season}/constructorStandings.json`,
+    `https://f1api.dev/api/${season}/constructors-championship`,
   );
-  const json = await res.json();
-  const standings =
-    json.MRData.StandingsTable.StandingsLists[0]?.ConstructorStandings ?? [];
+  if (!res.ok) {
+    throw new Error(`Failed to fetch constructor standings for ${season}`);
+  }
 
-  return standings.map((s: any) => ({
-    position: s.position,
-    points: s.points,
-    wins: s.wins,
-    constructor: s.Constructor.name,
-    nationality: s.Constructor.nationality,
-  }));
+  const json = await res.json();
+  const standings = json?.constructors_championship ?? [];
+
+  return standings.map(
+    (entry: any): ConstructorStanding => ({
+      position: entry.position?.toString() ?? "-",
+      points: entry.points?.toString() ?? "0",
+      wins: entry.wins ?? 0,
+      constructor: entry.team?.teamName ?? "N/A",
+      nationality: entry.team?.country ?? "N/A",
+    }),
+  );
 }
