@@ -26,6 +26,8 @@ export function NextRaceCountdown() {
   Math.floor((raceDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
   return (
     <div className="space-y-3 text-sm">
+      <div className="text-lg font-semibold">{race.name}</div>
+
       <div className="flex items-center gap-2">
         <MapPin className="w-4 h-4 text-muted-foreground" />
         <span>
