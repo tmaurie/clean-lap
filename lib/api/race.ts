@@ -21,6 +21,14 @@ export type QualifyingSession = {
   results: QualifyingResult[];
 };
 
+export type FreePracticeResult = {
+  position: string;
+  driver: string;
+  driverNationality?: string;
+  constructor: string;
+  time: string;
+};
+
 async function fetchJSON(url: string): Promise<any> {
   const res = await fetch(url);
   console.log(`[fetchJSON] fetching URL: ${url}`, res);
@@ -83,6 +91,16 @@ function mapQualifyingResults(results: any[]): QualifyingResult[] {
     q3: q.q3 ?? undefined,
     points: "0",
     bestTimes,
+  }));
+}
+
+function mapFreePracticeResults(results: any[]): FreePracticeResult[] {
+  return results.map((fp: any, index: number) => ({
+    position: fp.position?.toString() ?? (index + 1).toString(),
+    driver: `${fp.driver?.name ?? ""} ${fp.driver?.surname ?? ""}`.trim(),
+    driverNationality: fp.driver?.nationality,
+    constructor: fp.team?.teamName ?? "N/A",
+    time: fp.time ?? "N/A",
   }));
 }
 
@@ -236,6 +254,31 @@ export async function fetchSprintResults(
       points: r.points?.toString() ?? "0",
     })),
   };
+}
+
+export async function fetchFreePracticeResults(
+  season: string,
+  round: string,
+  session: "fp1" | "fp2" | "fp3",
+): Promise<{ results: FreePracticeResult[] }> {
+  const url = `https://f1api.dev/api/${season}/${round}/${session}`;
+  const res = await fetch(url);
+
+  if (res.status === 404) {
+    return { results: [] };
+  }
+  if (!res.ok) {
+    throw new Error(`Failed to fetch ${url}: ${res.status} ${res.statusText}`);
+  }
+
+  const json = await res.json();
+  const results =
+    json?.races?.[`${session}Results`] ??
+    json?.races?.results ??
+    json?.races ??
+    [];
+
+  return { results: mapFreePracticeResults(results) };
 }
 
 export async function fetchQualifyingResults(

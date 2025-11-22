@@ -21,11 +21,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PodiumBlock } from "@/app/results/PodiumBlock";
 import { ResultTable } from "@/app/results/ResultTable";
 import { getRaceResults } from "@/features/results/hooks";
-import { fetchQualifyingResults, fetchSprintResults } from "@/lib/api/race";
+import {
+  fetchFreePracticeResults,
+  fetchQualifyingResults,
+  fetchSprintResults,
+} from "@/lib/api/race";
 import {
   columnsQualif,
   columnsRace,
   columnsSprint,
+  columnsFreePractice,
 } from "@/lib/config/columns";
 import { isPastRace } from "@/lib/utils/date";
 import { countryToFlagEmoji } from "@/lib/utils/flags";
@@ -41,6 +46,9 @@ export default async function ResultsPage({ params }: any) {
   const circuitFlag = countryToFlagEmoji(circuit.country);
   const sprintResults = await fetchSprintResults(season, round);
   const qualifyingResults = await fetchQualifyingResults(season, round);
+  const fp1Results = await fetchFreePracticeResults(season, round, "fp1");
+  const fp2Results = await fetchFreePracticeResults(season, round, "fp2");
+  const fp3Results = await fetchFreePracticeResults(season, round, "fp3");
 
   const formattedDate = new Date(date).toLocaleDateString("fr-FR", {
     day: "numeric",
@@ -57,6 +65,8 @@ export default async function ResultsPage({ params }: any) {
   );
 
   const hasSprint = sprintResults.results.length > 0;
+  const tabCount = (hasSprint ? 3 : 2) + 3; // course, qualif, sprint? + FP1/2/3
+  const tabsGridCols = tabCount === 6 ? "grid-cols-6" : "grid-cols-5";
 
   return (
     <div className="space-y-12">
@@ -182,7 +192,7 @@ export default async function ResultsPage({ params }: any) {
               <TabsList
                 className={clsx(
                   "grid w-full gap-2 bg-muted/40 p-1 text-muted-foreground",
-                  hasSprint ? "grid-cols-3" : "grid-cols-2",
+                  tabsGridCols,
                 )}
               >
                 <TabsTrigger
@@ -202,7 +212,25 @@ export default async function ResultsPage({ params }: any) {
                   value="qualif"
                   className="data-[state=active]:bg-background"
                 >
-                  Qualifs
+                  Qualifications
+                </TabsTrigger>
+                <TabsTrigger
+                  value="fp1"
+                  className="data-[state=active]:bg-background"
+                >
+                  FP1
+                </TabsTrigger>
+                <TabsTrigger
+                  value="fp2"
+                  className="data-[state=active]:bg-background"
+                >
+                  FP2
+                </TabsTrigger>
+                <TabsTrigger
+                  value="fp3"
+                  className="data-[state=active]:bg-background"
+                >
+                  FP3
                 </TabsTrigger>
               </TabsList>
 
@@ -232,6 +260,45 @@ export default async function ResultsPage({ params }: any) {
                   <ResultTable
                     data={qualifyingResults.results}
                     columns={columnsQualif}
+                  />
+                )}
+              </TabsContent>
+
+              <TabsContent value="fp1" className="mt-6">
+                {fp1Results.results.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-6 text-sm text-muted-foreground">
+                    Pas de données pour la FP1.
+                  </div>
+                ) : (
+                  <ResultTable
+                    data={fp1Results.results}
+                    columns={columnsFreePractice}
+                  />
+                )}
+              </TabsContent>
+
+              <TabsContent value="fp2" className="mt-6">
+                {fp2Results.results.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-6 text-sm text-muted-foreground">
+                    Pas de données pour la FP2.
+                  </div>
+                ) : (
+                  <ResultTable
+                    data={fp2Results.results}
+                    columns={columnsFreePractice}
+                  />
+                )}
+              </TabsContent>
+
+              <TabsContent value="fp3" className="mt-6">
+                {fp3Results.results.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-6 text-sm text-muted-foreground">
+                    Pas de données pour la FP3.
+                  </div>
+                ) : (
+                  <ResultTable
+                    data={fp3Results.results}
+                    columns={columnsFreePractice}
                   />
                 )}
               </TabsContent>
