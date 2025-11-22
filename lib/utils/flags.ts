@@ -1,66 +1,83 @@
-export function countryToFlagEmoji(country: string): string {
-  const countryCodes: Record<string, string> = {
-    France: "FR",
-    Italy: "IT",
-    Spain: "ES",
-    Monaco: "MC",
-    Germany: "DE",
-    Belgium: "BE",
-    Japan: "JP",
-    Brazil: "BR",
-    USA: "US",
-    Canada: "CA",
-    Australia: "AU",
-    "Great Britain": "GB",
-    Austria: "AT",
-    Netherlands: "NL",
-    Mexico: "MX",
-    Switzerland: "CH",
-    Hungary: "HU",
-    Singapore: "SG",
-    Russia: "RU",
-    Sweden: "SE",
-    Finland: "FI",
-    Czechia: "CZ",
-    China: "CN",
-    Bahrain: "BH",
-    "Saudi Arabia": "SA",
-    Azerbaijan: "AZ",
-    Qatar: "QA",
-    Portugal: "PT",
-    "South Africa": "ZA",
-    "United Arab Emirates": "AE",
-  };
+const COUNTRY_OR_NATIONALITY_TO_CODE: Record<string, string> = {
+  france: "FR",
+  french: "FR",
+  italy: "IT",
+  italian: "IT",
+  spain: "ES",
+  spanish: "ES",
+  monaco: "MC",
+  monegasque: "MC",
+  germany: "DE",
+  german: "DE",
+  belgium: "BE",
+  belgian: "BE",
+  japan: "JP",
+  japanese: "JP",
+  brazil: "BR",
+  brazilian: "BR",
+  "united states": "US",
+  "united states of america": "US",
+  usa: "US",
+  american: "US",
+  canada: "CA",
+  canadian: "CA",
+  australia: "AU",
+  australian: "AU",
+  "great britain": "GB",
+  british: "GB",
+  austria: "AT",
+  austrian: "AT",
+  netherlands: "NL",
+  dutch: "NL",
+  mexico: "MX",
+  mexican: "MX",
+  switzerland: "CH",
+  swiss: "CH",
+  hungary: "HU",
+  hungarian: "HU",
+  singapore: "SG",
+  singaporean: "SG",
+  russia: "RU",
+  russian: "RU",
+  sweden: "SE",
+  swedish: "SE",
+  finland: "FI",
+  finnish: "FI",
+  czechia: "CZ",
+  czech: "CZ",
+  china: "CN",
+  chinese: "CN",
+  bahrain: "BH",
+  bahraini: "BH",
+  "saudi arabia": "SA",
+  saudi: "SA",
+  azerbaijan: "AZ",
+  azerbaijani: "AZ",
+  qatar: "QA",
+  qatari: "QA",
+  portugal: "PT",
+  portuguese: "PT",
+  "south africa": "ZA",
+  "south african": "ZA",
+  "united arab emirates": "AE",
+  uae: "AE",
+  thailand: "TH",
+  thai: "TH",
+  "new zealand": "NZ",
+  "new zealander": "NZ",
+  argentina: "AR",
+  argentine: "AR",
+  argentinian: "AR",
+};
 
-  const code = countryCodes[country];
-  if (!code) return "🏁";
+export function countryToFlagEmoji(countryOrNationality: string): string {
+  const normalized = countryOrNationality?.trim().toLowerCase();
+  if (!normalized) return "";
 
-  // Convert country code (FR) to 🇫🇷
+  const code = COUNTRY_OR_NATIONALITY_TO_CODE[normalized];
+  if (!code) return "";
+
   return code
     .toUpperCase()
     .replace(/./g, (char) => String.fromCodePoint(127397 + char.charCodeAt(0)));
-}
-
-export function nationalityToFlagEmoji(nationality: string): string {
-  const map: Record<string, string> = {
-    Netherlands: "🇳🇱",
-    "Great Britain": "🇬🇧",
-    Monaco: "🇲🇨",
-    Spain: "🇪🇸",
-    Germany: "🇩🇪",
-    Finland: "🇫🇮",
-    France: "🇫🇷",
-    Australia: "🇦🇺",
-    Mexico: "🇲🇽",
-    Canada: "🇨🇦",
-    Brazil: "🇧🇷",
-    Japan: "🇯🇵",
-    Thailand: "🇹🇭",
-    Italy: "🇮🇹",
-    "United States": "🇺🇸",
-    "New Zealand": "🇳🇿",
-    Argentina: "🇦🇷",
-  };
-
-  return map[nationality] ?? "";
 }
