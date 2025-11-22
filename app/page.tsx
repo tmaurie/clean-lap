@@ -11,6 +11,7 @@ import {
 
 import { NextRaceCountdown } from "@/components/home/NextRaceCountdown";
 import { RaceResultsTable } from "@/components/home/RaceResultTable";
+import { LastQualifyingPreview } from "@/components/home/LastQualifyingPreview";
 import { StandingsPreview } from "@/components/home/StandingsPreview";
 import { UpcomingRaces } from "@/components/home/UpcomingRaces";
 import { DotPattern } from "@/components/magicui/dot-pattern";
@@ -170,6 +171,7 @@ export default function HomePage() {
               </CardContent>
             </Card>
           </div>
+          <LastQualifyingPreview limit={5} />
         </div>
       </section>
 
