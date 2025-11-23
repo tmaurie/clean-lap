@@ -29,6 +29,35 @@ export type FreePracticeResult = {
   time: string;
 };
 
+export type RaceSession = {
+  date: string | null;
+  time: string | null;
+};
+
+export type RaceSchedule = {
+  fp1: RaceSession;
+  fp2: RaceSession;
+  fp3: RaceSession;
+  qualy: RaceSession;
+  sprintQualy: RaceSession;
+  sprintRace: RaceSession;
+  race: RaceSession;
+};
+
+export type RaceCircuitDetails = {
+  name?: string | null;
+  country?: string | null;
+  city?: string | null;
+  circuitLength?: string | null;
+  lapRecord?: string | null;
+  firstParticipationYear?: number | null;
+  corners?: number | null;
+  fastestLapDriverId?: string | null;
+  fastestLapTeamId?: string | null;
+  fastestLapYear?: number | null;
+  url?: string | null;
+};
+
 async function fetchJSON(url: string): Promise<any> {
   const res = await fetch(url);
   console.log(`[fetchJSON] fetching URL: ${url}`, res);
@@ -102,6 +131,16 @@ function mapFreePracticeResults(results: any[]): FreePracticeResult[] {
     constructor: fp.team?.teamName ?? "N/A",
     time: fp.time ?? "N/A",
   }));
+}
+
+function normalizeScheduleEntry(session: any | undefined): {
+  date: string | null;
+  time: string | null;
+} {
+  return {
+    date: session?.date ?? null,
+    time: session?.time ?? null,
+  };
 }
 
 export async function fetchNextRace(): Promise<Race | null> {
@@ -309,13 +348,73 @@ export async function fetchLastQualifying(): Promise<QualifyingSession | null> {
         ? `${race.circuit.city}, ${race.circuit.country}`
         : "Lieu inconnu",
       date:
-        race?.schedule?.qualy?.date ?? race?.qualyTime ?? race?.date ?? null,
+        race?.schedule?.qualy?.date ?? race?.qualyDate ?? race?.date ?? null,
       time:
-        race?.schedule?.qualy?.time ?? race?.qualytDate ?? race?.time ?? null,
+        race?.schedule?.qualy?.time ?? race?.qualyTime ?? race?.time ?? null,
       results: mapQualifyingResults(race?.qualyResults ?? []),
     };
   } catch (error) {
     console.error("[fetchLastQualifying] Failed to fetch data", error);
+    return null;
+  }
+}
+
+export async function fetchRaceSchedule(
+  season: string,
+  round: string,
+): Promise<{
+  schedule: RaceSchedule;
+  circuitDetails?: RaceCircuitDetails;
+} | null> {
+  try {
+    const baseUrl =
+      season === "current"
+        ? "https://f1api.dev/api/current"
+        : `https://f1api.dev/api/${season}`;
+    const json = await fetchJSON(baseUrl);
+    const races = json?.races ?? [];
+
+    const byRound =
+      round === "last"
+        ? races
+            .slice()
+            .sort(
+              (a: any, b: any) => Number(b.round ?? 0) - Number(a.round ?? 0),
+            )[0]
+        : races.find((r: any) => String(r.round) === String(round));
+
+    const race = byRound ?? null;
+    const schedule = race?.schedule;
+    if (!schedule) return null;
+
+    return {
+      schedule: {
+        fp1: normalizeScheduleEntry(schedule.fp1),
+        fp2: normalizeScheduleEntry(schedule.fp2),
+        fp3: normalizeScheduleEntry(schedule.fp3),
+        qualy: normalizeScheduleEntry(schedule.qualy),
+        sprintQualy: normalizeScheduleEntry(schedule.sprintQualy),
+        sprintRace: normalizeScheduleEntry(schedule.sprintRace),
+        race: normalizeScheduleEntry(schedule.race ?? race),
+      },
+      circuitDetails: race?.circuit
+        ? {
+            name: race.circuit.circuitName,
+            country: race.circuit.country,
+            city: race.circuit.city,
+            circuitLength: race.circuit.circuitLength,
+            lapRecord: race.circuit.lapRecord,
+            firstParticipationYear: race.circuit.firstParticipationYear,
+            corners: race.circuit.corners,
+            fastestLapDriverId: race.circuit.fastestLapDriverId,
+            fastestLapTeamId: race.circuit.fastestLapTeamId,
+            fastestLapYear: race.circuit.fastestLapYear,
+            url: race.circuit.url,
+          }
+        : undefined,
+    };
+  } catch (error) {
+    console.error("[fetchRaceSchedule] Failed to fetch data", error);
     return null;
   }
 }
