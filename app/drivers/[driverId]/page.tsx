@@ -38,15 +38,12 @@ function StatCard({
   );
 }
 
-export default async function DriverPage({
-  params,
-  searchParams,
-}: {
-  params: { driverId: string };
-  searchParams: { season?: string };
-}) {
-  const season = searchParams?.season ?? "current";
-  const data = await fetchDriverSeason(params.driverId, season);
+export default async function DriverPage({ params, searchParams }: any) {
+  const { driverId } = params;
+  const { season } = await searchParams;
+
+  const currentSeason = season ?? "current";
+  const data = await fetchDriverSeason(driverId, currentSeason);
 
   if (!data) return notFound();
 
