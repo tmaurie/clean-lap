@@ -36,7 +36,11 @@ const renderPositionPodium = (position: string | number) => {
 };
 
 export const columnsRace = [
-  { key: "position", label: "#", render: (position: string) => renderPositionPodium(position) },
+  {
+    key: "position",
+    label: "#",
+    render: (position: string) => renderPositionPodium(position),
+  },
   {
     key: "driver",
     label: "Pilote",
@@ -122,7 +126,11 @@ export const columnsRace = [
 ];
 
 export const columnsQualif = [
-  { key: "position", label: "#", render: (position: string) => renderPositionPodium(position) },
+  {
+    key: "position",
+    label: "#",
+    render: (position: string) => renderPositionPodium(position),
+  },
   { key: "driver", label: "Pilote" },
   {
     key: "constructor",
@@ -208,7 +216,11 @@ export const columnsQualif = [
 ];
 
 export const columnsFreePractice = [
-  { key: "position", label: "#", render: (position: string) => renderPositionPodium(position) },
+  {
+    key: "position",
+    label: "#",
+    render: (position: string) => renderPositionPodium(position),
+  },
   {
     key: "driver",
     label: "Pilote",
@@ -243,7 +255,11 @@ export const columnsFreePractice = [
 ];
 
 export const columnsSprint = [
-  { key: "position", label: "#", render: (position: string) => renderPositionPodium(position) },
+  {
+    key: "position",
+    label: "#",
+    render: (position: string) => renderPositionPodium(position),
+  },
   {
     key: "driver",
     label: "Pilote",

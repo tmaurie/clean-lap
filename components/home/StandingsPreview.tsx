@@ -76,6 +76,7 @@ export function StandingsPreview({
               const wins = Number(driver.wins) || 0;
               const progress = Math.round((points / maxDriverPoints) * 100);
               const flag = countryToFlagEmoji(driver.nationality);
+                const teamColor = getConstructorColor(driver.constructor);
 
               return (
                 <li
@@ -115,10 +116,13 @@ export function StandingsPreview({
                     </div>
                   </div>
                   <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
-                    <div
-                      className="h-full rounded-full bg-primary/80"
-                      style={{ width: `${progress}%` }}
-                    />
+                      <div
+                          className="h-full rounded-full"
+                          style={{
+                              width: `${progress}%`,
+                              background: `linear-gradient(90deg, ${teamColor}, ${teamColor}aa, ${teamColor}55)`,
+                          }}
+                      />
                   </div>
                 </li>
               );
@@ -138,6 +142,7 @@ export function StandingsPreview({
               const progress = Math.round(
                 (points / maxConstructorPoints) * 100,
               );
+              const teamColor = getConstructorColor(constructor.constructor);
 
               return (
                 <li
@@ -168,8 +173,11 @@ export function StandingsPreview({
                   </div>
                   <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-primary/60 via-primary/40 to-primary/20"
-                      style={{ width: `${progress}%` }}
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${progress}%`,
+                        background: `linear-gradient(90deg, ${teamColor}, ${teamColor}aa, ${teamColor}55)`,
+                      }}
                     />
                   </div>
                 </li>

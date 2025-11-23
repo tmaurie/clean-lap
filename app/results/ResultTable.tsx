@@ -11,7 +11,7 @@ export function ResultTable({ data, columns }: ResultTableProps) {
   const hasData = Array.isArray(data) && data.length > 0;
 
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-primary/10 bg-gradient-to-br from-background via-background to-primary/5 shadow-lg backdrop-blur">
+    <div className="relative overflow-hidden rounded-2xl border border-primary/10 bg-gradient-to-br from-background via-background to-primary/5 shadow-lg backdrop-blur">
       <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
 
       <div className="overflow-x-auto">
