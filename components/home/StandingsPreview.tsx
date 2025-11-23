@@ -76,7 +76,7 @@ export function StandingsPreview({
               const wins = Number(driver.wins) || 0;
               const progress = Math.round((points / maxDriverPoints) * 100);
               const flag = countryToFlagEmoji(driver.nationality);
-                const teamColor = getConstructorColor(driver.constructor);
+              const teamColor = getConstructorColor(driver.constructor);
 
               return (
                 <li
@@ -116,13 +116,13 @@ export function StandingsPreview({
                     </div>
                   </div>
                   <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
-                      <div
-                          className="h-full rounded-full"
-                          style={{
-                              width: `${progress}%`,
-                              background: `linear-gradient(90deg, ${teamColor}, ${teamColor}aa, ${teamColor}55)`,
-                          }}
-                      />
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${progress}%`,
+                        background: `linear-gradient(90deg, ${teamColor}, ${teamColor}aa, ${teamColor}55)`,
+                      }}
+                    />
                   </div>
                 </li>
               );
