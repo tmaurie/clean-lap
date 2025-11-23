@@ -16,7 +16,9 @@ export type DriverRaceResult = {
   date: string | null;
   grid: number | string | null;
   position: number | string | null;
-  points: number | string | null;
+  sprintPosition?: number | string | null;
+  sprintPoints?: number | null;
+  points: number | string | null; // total points for the event (race + sprint)
   status?: string | null;
   location?: string | null;
 };

@@ -336,11 +336,32 @@ export const columnsDriverSeason = [
     key: "position",
     label: "Résultat",
     render: (pos: number | string | null) =>
-      pos ? <span className="font-semibold">{pos}</span> : "N/A",
+      pos ? (
+        pos === 1 ? (
+          <span className="font-semibold text-amber-500">1 🏆</span>
+        ) : (
+          <span className="font-semibold">{pos}</span>
+        )
+      ) : (
+        "–"
+      ),
+  },
+  {
+    key: "sprintPosition",
+    label: "Sprint",
+    render: (pos: number | string | null) =>
+      pos ? <span className="font-semibold">{pos}</span> : "–",
+  },
+  {
+    key: "sprintPoints",
+    label: "Pts Sprint",
+    render: (pts: number | null | undefined) => (
+      <span className="font-mono text-sm">{pts ?? 0}</span>
+    ),
   },
   {
     key: "points",
-    label: "Points",
+    label: "Points total",
     render: (pts: number | string | null) => (
       <span className="font-bold">{pts ?? 0}</span>
     ),

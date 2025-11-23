@@ -30,6 +30,7 @@ function mapDriverRaceResults(raw: any[]): DriverRaceResult[] {
   return raw.map((r: any) => {
     const raceData = r?.race ?? r;
     const resultData = r?.result ?? r;
+    const sprintData = r?.sprintResult ?? r?.sprint ?? null;
     const raceName =
       raceData?.raceName ??
       raceData?.name ??
@@ -65,7 +66,14 @@ function mapDriverRaceResults(raw: any[]): DriverRaceResult[] {
       r?.score ??
       r?.racePoints ??
       null;
-    const points = Number(pointsVal ?? 0);
+    const racePoints = Number(pointsVal ?? 0);
+    const sprintPoints = Number(
+      sprintData?.pointsObtained ??
+        sprintData?.points ??
+        sprintData?.score ??
+        0,
+    );
+    const points = racePoints + sprintPoints;
 
     const date =
       raceData?.date ??
@@ -81,6 +89,12 @@ function mapDriverRaceResults(raw: any[]): DriverRaceResult[] {
       date,
       grid,
       position,
+      sprintPosition:
+        sprintData?.finishingPosition ??
+        sprintData?.position ??
+        sprintData?.result ??
+        null,
+      sprintPoints,
       points,
       status: r?.retired ?? r?.status ?? null,
       location,
