@@ -1,4 +1,8 @@
-import { Driver, DriverRaceResult, DriverSeason } from "@/entities/driver/model";
+import {
+  Driver,
+  DriverRaceResult,
+  DriverSeason,
+} from "@/entities/driver/model";
 
 async function fetchJSON(url: string) {
   const res = await fetch(url);
@@ -27,12 +31,16 @@ function mapDriverRaceResults(raw: any[]): DriverRaceResult[] {
     const raceData = r?.race ?? r;
     const resultData = r?.result ?? r;
     const raceName =
-      raceData?.raceName ?? raceData?.name ?? raceData?.race?.name ?? "Grand Prix";
+      raceData?.raceName ??
+      raceData?.name ??
+      raceData?.race?.name ??
+      "Grand Prix";
     const round = raceData?.round ?? raceData?.race?.round ?? null;
     const circuitData = raceData?.circuit ?? raceData?.race?.circuit;
     const location = circuitData
-      ? `${circuitData.city ?? ""}${circuitData.city ? ", " : ""}${circuitData.country ?? ""}`.trim() || null
-      : r?.location ?? null;
+      ? `${circuitData.city ?? ""}${circuitData.city ? ", " : ""}${circuitData.country ?? ""}`.trim() ||
+        null
+      : (r?.location ?? null);
 
     const grid =
       resultData?.gridPosition ??
@@ -118,8 +126,9 @@ export async function fetchDriverSeason(
     const racesRaw = json?.results ?? json?.races ?? json?.driverRaces ?? [];
     const races = mapDriverRaceResults(racesRaw);
 
-    const wins = races.filter((r) => r.position === 1 || r.position === "1")
-      .length;
+    const wins = races.filter(
+      (r) => r.position === 1 || r.position === "1",
+    ).length;
     const podiums = races.filter((r) => {
       const pos = Number(r.position);
       return Number.isFinite(pos) && pos > 0 && pos <= 3;
@@ -134,7 +143,9 @@ export async function fetchDriverSeason(
 
     return {
       season,
-      driver: driverInfo ? mapDriver(driverInfo) : { id: driverId, name: "", surname: "" },
+      driver: driverInfo
+        ? mapDriver(driverInfo)
+        : { id: driverId, name: "", surname: "" },
       races,
       stats: {
         wins,

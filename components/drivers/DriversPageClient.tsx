@@ -5,7 +5,13 @@ import { Loader2 } from "lucide-react";
 
 import { DriverCard } from "@/components/drivers/DriverCard";
 import { DriverSearchBar } from "@/components/drivers/DriverSearchBar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useDrivers } from "@/features/drivers/useDrivers";
 
 const seasons = ["current", "2025", "2024", "2023", "2022", "2021", "2020"];

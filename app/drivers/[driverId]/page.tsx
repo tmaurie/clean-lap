@@ -1,5 +1,11 @@
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowUpRight, BarChart2, Gauge, Trophy } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowUpRight,
+  BarChart2,
+  Gauge,
+  Trophy,
+} from "lucide-react";
 import Link from "next/link";
 
 import { DotPattern } from "@/components/magicui/dot-pattern";
@@ -56,7 +62,8 @@ export default async function DriverPage({
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
               <Button asChild variant="ghost" size="sm" className="gap-2 px-0">
                 <Link href="/drivers">
-                  <ArrowLeft className="h-4 w-4" aria-hidden /> Retour aux pilotes
+                  <ArrowLeft className="h-4 w-4" aria-hidden /> Retour aux
+                  pilotes
                 </Link>
               </Button>
               <Badge variant="secondary" className="bg-primary/10 text-primary">
@@ -64,7 +71,8 @@ export default async function DriverPage({
               </Badge>
             </div>
             <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-              <span className="text-4xl">{flag}</span> {driver.name} {driver.surname}
+              <span className="text-4xl">{flag}</span> {driver.name}{" "}
+              {driver.surname}
             </h1>
             <p className="text-muted-foreground">
               Nationalité : {driver.nationality ?? "N/A"} • Numéro{" "}
@@ -107,7 +115,9 @@ export default async function DriverPage({
           <div className="flex gap-2">
             {/* Quick season selector via query params */}
             <Button asChild variant="outline" size="sm">
-              <Link href={`/drivers/${driver.id}?season=current`}>Saison en cours</Link>
+              <Link href={`/drivers/${driver.id}?season=current`}>
+                Saison en cours
+              </Link>
             </Button>
             <Button asChild variant="outline" size="sm">
               <Link href={`/drivers/${driver.id}?season=2024`}>2024</Link>
