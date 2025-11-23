@@ -12,6 +12,7 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 const navItems = [
   { name: "Accueil", href: "/" },
   { name: "Calendrier", href: "/calendar" },
+  { name: "Pilotes", href: "/drivers" },
   { name: "Classements", href: "/standings" },
   { name: "Résultats", href: "/results" },
 ];
