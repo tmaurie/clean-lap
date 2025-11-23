@@ -24,6 +24,7 @@ import { getRaceResults } from "@/features/results/hooks";
 import {
   fetchFreePracticeResults,
   fetchQualifyingResults,
+  fetchRaceSchedule,
   fetchSprintResults,
 } from "@/lib/api/race";
 import {
@@ -40,6 +41,9 @@ export default async function ResultsPage({ params }: any) {
   const { season, round } = await params;
   const { raceName, location, date, results, time, circuit } =
     await getRaceResults(season, round);
+  const scheduleData = await fetchRaceSchedule(season, round);
+  const schedule = scheduleData?.schedule;
+  const circuitDetails = scheduleData?.circuitDetails;
 
   const country = location.split(", ").at(-1) || "";
   const flag = countryToFlagEmoji(country);
@@ -67,6 +71,44 @@ export default async function ResultsPage({ params }: any) {
   const hasSprint = sprintResults.results.length > 0;
   const tabCount = (hasSprint ? 3 : 2) + 3; // course, qualif, sprint? + FP1/2/3
   const tabsGridCols = tabCount === 6 ? "grid-cols-6" : "grid-cols-5";
+
+  const formatSession = (session?: {
+    date: string | null;
+    time: string | null;
+  }) => {
+    if (!session?.date) return null;
+    const dateObj = new Date(`${session.date}T${session.time ?? "00:00:00Z"}`);
+    if (Number.isNaN(dateObj.getTime())) {
+      return { date: session.date, time: session.time ?? null };
+    }
+    return {
+      date: dateObj.toLocaleDateString("fr-FR", {
+        weekday: "short",
+        day: "2-digit",
+        month: "short",
+      }),
+      time: session.time
+        ? dateObj.toLocaleTimeString("fr-FR", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : null,
+    };
+  };
+
+  const scheduleItems = [
+    { key: "fp1", label: "Essais libres 1", session: schedule?.fp1 },
+    { key: "fp2", label: "Essais libres 2", session: schedule?.fp2 },
+    { key: "fp3", label: "Essais libres 3", session: schedule?.fp3 },
+    { key: "qualy", label: "Qualifications", session: schedule?.qualy },
+    {
+      key: "sprintQualy",
+      label: "Sprint qualifs",
+      session: schedule?.sprintQualy,
+    },
+    { key: "sprintRace", label: "Sprint", session: schedule?.sprintRace },
+    { key: "race", label: "Course", session: schedule?.race },
+  ];
 
   return (
     <div className="space-y-12">
@@ -134,9 +176,8 @@ export default async function ResultsPage({ params }: any) {
               </Button>
             </div>
           </div>
-
           <Card className="border-primary/20 bg-background/80 backdrop-blur">
-            <CardHeader>
+            <CardHeader className="space-y-1">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Flag className="h-5 w-5 text-primary" aria-hidden />
                 Circuit {circuit.name}
@@ -146,13 +187,47 @@ export default async function ResultsPage({ params }: any) {
                 {circuit.locality}, {circuit.country}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6 text-sm text-muted-foreground">
+            <CardContent className="space-y-5 text-sm text-muted-foreground">
               <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-4">
                 <p>
                   Un tracé emblématique qui accueille la Formule 1 depuis des
                   décennies. Consultez les informations officielles du circuit
                   pour préparer votre analyse.
                 </p>
+              </div>
+              <div className="grid gap-3 rounded-xl border border-dashed bg-card/60 p-4 text-sm sm:grid-cols-2">
+                {[
+                  {
+                    label: "Longueur",
+                    value: circuitDetails?.circuitLength ?? "N/A",
+                  },
+                  {
+                    label: "Virages",
+                    value:
+                      circuitDetails?.corners !== null &&
+                      circuitDetails?.corners !== undefined
+                        ? circuitDetails.corners
+                        : "N/A",
+                  },
+                  {
+                    label: "Record du tour",
+                    value: circuitDetails?.lapRecord ?? "N/A",
+                  },
+                  {
+                    label: "Première année",
+                    value: circuitDetails?.firstParticipationYear ?? "N/A",
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    className="flex items-center justify-between rounded-lg bg-muted/40 px-3 py-2"
+                  >
+                    <span className="text-muted-foreground">{item.label}</span>
+                    <span className="font-medium text-foreground">
+                      {item.value}
+                    </span>
+                  </div>
+                ))}
               </div>
               <Button asChild variant="secondary" className="w-full">
                 <a href={circuit.url} target="_blank" rel="noreferrer">
@@ -162,6 +237,51 @@ export default async function ResultsPage({ params }: any) {
               </Button>
             </CardContent>
           </Card>
+        </div>
+
+        <div className="px-6 pb-12 md:pb-16 md:px-12">
+          <div className="space-y-4 md:grid md:grid-cols-1 md:gap-6">
+            <Card className=" border-primary/20 bg-background/80 backdrop-blur">
+              <CardHeader className="space-y-1">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <CalendarClock className="h-5 w-5 text-primary" aria-hidden />
+                  Programme du week-end
+                </CardTitle>
+                <CardDescription>
+                  Horaires officiels (heure locale de votre navigateur).
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
+                {scheduleItems.map((item) => {
+                  const formatted = formatSession(item.session);
+                  return (
+                    <div
+                      key={item.key}
+                      className="flex items-center justify-between rounded-lg border bg-card/50 px-3 py-2"
+                    >
+                      <span className="font-medium text-foreground">
+                        {item.label}
+                      </span>
+                      {formatted ? (
+                        <span className="mt-1 text-left">
+                          <span className="block">{formatted.date}</span>
+                          {formatted.time && (
+                            <span className="block text-xs">
+                              {formatted.time}
+                            </span>
+                          )}
+                        </span>
+                      ) : (
+                        <span className="mt-1 text-muted-foreground">
+                          Non programmé
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </section>
 
