@@ -1,0 +1,698 @@
+{
+  "api": "https://f1api.dev",
+  "url": "https://f1api.dev/api/2025/drivers/max_verstappen",
+  "limit": 30,
+  "offset": 0,
+  "total": 22,
+  "season": 2025,
+  "championshipId": "f1_2025",
+  "driver": {
+    "driverId": "max_verstappen",
+    "name": "Max",
+    "surname": "Verstappen",
+    "nationality": "Netherlands",
+    "birthday": "1997-09-30",
+    "number": 33,
+    "shortName": "VER",
+    "url": "https://en.wikipedia.org/wiki/Max_Verstappen"
+  },
+  "team": {
+    "teamId": "red_bull",
+    "teamName": "Red Bull Racing",
+    "teamNationality": "Austria",
+    "firstAppeareance": 2005,
+    "constructorsChampionships": 6,
+    "driversChampionships": 8,
+    "url": "https://en.wikipedia.org/wiki/Red_Bull_Racing"
+  },
+  "results": [
+    {
+      "race": {
+        "raceId": "australian_2025",
+        "name": "Louis Vuitton Australian Grand Prix 2025",
+        "round": 1,
+        "date": "2025-03-16",
+        "circuit": {
+          "circuitId": "albert_park",
+          "name": "Albert Park Circuit",
+          "country": "Australia",
+          "city": "Melbourne",
+          "length": 5278,
+          "lapRecord": "1:19:813",
+          "firstParticipationYear": 1996,
+          "numberOfCorners": 14,
+          "fastestLapDriverId": "leclerc",
+          "fastestLapTeamId": "ferrari",
+          "fastestLapYear": 2024
+        }
+      },
+      "result": {
+        "finishingPosition": 2,
+        "gridPosition": 3,
+        "raceTime": "+0.895",
+        "pointsObtained": 18,
+        "retired": null
+      },
+      "sprintResult": null
+    },
+    {
+      "race": {
+        "raceId": "chinese_2025",
+        "name": "Heineken Chinese Grand Prix 2025",
+        "round": 2,
+        "date": "2025-03-23",
+        "circuit": {
+          "circuitId": "shanghai",
+          "name": "Shanghai International Circuit",
+          "country": "China",
+          "city": "Shanghai",
+          "length": 5451,
+          "lapRecord": "1:32:238",
+          "firstParticipationYear": 2004,
+          "numberOfCorners": 16,
+          "fastestLapDriverId": "michael_schumacher",
+          "fastestLapTeamId": "ferrari",
+          "fastestLapYear": 2004
+        }
+      },
+      "result": {
+        "finishingPosition": 4,
+        "gridPosition": 4,
+        "raceTime": "+16.656",
+        "pointsObtained": 12,
+        "retired": null
+      },
+      "sprintResult": {
+        "finishingPosition": 3,
+        "gridPosition": 2,
+        "raceTime": "+9.804s",
+        "pointsObtained": 6,
+        "retired": null
+      }
+    },
+    {
+      "race": {
+        "raceId": "japanese_2025",
+        "name": "Lenovo Japanese Grand Prix 2025",
+        "round": 3,
+        "date": "2025-04-06",
+        "circuit": {
+          "circuitId": "suzuka",
+          "name": "Suzuka International Circuit",
+          "country": "Japan",
+          "city": "Suzuka",
+          "length": 5807,
+          "lapRecord": "1:30:983",
+          "firstParticipationYear": 1987,
+          "numberOfCorners": 18,
+          "fastestLapDriverId": "hamilton",
+          "fastestLapTeamId": "mercedes",
+          "fastestLapYear": 2019
+        }
+      },
+      "result": {
+        "finishingPosition": 1,
+        "gridPosition": 1,
+        "raceTime": "1:22:06.983",
+        "pointsObtained": 25,
+        "retired": null
+      },
+      "sprintResult": null
+    },
+    {
+      "race": {
+        "raceId": "bahrain_2025",
+        "name": "Bahrain Grand Prix 2025",
+        "round": 4,
+        "date": "2025-04-13",
+        "circuit": {
+          "circuitId": "bahrain",
+          "name": "Bahrain International Circuit",
+          "country": "Bahrain",
+          "city": "Sakhir",
+          "length": 5412,
+          "lapRecord": "1:31:447",
+          "firstParticipationYear": 2004,
+          "numberOfCorners": 15,
+          "fastestLapDriverId": "de_la_rosa",
+          "fastestLapTeamId": "mclaren",
+          "fastestLapYear": 2005
+        }
+      },
+      "result": {
+        "finishingPosition": 6,
+        "gridPosition": 7,
+        "raceTime": "+34.395",
+        "pointsObtained": 8,
+        "retired": null
+      },
+      "sprintResult": null
+    },
+    {
+      "race": {
+        "raceId": "saudi_arabia_2025",
+        "name": "STC Saudi Arabian Grand Prix 2025",
+        "round": 5,
+        "date": "2025-04-20",
+        "circuit": {
+          "circuitId": "jeddah",
+          "name": "Jeddah Corniche Circuit",
+          "country": "Saudi Arabia",
+          "city": "Jedda",
+          "length": 6174,
+          "lapRecord": "1:30:734",
+          "firstParticipationYear": 2021,
+          "numberOfCorners": 27,
+          "fastestLapDriverId": "hamilton",
+          "fastestLapTeamId": "mercedes",
+          "fastestLapYear": 2021
+        }
+      },
+      "result": {
+        "finishingPosition": 2,
+        "gridPosition": 1,
+        "raceTime": "+2.843",
+        "pointsObtained": 18,
+        "retired": null
+      },
+      "sprintResult": null
+    },
+    {
+      "race": {
+        "raceId": "miami_2025",
+        "name": "CRYPTO.COM Miami Grand Prix 2025",
+        "round": 6,
+        "date": "2025-05-04",
+        "circuit": {
+          "circuitId": "miami",
+          "name": "Miami International Autodrome",
+          "country": "United States",
+          "city": "Miami",
+          "length": 5412,
+          "lapRecord": "1:29:708",
+          "firstParticipationYear": 2022,
+          "numberOfCorners": 19,
+          "fastestLapDriverId": "max_verstappen",
+          "fastestLapTeamId": "red_bull",
+          "fastestLapYear": 2023
+        }
+      },
+      "result": {
+        "finishingPosition": 4,
+        "gridPosition": 1,
+        "raceTime": "+39.956",
+        "pointsObtained": 12,
+        "retired": null
+      },
+      "sprintResult": {
+        "finishingPosition": 17,
+        "gridPosition": 4,
+        "raceTime": "+12.059s",
+        "pointsObtained": 0,
+        "retired": null
+      }
+    },
+    {
+      "race": {
+        "raceId": "emilia_romagna_2025",
+        "name": "AWS Gran Premio del Made in Italy e Dell Emilia-Romagna 2025",
+        "round": 7,
+        "date": "2025-05-18",
+        "circuit": {
+          "circuitId": "imola",
+          "name": "Imola Autodromo Internazionale Enzo e Dino Ferrari",
+          "country": "Italy",
+          "city": "Imola",
+          "length": 4909,
+          "lapRecord": "1:15:484",
+          "firstParticipationYear": 1980,
+          "numberOfCorners": 19,
+          "fastestLapDriverId": "hamilton",
+          "fastestLapTeamId": "mercedes",
+          "fastestLapYear": 2020
+        }
+      },
+      "result": {
+        "finishingPosition": 1,
+        "gridPosition": 2,
+        "raceTime": "1:31:33.199",
+        "pointsObtained": 25,
+        "retired": null
+      },
+      "sprintResult": null
+    },
+    {
+      "race": {
+        "raceId": "monaco_2025",
+        "name": "Grand Prix de Monaco 2025",
+        "round": 8,
+        "date": "2025-05-25",
+        "circuit": {
+          "circuitId": "monaco",
+          "name": "Circuit de Monaco",
+          "country": "Monaco",
+          "city": "Monte Carlo",
+          "length": 3337,
+          "lapRecord": "1:12:909",
+          "firstParticipationYear": 1950,
+          "numberOfCorners": 19,
+          "fastestLapDriverId": "hamilton",
+          "fastestLapTeamId": "mercedes",
+          "fastestLapYear": 2021
+        }
+      },
+      "result": {
+        "finishingPosition": 4,
+        "gridPosition": 4,
+        "raceTime": "+20.572",
+        "pointsObtained": 12,
+        "retired": null
+      },
+      "sprintResult": null
+    },
+    {
+      "race": {
+        "raceId": "spanish_2025",
+        "name": "Aramco Gran Premio de España 2025",
+        "round": 9,
+        "date": "2025-06-01",
+        "circuit": {
+          "circuitId": "montmelo",
+          "name": "Circuit de Barcelona-Catalunya",
+          "country": "Spain",
+          "city": "Barcelona",
+          "length": 4657,
+          "lapRecord": "1:16:330",
+          "firstParticipationYear": 1991,
+          "numberOfCorners": 14,
+          "fastestLapDriverId": "max_verstappen",
+          "fastestLapTeamId": "red_bull",
+          "fastestLapYear": 2023
+        }
+      },
+      "result": {
+        "finishingPosition": 10,
+        "gridPosition": 3,
+        "raceTime": "+21.826",
+        "pointsObtained": 1,
+        "retired": null
+      },
+      "sprintResult": null
+    },
+    {
+      "race": {
+        "raceId": "canadian_2025",
+        "name": "Pirelli Grand Prix Du Canada 2025",
+        "round": 10,
+        "date": "2025-06-15",
+        "circuit": {
+          "circuitId": "gilles_villeneuve",
+          "name": "Circuit Gilles Villeneuve",
+          "country": "Canada",
+          "city": "Montreal",
+          "length": 4361,
+          "lapRecord": "1:13:078",
+          "firstParticipationYear": 1978,
+          "numberOfCorners": 14,
+          "fastestLapDriverId": "bottas",
+          "fastestLapTeamId": "mercedes",
+          "fastestLapYear": 2019
+        }
+      },
+      "result": {
+        "finishingPosition": 2,
+        "gridPosition": 2,
+        "raceTime": "+0.228",
+        "pointsObtained": 18,
+        "retired": null
+      },
+      "sprintResult": null
+    },
+    {
+      "race": {
+        "raceId": "austrian_2025",
+        "name": "MSC Cruises Austrian Grand Prix 2025",
+        "round": 11,
+        "date": "2025-06-29",
+        "circuit": {
+          "circuitId": "red_bull_ring",
+          "name": "Red Bull Ring",
+          "country": "Austria",
+          "city": "Spielberg",
+          "length": 4318,
+          "lapRecord": "1:05:619",
+          "firstParticipationYear": 1970,
+          "numberOfCorners": 10,
+          "fastestLapDriverId": "sainz",
+          "fastestLapTeamId": "mclaren",
+          "fastestLapYear": 2020
+        }
+      },
+      "result": {
+        "finishingPosition": "NC",
+        "gridPosition": 7,
+        "raceTime": "DNF (0)",
+        "pointsObtained": 0,
+        "retired": null
+      },
+      "sprintResult": null
+    },
+    {
+      "race": {
+        "raceId": "british_2025",
+        "name": "Qatar Airways British Grand Prix 2025",
+        "round": 12,
+        "date": "2025-07-06",
+        "circuit": {
+          "circuitId": "silverstone",
+          "name": "Silverstone Circuit",
+          "country": "Great Britain",
+          "city": "Silverstone",
+          "length": 5891,
+          "lapRecord": "1:27:097",
+          "firstParticipationYear": 1950,
+          "numberOfCorners": 18,
+          "fastestLapDriverId": "max_verstappen",
+          "fastestLapTeamId": "red_bull",
+          "fastestLapYear": 2020
+        }
+      },
+      "result": {
+        "finishingPosition": 5,
+        "gridPosition": 1,
+        "raceTime": "+56.781",
+        "pointsObtained": 10,
+        "retired": null
+      },
+      "sprintResult": null
+    },
+    {
+      "race": {
+        "raceId": "belgian_2025",
+        "name": "Belgian Grand Prix 2025",
+        "round": 13,
+        "date": "2025-07-27",
+        "circuit": {
+          "circuitId": "spa",
+          "name": "Circuit de Spa-Francorchamps",
+          "country": "Belgium",
+          "city": "Stavelot",
+          "length": 7004,
+          "lapRecord": "1:46:286",
+          "firstParticipationYear": 1950,
+          "numberOfCorners": 20,
+          "fastestLapDriverId": "bottas",
+          "fastestLapTeamId": "mercedes",
+          "fastestLapYear": 2018
+        }
+      },
+      "result": {
+        "finishingPosition": 4,
+        "gridPosition": 4,
+        "raceTime": "+21.731",
+        "pointsObtained": 12,
+        "retired": null
+      },
+      "sprintResult": {
+        "finishingPosition": 1,
+        "gridPosition": 2,
+        "raceTime": null,
+        "pointsObtained": 8,
+        "retired": null
+      }
+    },
+    {
+      "race": {
+        "raceId": "hungarian_2025",
+        "name": "Lenovo Hungarian Grand Prix 2025",
+        "round": 14,
+        "date": "2025-08-03",
+        "circuit": {
+          "circuitId": "hungaroring",
+          "name": "Hungaroring",
+          "country": "Hungary",
+          "city": "Mogyorod",
+          "length": 4381,
+          "lapRecord": "1:16:627",
+          "firstParticipationYear": 1986,
+          "numberOfCorners": 14,
+          "fastestLapDriverId": "hamilton",
+          "fastestLapTeamId": "mercedes",
+          "fastestLapYear": 2020
+        }
+      },
+      "result": {
+        "finishingPosition": 9,
+        "gridPosition": 8,
+        "raceTime": "+1:12.645",
+        "pointsObtained": 2,
+        "retired": null
+      },
+      "sprintResult": null
+    },
+    {
+      "race": {
+        "raceId": "dutch_2025",
+        "name": "Heineken Dutch Grand Prix 2025",
+        "round": 15,
+        "date": "2025-08-31",
+        "circuit": {
+          "circuitId": "zandvoort",
+          "name": "Circuit Zandvoort",
+          "country": "Netherlands",
+          "city": "Zandvoort",
+          "length": 4259,
+          "lapRecord": "1:11:097",
+          "firstParticipationYear": 1950,
+          "numberOfCorners": 14,
+          "fastestLapDriverId": "hamilton",
+          "fastestLapTeamId": "mercedes",
+          "fastestLapYear": 2021
+        }
+      },
+      "result": {
+        "finishingPosition": 2,
+        "gridPosition": 3,
+        "raceTime": "+1.271",
+        "pointsObtained": 18,
+        "retired": null
+      },
+      "sprintResult": null
+    },
+    {
+      "race": {
+        "raceId": "italian_2025",
+        "name": "Pirelli Gran D'Italia 2025",
+        "round": 16,
+        "date": "2025-09-07",
+        "circuit": {
+          "circuitId": "monza",
+          "name": "Autodromo Nazionale Monza",
+          "country": "Italy",
+          "city": "Monza",
+          "length": 5793,
+          "lapRecord": "1:21:046",
+          "firstParticipationYear": 1950,
+          "numberOfCorners": 11,
+          "fastestLapDriverId": "barrichelo",
+          "fastestLapTeamId": "ferrari",
+          "fastestLapYear": 2004
+        }
+      },
+      "result": {
+        "finishingPosition": 1,
+        "gridPosition": 1,
+        "raceTime": "1:13:24.325",
+        "pointsObtained": 25,
+        "retired": null
+      },
+      "sprintResult": null
+    },
+    {
+      "race": {
+        "raceId": "azerbaijan_2025",
+        "name": "Qatar Airways Azerbaijan Grand Prix 2025",
+        "round": 17,
+        "date": "2025-09-21",
+        "circuit": {
+          "circuitId": "baku",
+          "name": "Baku City Circuit",
+          "country": "Azerbaijan",
+          "city": "Baku",
+          "length": 6003,
+          "lapRecord": "1:43:009",
+          "firstParticipationYear": 2017,
+          "numberOfCorners": 20,
+          "fastestLapDriverId": "leclerc",
+          "fastestLapTeamId": "ferrari",
+          "fastestLapYear": 2019
+        }
+      },
+      "result": {
+        "finishingPosition": 1,
+        "gridPosition": 1,
+        "raceTime": "1:33:26.408",
+        "pointsObtained": 25,
+        "retired": null
+      },
+      "sprintResult": null
+    },
+    {
+      "race": {
+        "raceId": "singapore_2025",
+        "name": "Singapore Airlines Singapore Grand Prix 2025",
+        "round": 18,
+        "date": "2025-10-05",
+        "circuit": {
+          "circuitId": "marina_bay",
+          "name": "Marina Bay Street Circuit",
+          "country": "Singapore",
+          "city": "Singapore",
+          "length": 4940,
+          "lapRecord": "1:35:867",
+          "firstParticipationYear": 2008,
+          "numberOfCorners": 19,
+          "fastestLapDriverId": "hamilton",
+          "fastestLapTeamId": "mercedes",
+          "fastestLapYear": 2023
+        }
+      },
+      "result": {
+        "finishingPosition": 2,
+        "gridPosition": 2,
+        "raceTime": "+5.430",
+        "pointsObtained": 18,
+        "retired": null
+      },
+      "sprintResult": null
+    },
+    {
+      "race": {
+        "raceId": "united_states_2025",
+        "name": "MSC Cruises United States Grand Prix 2025",
+        "round": 19,
+        "date": "2025-10-19",
+        "circuit": {
+          "circuitId": "austin",
+          "name": "Circuit of The Americas",
+          "country": "United States",
+          "city": "Austin",
+          "length": 3426,
+          "lapRecord": "1:36:169",
+          "firstParticipationYear": 2012,
+          "numberOfCorners": 20,
+          "fastestLapDriverId": "leclerc",
+          "fastestLapTeamId": "ferrari",
+          "fastestLapYear": 2019
+        }
+      },
+      "result": {
+        "finishingPosition": 1,
+        "gridPosition": 1,
+        "raceTime": "1:34:00.161",
+        "pointsObtained": 25,
+        "retired": null
+      },
+      "sprintResult": {
+        "finishingPosition": 1,
+        "gridPosition": 1,
+        "raceTime": "37:58.229",
+        "pointsObtained": 8,
+        "retired": null
+      }
+    },
+    {
+      "race": {
+        "raceId": "mexican_2025",
+        "name": "Gran Premio de La Ciudad de México 2025",
+        "round": 20,
+        "date": "2025-10-26",
+        "circuit": {
+          "circuitId": "hermanos_rodriguez",
+          "name": "Autódromo Hermanos Rodríguez",
+          "country": "Mexico",
+          "city": "Mexico City",
+          "length": 4304,
+          "lapRecord": "1:17:774",
+          "firstParticipationYear": 1962,
+          "numberOfCorners": 17,
+          "fastestLapDriverId": "bottas",
+          "fastestLapTeamId": "mercedes",
+          "fastestLapYear": 2021
+        }
+      },
+      "result": {
+        "finishingPosition": 3,
+        "gridPosition": 5,
+        "raceTime": "+31.049",
+        "pointsObtained": 15,
+        "retired": null
+      },
+      "sprintResult": null
+    },
+    {
+      "race": {
+        "raceId": "brazilian_2025",
+        "name": "MSC Cruises Grande Premio de Sao Paulo 2025",
+        "round": 21,
+        "date": "2025-11-09",
+        "circuit": {
+          "circuitId": "interlagos",
+          "name": "Autodromo José Carlos Pace | Interlagos",
+          "country": "Brazil",
+          "city": "Sao Paulo",
+          "length": 4309,
+          "lapRecord": "1:10:540",
+          "firstParticipationYear": 1972,
+          "numberOfCorners": 15,
+          "fastestLapDriverId": "bottas",
+          "fastestLapTeamId": "mercedes",
+          "fastestLapYear": 2018
+        }
+      },
+      "result": {
+        "finishingPosition": 3,
+        "gridPosition": "not available",
+        "raceTime": "+10.750",
+        "pointsObtained": 15,
+        "retired": null
+      },
+      "sprintResult": {
+        "finishingPosition": 4,
+        "gridPosition": 6,
+        "raceTime": "+4.423",
+        "pointsObtained": 5,
+        "retired": null
+      }
+    },
+    {
+      "race": {
+        "raceId": "las_vegas_2025",
+        "name": "Heineken Las Vegas Grand Prix 2025",
+        "round": 22,
+        "date": "2025-11-23",
+        "circuit": {
+          "circuitId": "vegas",
+          "name": "Las Vegas Strip Circuit",
+          "country": "United States",
+          "city": "Las Vegas",
+          "length": 3853,
+          "lapRecord": "1:35:490",
+          "firstParticipationYear": 2023,
+          "numberOfCorners": 17,
+          "fastestLapDriverId": "piastri",
+          "fastestLapTeamId": "mclaren",
+          "fastestLapYear": 2023
+        }
+      },
+      "result": {
+        "finishingPosition": 3,
+        "gridPosition": "not available",
+        "raceTime": "+10.750",
+        "pointsObtained": 15,
+        "retired": null
+      },
+      "sprintResult": null
+    }
+  ]
+}
