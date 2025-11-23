@@ -321,3 +321,49 @@ export const columnsSprint = [
     render: (points: number) => <span className="font-bold">{points}</span>,
   },
 ];
+
+export const columnsDriverSeason = [
+  { key: "round", label: "#" },
+  { key: "raceName", label: "Grand Prix" },
+  { key: "location", label: "Lieu" },
+  {
+    key: "grid",
+    label: "Grille",
+    render: (grid: number | string | null) =>
+      grid ? <span className="font-mono text-sm">{grid}</span> : "N/A",
+  },
+  {
+    key: "position",
+    label: "Résultat",
+    render: (pos: number | string | null) =>
+      pos ? (
+        pos === 1 ? (
+          <span className="font-semibold text-amber-500">1 🏆</span>
+        ) : (
+          <span className="font-semibold">{pos}</span>
+        )
+      ) : (
+        "–"
+      ),
+  },
+  {
+    key: "sprintPosition",
+    label: "Sprint",
+    render: (pos: number | string | null) =>
+      pos ? <span className="font-semibold">{pos}</span> : "–",
+  },
+  {
+    key: "sprintPoints",
+    label: "Pts Sprint",
+    render: (pts: number | null | undefined) => (
+      <span className="font-mono text-sm">{pts ?? 0}</span>
+    ),
+  },
+  {
+    key: "points",
+    label: "Points total",
+    render: (pts: number | string | null) => (
+      <span className="font-bold">{pts ?? 0}</span>
+    ),
+  },
+];

@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, CalendarDays, BarChart2, Flag } from "lucide-react";
+import { Home, CalendarDays, BarChart2, Flag, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useScrollDirection } from "@/lib/hooks";
 
 const navItems = [
   { name: "Accueil", href: "/", icon: Home },
   { name: "Calendrier", href: "/calendar", icon: CalendarDays },
+  { name: "Pilotes", href: "/drivers", icon: User },
   { name: "Classements", href: "/standings", icon: BarChart2 },
   { name: "Résultats", href: "/results", icon: Flag },
 ];
