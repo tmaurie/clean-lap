@@ -235,8 +235,11 @@ function StandingsCard({
         )}
       >
         <div
-          className="h-full rounded-full bg-gradient-to-r from-primary/80 via-primary/60 to-primary/40"
-          style={{ width: `${progress}%` }}
+          className="h-1.5 rounded-full"
+          style={{
+            width: `${progress}%`,
+            background: `linear-gradient(90deg, ${accentColor}, ${accentColor}80)`,
+          }}
         />
       </div>
     </div>

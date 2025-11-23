@@ -258,7 +258,7 @@ export function CalendarPageClient({ initialView }: { initialView: string }) {
             <div className="space-y-4">
               {completedRaces.length === 0 && (
                 <p className="text-sm text-muted-foreground">
-                  La saison n'a pas encore commencé.
+                  La saison n&#39;a pas encore commencé.
                 </p>
               )}
               {completedRaces.map((race, index) => {
