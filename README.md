@@ -1,64 +1,59 @@
 # 🏎️ CleanLap
 
-**CleanLap** est une web app dédiée à la F1, construite avec Next.js, TypeScript et Shadcn/UI.  
-Elle fournit en un clin d'œil toutes les informations essentielles : prochaine course, résultats récents, calendrier et classements.
+Tableau de bord F1 construit avec Next.js, TypeScript et Shadcn/UI. L'app affiche en un clin d'œil la prochaine course, les résultats récents, les horaires du week-end et les classements.
 
 ---
 
-## ✨ Fonctionnalités principales
+## ✨ Fonctionnalités actuelles
 
-- 🔥 **Compte à rebours vers la prochaine course**
-- 🏁 **Résultats de la dernière course**
-- 📆 **Liste des prochaines courses à venir**
-- 📊 **Classement pilotes & constructeurs (top 5)**
-- 🏆 **Historique des résultats de la saison en cours et des saisons précédentes**
+- ⏱️ Compte à rebours de la prochaine course avec infos circuit
+- 🏁 Résultat de la dernière course (aperçu + page détaillée)
+- 🏎️ Aperçu des qualifications du week-end courant (affichées seulement si la qualif est aujourd'hui ou demain)
+- 🏎️💨 Page Résultats : onglets Course, Sprint, Qualifications, FP1, FP2, FP3
+- 📊 Classements pilotes & constructeurs (top 5) + couleurs d'écurie
+- 🗓️ Aperçu des prochaines courses + page calendrier
+- 📂 Résultats par saison/manche, pages standings et calendrier dédiées
 
 ---
 
-## 🧱 Tech Stack
+## 🛠️ Stack technique
 
-- **Next.js 15** pour le rendu côté serveur et la génération de pages statiques
-- **TypeScript** pour la sécurité des types
-- **React 19** pour la construction d'interfaces utilisateur
-- **Shadcn/UI** pour les composants UI réutilisables
-- **React Query** (`@tanstack/react-query`) pour la gestion des données distantes
-- **f1api.dev** pour les données F1 (courses, standings, résultats)
-- **Tailwind CSS** pour le style rapide et cohérent
-- **ESLint** et **Prettier** pour le linting et le formatage du code
+- Next.js 15 (App Router) + React 19
+- TypeScript
+- Tailwind CSS
+- Shadcn/UI
+- React Query (`@tanstack/react-query`)
+- f1api.dev pour les données F1 (courses, résultats, standings, essais libres)
+- ESLint + Prettier
 
-## 🚀 Démarrer le projet
+---
+
+## 🗂️ Structure rapide
+
+- `app/` : pages et layouts (App Router)
+- `components/` : composants UI (cards, tables, countdowns, previews)
+- `features/` : hooks et logique d'affichage (nextRace, race results, standings, qualif, etc.)
+- `entities/` : types métier (course, résultats…)
+- `lib/` : appels API, helpers (couleurs, dates, flags)
+- `providers/` : providers globaux (React Query, thèmes)
+
+---
+
+## 🚀 Démarrer
 
 ```bash
 npm install
-npm dev
-```
-
-Architecture de fichiers :
-
-```bash
-src/
-├── app/                  # App Router (pages, layout)
-├── components/           # UI components (Card, Countdown, etc.)
-├── features/             # Hooks React + logique liée à l'affichage
-├── entities/             # Types & logique métier pure
-├── lib/
-│   ├── api/              # Appels API externes (f1api.dev)
-│   └── ui/               # Helpers visuels (ex: getConstructorColor)
-├── providers/            # Contexts globaux (theme, query)
-├── styles/               # Tailwind config & global CSS
-└── public/               # Assets statiques
+npm run dev
 ```
 
 ---
 
-## 🚧 Roadmap
+## 🧭 Roadmap
 
-> 📌 [Voir la version complète dans `/docs/roadmap.md`](./docs/roadmap.md)
+- Voir `/docs/roadmap.md`
 
 ---
 
-## 📜 License
+## 📜 Licence
 
-Ce projet est un side project à but pédagogique et communautaire, basé sur des données publiques.
-
-Made with 💻 and 🏁 by a passionate dev & F1 fan.
+Side project communautaire basé sur des données publiques (f1api.dev). Made with ❤️ by des passionnés de F1.
