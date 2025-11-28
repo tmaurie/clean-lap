@@ -44,7 +44,7 @@ export function DriverCard({ driver }: DriverCardProps) {
       <CardContent className="flex items-end justify-between text-sm text-muted-foreground">
         <div className="space-y-1">
           <div className="text-xs">Nation</div>
-          <div className="uppercase tracking-widest align-center font-medium text-foreground flex items-center gap-2">
+          <div className="uppercase tracking-widest font-medium text-foreground flex items-center gap-2">
             {flag && <span className="text-lg ">{flag}</span>}
             {driver.nationality ?? "N/A"}
           </div>
