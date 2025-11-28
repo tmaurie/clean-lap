@@ -41,23 +41,31 @@ export function ResultTable({ data, columns }: ResultTableProps) {
               </tr>
             )}
 
-            {data.map((row, idx) => (
-              <tr
-                key={idx}
-                className="group transition-all duration-200 odd:bg-background/80 even:bg-muted/20 hover:-translate-y-[1px] hover:bg-primary/5"
-              >
-                {columns.map((col) => (
-                  <td
-                    key={col.key}
-                    className="px-5 py-4 align-middle text-foreground transition-colors group-hover:text-foreground"
-                  >
-                    {col.render
-                      ? col.render(row[col.key], row)
-                      : (row[col.key] ?? "-")}
-                  </td>
-                ))}
-              </tr>
-            ))}
+            {data.map((row, idx) => {
+              const isNC = row.position === "NC";
+              const rowClassName = [
+                "group transition-all duration-200 hover:-translate-y-[1px]",
+                isNC
+                  ? "bg-destructive/10 text-destructive-foreground"
+                  : "odd:bg-background/80 even:bg-muted/20 hover:bg-primary/5",
+              ].join(" ");
+
+              return (
+                <tr key={idx} className={rowClassName}>
+                  {columns.map((col) => {
+                    const value = row[col.key];
+                    return (
+                      <td
+                        key={col.key}
+                        className="px-5 py-4 align-middle text-foreground transition-colors group-hover:text-foreground"
+                      >
+                        {col.render ? col.render(value, row) : String(value)}
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
