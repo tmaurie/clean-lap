@@ -117,7 +117,7 @@ export default async function DriverPage({ params, searchParams }: any) {
               </Link>
             </Button>
             {[...Array(5)].map((_, index) => {
-              const yr = (new Date().getFullYear() - 1 - index).toString();
+              const yr = (new Date().getFullYear() - index).toString();
               return (
                 <Button asChild variant="outline" size="sm" key={yr}>
                   <Link href={`/drivers/${driver.id}?season=${yr}`}>{yr}</Link>
