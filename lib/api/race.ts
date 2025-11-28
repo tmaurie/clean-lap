@@ -60,7 +60,6 @@ export type RaceCircuitDetails = {
 
 async function fetchJSON(url: string): Promise<any> {
   const res = await fetch(url);
-  console.log(`[fetchJSON] fetching URL: ${url}`, res);
   if (!res.ok) {
     throw new Error(`Failed to fetch ${url}: ${res.status} ${res.statusText}`);
   }
@@ -146,7 +145,6 @@ function normalizeScheduleEntry(session: any | undefined): {
 export async function fetchNextRace(): Promise<Race | null> {
   try {
     const json = await fetchJSON("https://f1api.dev/api/current/next");
-    console.log(json.race[0]);
     const raceData = json.race[0];
     return {
       name: raceData.raceName,
