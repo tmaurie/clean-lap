@@ -1,17 +1,10 @@
-type ResultRow = {
-  position?: string;
-  [key: string]: unknown;
-};
-
-type ColumnConfig = {
-  key: string;
-  label: string;
-  render?: (value: unknown, row: ResultRow) => React.ReactNode;
-};
-
 type ResultTableProps = {
-  data: ResultRow[];
-  columns: ColumnConfig[];
+  data: any[];
+  columns: {
+    key: string;
+    label: string;
+    render?: (value: any, row: any) => React.ReactNode;
+  }[];
 };
 
 export function ResultTable({ data, columns }: ResultTableProps) {
