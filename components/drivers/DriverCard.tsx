@@ -16,12 +16,12 @@ type DriverCardProps = {
 export function DriverCard({ driver }: DriverCardProps) {
   const flag = driver.nationality ? countryToFlagEmoji(driver.nationality) : "";
   const teamColor = getConstructorColor(driver.teamId || "");
-  const gradientBg = `linear-gradient(135deg, ${teamColor}, ${teamColor}22,  transparent)`;
+  const gradientBg = `linear-gradient(135deg, ${teamColor}, ${teamColor}22, transparent)`;
 
   return (
     <Card
       className="border-dashed bg-card/80 backdrop-blur transition hover:-translate-y-1 hover:shadow-md"
-      //style={{ background: gradientBg }}
+
     >
       <CardHeader className="pb-2 flex flex-row justify-between">
         <div className="flex items-center gap-3">
@@ -37,16 +37,15 @@ export function DriverCard({ driver }: DriverCardProps) {
         </div>
         <div className="flex items-center justify-between">
           <Badge variant="secondary" className="bg-primary/10 text-primary">
-            {driver.teamId ? driver.teamId : "Pilote"}
+            {driver.teamId ? driver.teamId : "Équipe inconnue"}
           </Badge>
         </div>
       </CardHeader>
       <CardContent className="flex items-end justify-between text-sm text-muted-foreground">
         <div className="space-y-1">
-          <div className="text-xs ">Nation</div>
+          <div className="text-xs">Nation</div>
           <div className="uppercase tracking-widest align-center font-medium text-foreground flex items-center gap-2">
-            {" "}
-            {flag && <span className="text-lg ">{flag}</span>}{" "}
+            {flag && <span className="text-lg ">{flag}</span>}
             {driver.nationality ?? "N/A"}
           </div>
         </div>
