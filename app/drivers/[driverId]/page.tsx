@@ -116,9 +116,14 @@ export default async function DriverPage({ params, searchParams }: any) {
                 Saison en cours
               </Link>
             </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/drivers/${driver.id}?season=2024`}>2024</Link>
-            </Button>
+            {[...Array(5)].map((_, index) => {
+              const yr = (new Date().getFullYear() - 1 - index).toString();
+              return (
+                <Button asChild variant="outline" size="sm" key={yr}>
+                  <Link href={`/drivers/${driver.id}?season=${yr}`}>{yr}</Link>
+                </Button>
+              );
+            })}
           </div>
         </div>
         <ResultTable data={races} columns={columnsDriverSeason} />
