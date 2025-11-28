@@ -19,8 +19,7 @@ export function DriverCard({ driver }: DriverCardProps) {
   const gradientBg = `linear-gradient(135deg, ${teamColor}, ${teamColor}22, transparent)`;
 
   return (
-    <Card className="border-dashed bg-card/80 backdrop-blur transition hover:-translate-y-1 hover:shadow-md"//style={{ background: gradientBg }}
-    >
+    <Card className="border-dashed bg-card/80 backdrop-blur transition hover:-translate-y-1 hover:shadow-md">
       <CardHeader className="pb-2 flex flex-row justify-between">
         <div className="flex items-center gap-3">
           <div
