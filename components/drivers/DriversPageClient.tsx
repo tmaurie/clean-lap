@@ -107,7 +107,7 @@ export function DriversPageClient() {
                     <DropdownMenuRadioItem value="all">
                       Toutes les equipes
                     </DropdownMenuRadioItem>
-                    {teams.map((team) => (
+                    {teams.map((team: any) => (
                       <DropdownMenuRadioItem key={team} value={team}>
                         {team}
                       </DropdownMenuRadioItem>
