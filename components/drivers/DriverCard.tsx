@@ -5,7 +5,11 @@ import { ArrowRight, Info } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Driver } from "@/entities/driver/model";
 import { countryToFlagEmoji } from "@/lib/utils/flags";
 import { getConstructorColor } from "@/lib/utils/colors";
@@ -83,7 +87,9 @@ export function DriverCard({ driver }: DriverCardProps) {
                 </div>
                 <div className="flex items-center justify-between text-muted-foreground">
                   <span>Naissance</span>
-                  <span className="font-medium text-foreground">{birthLabel}</span>
+                  <span className="font-medium text-foreground">
+                    {birthLabel}
+                  </span>
                 </div>
                 {driver.shortName && (
                   <div className="flex items-center justify-between text-muted-foreground">
@@ -97,7 +103,8 @@ export function DriverCard({ driver }: DriverCardProps) {
                   href={`/drivers/${driver.id}`}
                   className="inline-flex items-center gap-1 text-sm font-medium text-primary underline-offset-4 hover:underline"
                 >
-                  Voir la fiche pilote <ArrowRight className="h-4 w-4" aria-hidden />
+                  Voir la fiche pilote{" "}
+                  <ArrowRight className="h-4 w-4" aria-hidden />
                 </Link>
               </div>
             </PopoverContent>
