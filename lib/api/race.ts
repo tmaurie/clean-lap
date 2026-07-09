@@ -13,14 +13,6 @@ export type QualifyingResult = {
   bestTimes?: { q1: number | null; q2: number | null; q3: number | null };
 };
 
-export type QualifyingSession = {
-  raceName: string;
-  location: string;
-  date: string | null;
-  time: string | null;
-  results: QualifyingResult[];
-};
-
 export type FreePracticeResult = {
   position: string;
   driver: string;
@@ -140,42 +132,6 @@ function normalizeScheduleEntry(session: any | undefined): {
     date: session?.date ?? null,
     time: session?.time ?? null,
   };
-}
-
-export async function fetchNextRace(): Promise<Race | null> {
-  try {
-    const json = await fetchJSON("https://f1api.dev/api/current/next");
-    const raceData = json.race[0];
-    return {
-      name: raceData.raceName,
-      date: raceData.schedule.race.date,
-      time: raceData.schedule.race.time,
-      circuit: raceData.circuit.circuitName,
-      location: `${raceData.circuit.city}, ${raceData.circuit.country}`,
-    };
-  } catch (err) {
-    console.error("[fetchNextRace] Failed to parse race data", err);
-    return null;
-  }
-}
-
-export async function fetchUpcomingRaces(): Promise<Race[]> {
-  const json = await fetchJSON("https://f1api.dev/api/current");
-  const races = json.races;
-  const now = new Date();
-
-  return races
-    .map((raceData: any) => ({
-      name: raceData.raceName,
-      date: raceData.schedule.race.date,
-      time: raceData.schedule.race.time,
-      circuit: raceData.circuit.circuitName,
-      location: `${raceData.circuit.city}, ${raceData.circuit.country}`,
-    }))
-    .filter((race: Race) => {
-      const raceDateTime = new Date(`${race.date}T${race.time}`);
-      return raceDateTime > now;
-    });
 }
 
 export async function fetchRaces(season: string): Promise<Race[]> {
@@ -332,29 +288,6 @@ export async function fetchQualifyingResults(
   return {
     results: mapQualifyingResults(results),
   };
-}
-
-export async function fetchLastQualifying(): Promise<QualifyingSession | null> {
-  try {
-    const json = await fetchJSON("https://f1api.dev/api/current/last/qualy");
-    const race = json?.races;
-    if (!race) return null;
-
-    return {
-      raceName: race?.raceName ?? "Qualifications",
-      location: race?.circuit
-        ? `${race.circuit.city}, ${race.circuit.country}`
-        : "Lieu inconnu",
-      date:
-        race?.schedule?.qualy?.date ?? race?.qualyDate ?? race?.date ?? null,
-      time:
-        race?.schedule?.qualy?.time ?? race?.qualyTime ?? race?.time ?? null,
-      results: mapQualifyingResults(race?.qualyResults ?? []),
-    };
-  } catch (error) {
-    console.error("[fetchLastQualifying] Failed to fetch data", error);
-    return null;
-  }
 }
 
 export async function fetchRaceSchedule(

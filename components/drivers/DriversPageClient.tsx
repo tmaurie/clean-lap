@@ -1,173 +1,112 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Filter, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 import { DriverCard } from "@/components/drivers/DriverCard";
 import { DriverSearchBar } from "@/components/drivers/DriverSearchBar";
-import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ScrollArea } from "@/components/ui/scroll-area";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { SectionEyebrow } from "@/components/paddock/SectionEyebrow";
+import { HatchOverlay } from "@/components/paddock/HatchOverlay";
 import { useDrivers } from "@/features/drivers/useDrivers";
+import type { Driver } from "@/entities/driver/model";
 
-const seasons = [
-  "current",
-  ...Array.from({ length: new Date().getFullYear() - 1949 }, (_, i) =>
-    (1950 + i).toString(),
-  ).reverse(),
-];
+const seasons = ["current", "2025", "2024", "2023", "2022", "2021", "2020"];
 
 export function DriversPageClient() {
   const [search, setSearch] = useState("");
   const [season, setSeason] = useState("current");
-  const [teamFilter, setTeamFilter] = useState<string>("all");
+  const [team, setTeam] = useState("all");
   const { data: drivers, isLoading, isError } = useDrivers(search, season);
 
-  const teams = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          (drivers ?? []).map((driver: any) => driver.teamId).filter(Boolean),
-        ),
-      ).sort(),
-    [drivers],
-  );
+  const teams = useMemo(() => {
+    const unique = new Set(
+      (drivers ?? []).map((d: Driver) => d.teamId).filter(Boolean),
+    );
+    return Array.from(unique) as string[];
+  }, [drivers]);
 
-  const filteredDrivers = useMemo(
-    () =>
-      (drivers ?? []).filter((driver: any) =>
-        teamFilter === "all" ? true : driver.teamId === teamFilter,
-      ),
-    [drivers, teamFilter],
-  );
-
-  const title =
-    search.trim().length > 0
-      ? `Résultats pour "${search}"`
-      : season === "current"
-        ? "Pilotes saison en cours"
-        : `Pilotes ${season}`;
+  const filteredDrivers = useMemo(() => {
+    if (team === "all") return drivers ?? [];
+    return (drivers ?? []).filter((d: Driver) => d.teamId === team);
+  }, [drivers, team]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
-          <p className="text-sm text-muted-foreground">
-            Recherchez un pilote par nom ou sélectionnez une saison.
-          </p>
+    <div className="flex flex-col">
+      <section className="relative overflow-hidden border-b border-border px-6 py-14 md:px-12">
+        <HatchOverlay />
+        <div className="relative flex flex-wrap items-end justify-between gap-8">
+          <div className="flex flex-col gap-5">
+            <SectionEyebrow>
+              Saison {season === "current" ? "en cours" : season} —{" "}
+              {drivers?.length ?? 0} titulaires
+            </SectionEyebrow>
+            <h1 className="text-5xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl">
+              Pilotes
+            </h1>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <DriverSearchBar value={search} onChange={setSearch} />
+            <Select value={team} onValueChange={setTeam}>
+              <SelectTrigger className="h-11 w-[190px] border-white/15 font-mono text-xs font-bold uppercase tracking-[0.08em]">
+                <SelectValue placeholder="Écurie" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Écurie : toutes</SelectItem>
+                {teams.map((t) => (
+                  <SelectItem key={t} value={t}>
+                    {t}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={season} onValueChange={setSeason}>
+              <SelectTrigger className="h-11 w-[150px] border-white/15 font-mono text-xs font-bold uppercase tracking-[0.08em]">
+                <SelectValue placeholder="Saison" />
+              </SelectTrigger>
+              <SelectContent>
+                {seasons.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {s === "current" ? "Saison en cours" : s}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="gap-2">
-                <Filter className="h-4 w-4" aria-hidden />
-                Filtres
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-72">
-              <DropdownMenuLabel>Filtres pilotes</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel className="text-xs text-muted-foreground">
-                Saison
-              </DropdownMenuLabel>
-              <ScrollArea className="h-64">
-                <DropdownMenuRadioGroup
-                  value={season}
-                  onValueChange={(value) => setSeason(value)}
-                >
-                  {seasons.map((s) => (
-                    <DropdownMenuRadioItem key={s} value={s}>
-                      {s === "current" ? "Saison en cours" : s}
-                    </DropdownMenuRadioItem>
-                  ))}
-                </DropdownMenuRadioGroup>
-              </ScrollArea>
+      </section>
 
-              {teams.length > 0 && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel className="text-xs text-muted-foreground">
-                    Equipe
-                  </DropdownMenuLabel>
-                  <DropdownMenuRadioGroup
-                    value={teamFilter}
-                    onValueChange={(value) => setTeamFilter(value)}
-                  >
-                    <DropdownMenuRadioItem value="all">
-                      Toutes les equipes
-                    </DropdownMenuRadioItem>
-                    {teams.map((team: any) => (
-                      <DropdownMenuRadioItem key={team} value={team}>
-                        {team}
-                      </DropdownMenuRadioItem>
-                    ))}
-                  </DropdownMenuRadioGroup>
-                </>
-              )}
-
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onSelect={(event) => {
-                  event.preventDefault();
-                  setSearch("");
-                  setTeamFilter("all");
-                  setSeason("current");
-                }}
-              >
-                Reinitialiser
-                <DropdownMenuShortcut>Cmd+R</DropdownMenuShortcut>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
-
-      <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-        <span className="rounded-full border bg-muted/50 px-3 py-1">
-          Saison: {season === "current" ? "en cours" : season}
-        </span>
-        {teamFilter !== "all" ? (
-          <span className="rounded-full border bg-muted/30 px-3 py-1">
-            Equipe: {teamFilter}
-          </span>
-        ) : (
-          <span className="rounded-full border bg-muted/30 px-3 py-1">
-            Toutes les equipes
-          </span>
+      <section className="px-6 py-10 md:px-12">
+        {isLoading && (
+          <div className="flex items-center gap-2 text-sm text-foreground/50">
+            <Loader2 className="h-4 w-4 animate-spin" /> Chargement des
+            pilotes...
+          </div>
         )}
-      </div>
+        {isError && (
+          <p className="text-sm text-foreground/50">
+            Impossible de charger les pilotes pour le moment.
+          </p>
+        )}
+        {!isLoading && filteredDrivers.length === 0 && (
+          <div className="border border-dashed border-white/15 p-6 text-sm text-foreground/50">
+            Aucun pilote trouvé. Essayez une autre recherche ou changez de
+            saison.
+          </div>
+        )}
 
-      <DriverSearchBar value={search} onChange={setSearch} />
-
-      {isLoading && (
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" /> Chargement des pilotes...
+        <div className="grid grid-cols-1 gap-px border border-white/8 bg-white/8 sm:grid-cols-2 lg:grid-cols-4">
+          {filteredDrivers.map((driver: any) => (
+            <DriverCard key={driver.id} driver={driver} />
+          ))}
         </div>
-      )}
-      {isError && <p>Impossible de charger les pilotes pour le moment.</p>}
-
-      {!isLoading && filteredDrivers.length === 0 && (
-        <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-6 text-sm text-muted-foreground">
-          Aucun pilote trouvé. Essayez une autre recherche ou changez de saison.
-        </div>
-      )}
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {filteredDrivers.map((driver: any) => (
-          <DriverCard key={driver.id} driver={driver} />
-        ))}
-      </div>
+      </section>
     </div>
   );
 }

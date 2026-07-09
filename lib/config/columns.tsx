@@ -5,29 +5,16 @@ import { clsx } from "clsx";
 
 const renderPositionPodium = (position: string | number) => {
   if (position === undefined || position === null) {
-    return (
-      <span className="inline-flex min-w-[2.5rem] items-center justify-center rounded-full border border-border/60 bg-muted/40 px-3 py-1 text-xs font-semibold text-muted-foreground">
-        -
-      </span>
-    );
+    return <span className="font-mono text-sm text-muted-foreground">-</span>;
   }
 
   const posNum = Number(position);
 
-  const podiumStyle =
-    posNum === 1
-      ? "bg-gradient-to-r from-amber-300 via-orange-300 to-amber-200 text-amber-950 shadow-[0_0_0_1px_rgba(255,255,255,0.65)]"
-      : posNum === 2
-        ? "bg-gradient-to-r from-slate-200 via-slate-100 to-white text-slate-900 shadow-[0_0_0_1px_rgba(255,255,255,0.65)]"
-        : posNum === 3
-          ? "bg-gradient-to-r from-amber-200 via-orange-200 to-yellow-100 text-amber-900 shadow-[0_0_0_1px_rgba(255,255,255,0.6)]"
-          : "border border-border/60 bg-background/60 text-muted-foreground";
-
   return (
     <span
       className={clsx(
-        "inline-flex min-w-[2.5rem] items-center justify-center rounded-full px-3 py-1 text-xs font-semibold shadow-inner",
-        podiumStyle,
+        "text-lg font-black italic",
+        posNum === 1 ? "text-primary" : "text-foreground/50",
       )}
     >
       {position}
@@ -53,7 +40,7 @@ export const columnsRace = [
         {row.position == "1" && (
           <Badge
             variant="secondary"
-            className="ml-2 border border-amber-200 bg-amber-100/90 px-2 py-0.5 text-[0.7rem] font-semibold text-amber-900 shadow-[0_2px_12px_-4px_rgba(251,191,36,0.45)]"
+            className="ml-2 rounded-none border-none bg-primary px-2 py-0.5 text-[0.7rem] font-bold uppercase italic text-primary-foreground"
           >
             🏆 Vainqueur
           </Badge>
@@ -269,7 +256,7 @@ export const columnsSprint = [
         {row.position === "1" && (
           <Badge
             variant="secondary"
-            className="ml-2 border border-amber-200 bg-amber-100/90 px-2 py-0.5 text-[0.7rem] font-semibold text-amber-900 shadow-[0_2px_12px_-4px_rgba(251,191,36,0.45)]"
+            className="ml-2 rounded-none border-none bg-primary px-2 py-0.5 text-[0.7rem] font-bold uppercase italic text-primary-foreground"
           >
             🏆 Vainqueur
           </Badge>
@@ -319,51 +306,5 @@ export const columnsSprint = [
     key: "points",
     label: "Points",
     render: (points: number) => <span className="font-bold">{points}</span>,
-  },
-];
-
-export const columnsDriverSeason = [
-  { key: "round", label: "#" },
-  { key: "raceName", label: "Grand Prix" },
-  { key: "location", label: "Lieu" },
-  {
-    key: "grid",
-    label: "Grille",
-    render: (grid: number | string | null) =>
-      grid ? <span className="font-mono text-sm">{grid}</span> : "N/A",
-  },
-  {
-    key: "position",
-    label: "Résultat",
-    render: (pos: number | string | null) =>
-      pos ? (
-        pos === 1 ? (
-          <span className="font-semibold text-amber-500">1 🏆</span>
-        ) : (
-          <span className="font-semibold">{pos}</span>
-        )
-      ) : (
-        "–"
-      ),
-  },
-  {
-    key: "sprintPosition",
-    label: "Sprint",
-    render: (pos: number | string | null) =>
-      pos ? <span className="font-semibold">{pos}</span> : "–",
-  },
-  {
-    key: "sprintPoints",
-    label: "Pts Sprint",
-    render: (pts: number | null | undefined) => (
-      <span className="font-mono text-sm">{pts ?? 0}</span>
-    ),
-  },
-  {
-    key: "points",
-    label: "Points total",
-    render: (pts: number | string | null) => (
-      <span className="font-bold">{pts ?? 0}</span>
-    ),
   },
 ];

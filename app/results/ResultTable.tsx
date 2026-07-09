@@ -11,64 +11,57 @@ export function ResultTable({ data, columns }: ResultTableProps) {
   const hasData = Array.isArray(data) && data.length > 0;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-primary/10 bg-gradient-to-br from-background via-background to-primary/5 shadow-lg backdrop-blur">
-      <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent" />
+    <div className="overflow-x-auto border border-white/8">
+      <table className="w-full min-w-[640px] border-collapse text-sm">
+        <thead>
+          <tr className="border-b border-white/8">
+            {columns.map((col) => (
+              <th
+                key={col.key}
+                className="px-5 py-3.5 text-left text-[11px] font-bold uppercase tracking-[0.15em] text-foreground/45"
+              >
+                {col.label}
+              </th>
+            ))}
+          </tr>
+        </thead>
 
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px] border-collapse text-sm">
-          <thead className="bg-gradient-to-r from-primary/10 via-background to-primary/10 text-[0.7rem] uppercase tracking-[0.12em] text-muted-foreground">
-            <tr className="border-b border-border/70">
-              {columns.map((col) => (
-                <th
-                  key={col.key}
-                  className="px-5 py-4 text-left font-semibold text-foreground"
-                >
-                  {col.label}
-                </th>
-              ))}
+        <tbody>
+          {!hasData && (
+            <tr>
+              <td
+                colSpan={columns.length}
+                className="px-5 py-6 text-center text-sm text-foreground/50"
+              >
+                Aucun résultat disponible pour le moment.
+              </td>
             </tr>
-          </thead>
+          )}
 
-          <tbody className="divide-y divide-border/80">
-            {!hasData && (
-              <tr>
-                <td
-                  colSpan={columns.length}
-                  className="px-5 py-6 text-center text-sm text-muted-foreground"
-                >
-                  Aucun résultat disponible pour le moment.
-                </td>
+          {data.map((row, idx) => {
+            const isNC = row.position === "NC";
+
+            return (
+              <tr
+                key={idx}
+                className={
+                  "border-b border-white/8 transition-colors hover:bg-[#12151a]" +
+                  (isNC ? " text-destructive" : "")
+                }
+              >
+                {columns.map((col) => {
+                  const value = row[col.key];
+                  return (
+                    <td key={col.key} className="px-5 py-3.5 align-middle">
+                      {col.render ? col.render(value, row) : String(value)}
+                    </td>
+                  );
+                })}
               </tr>
-            )}
-
-            {data.map((row, idx) => {
-              const isNC = row.position === "NC";
-              const rowClassName = [
-                "group transition-all duration-200 hover:-translate-y-[1px]",
-                isNC
-                  ? "bg-destructive/10 text-destructive-foreground"
-                  : "odd:bg-background/80 even:bg-muted/20 hover:bg-primary/5",
-              ].join(" ");
-
-              return (
-                <tr key={idx} className={rowClassName}>
-                  {columns.map((col) => {
-                    const value = row[col.key];
-                    return (
-                      <td
-                        key={col.key}
-                        className="px-5 py-4 align-middle text-foreground transition-colors group-hover:text-foreground"
-                      >
-                        {col.render ? col.render(value, row) : String(value)}
-                      </td>
-                    );
-                  })}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 }

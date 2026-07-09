@@ -21,11 +21,11 @@ export function BottomNav() {
   return (
     <nav
       className={cn(
-        "fixed bottom-0 z-50 w-full border-t bg-background shadow-sm transition-transform duration-300 md:hidden",
+        "fixed bottom-0 z-50 w-full border-t border-border bg-background/95 backdrop-blur-md transition-transform duration-300 md:hidden",
         scrollDir === "down" ? "translate-y-full" : "translate-y-0",
       )}
     >
-      <div className="flex justify-around items-center h-14">
+      <div className="flex h-14 items-center justify-around">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
@@ -35,11 +35,11 @@ export function BottomNav() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-col items-center justify-center text-xs transition-all duration-150 ease-out text-muted-foreground active:scale-95",
-                isActive && "text-primary font-semibold",
+                "flex flex-col items-center justify-center text-[11px] font-semibold uppercase tracking-wide text-foreground/55 transition-all duration-150 ease-out active:scale-95",
+                isActive && "text-primary",
               )}
             >
-              <Icon className="h-5 w-5 mb-0.5" />
+              <Icon className="mb-0.5 h-5 w-5" />
               {item.name}
             </Link>
           );

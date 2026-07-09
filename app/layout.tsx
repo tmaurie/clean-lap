@@ -1,12 +1,23 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Archivo, IBM_Plex_Mono } from "next/font/google";
 import { ThemeProviders } from "@/providers/theme-providers";
 import { Shell } from "@/components/layout/Shell";
 import NextTopLoader from "nextjs-toploader";
 import React from "react";
 
-const geist = Geist({ subsets: ["latin"] });
+const archivo = Archivo({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+  variable: "--font-archivo",
+});
+
+const plexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-plex-mono",
+});
 
 export const metadata: Metadata = {
   title: "CleanLap",
@@ -28,9 +39,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" suppressHydrationWarning>
-      <body className={geist.className}>
-        <NextTopLoader color="#fff" height={2} showSpinner={false} />
+    <html lang="fr" className={`${archivo.variable} ${plexMono.variable}`}>
+      <body className={archivo.className}>
+        <NextTopLoader color="#ff2c2c" height={2} showSpinner={false} />
         <ThemeProviders>
           <Shell>{children}</Shell>
         </ThemeProviders>

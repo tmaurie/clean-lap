@@ -1,0 +1,71 @@
+[
+  {
+    "api": "https://f1api.dev",
+    "url": "https://f1api.dev/api/drivers/search?q=verstappen",
+    "limit": 30,
+    "offset": 0,
+    "query": "verstappen",
+    "total": 2,
+    "drivers": [
+      {
+        "driverId": "max_verstappen",
+        "name": "Max",
+        "surname": "Verstappen",
+        "nationality": "Netherlands",
+        "birthday": "1997-09-30",
+        "number": 33,
+        "shortName": "VER",
+        "url": "https://en.wikipedia.org/wiki/Max_Verstappen"
+      },
+      {
+        "driverId": "verstappen",
+        "name": "Jos",
+        "surname": "Verstappen",
+        "nationality": "Netherlands",
+        "birthday": "1972-03-04",
+        "number": null,
+        "shortName": null,
+        "url": "http://en.wikipedia.org/wiki/Jos_Verstappen"
+      }
+    ]
+  },
+  {
+    "api": "https://f1api.dev",
+    "url": "https://f1api.dev/api/2010/drivers",
+    "limit": 30,
+    "offset": 0,
+    "total": 27,
+    "season": 2010,
+    "championshipId": "f1_2010",
+    "drivers": [
+      {
+        "driverId": "vettel",
+        "name": "Sebastian",
+        "surname": "Vettel",
+        "nationality": "Germany",
+        "birthday": "03/07/1987",
+        "number": 5,
+        "shortName": "VET",
+        "url": "https://en.wikipedia.org/wiki/Sebastian_Vettel",
+        "teamId": "red_bull"
+      }
+    ]
+  },
+  {
+    "api": "https://f1api.dev",
+    "url": "https://f1api.dev/api/drivers/alonso",
+    "total": 1,
+    "driver": [
+      {
+        "driverId": "alonso",
+        "name": "Fernando",
+        "surname": "Alonso",
+        "nationality": "Spain",
+        "birthday": "1981-07-29",
+        "number": 14,
+        "shortName": "ALO",
+        "url": "https://en.wikipedia.org/wiki/Fernando_Alonso"
+      }
+    ]
+  }
+]

@@ -1,0 +1,572 @@
+{
+  "api": "https://f1api.dev",
+  "url": "https://f1api.dev/api/2024/5/sprint/race",
+  "limit": 30,
+  "offset": 0,
+  "total": 20,
+  "season": 2024,
+  "races": {
+    "round": "5",
+    "date": "2024-04-20",
+    "time": "04:00:00Z",
+    "url": "https://en.wikipedia.org/wiki/2024_Chinese_Grand_Prix",
+    "raceId": "china_2024",
+    "raceName": "Lenovo Chinese Grand Prix 2024",
+    "circuit": {
+      "circuitId": "shanghai",
+      "circuitName": "Shanghai International Circuit",
+      "country": "China",
+      "city": "Shanghai",
+      "circuitLength": "5451km",
+      "corners": 16,
+      "firstParticipationYear": 2004,
+      "lapRecord": "1:32:238",
+      "fastestLapDriverId": "michael_schumacher",
+      "fastestLapTeamId": "ferrari",
+      "fastestLapYear": 2004,
+      "url": "http://en.wikipedia.org/wiki/Shanghai_International_Circuit"
+    },
+    "sprintRaceResults": [
+      {
+        "sprintRaceId": 1,
+        "driverId": "max_verstappen",
+        "teamId": "red_bull",
+        "position": 1,
+        "gridPosition": 4,
+        "points": 8,
+        "driver": {
+          "driverId": "max_verstappen",
+          "number": 33,
+          "name": "Max",
+          "surname": "Verstappen",
+          "shortName": "VER",
+          "url": "https://en.wikipedia.org/wiki/Max_Verstappen",
+          "nationality": "Netherlands",
+          "birthday": "1997-09-30"
+        },
+        "team": {
+          "teamId": "red_bull",
+          "teamName": "Red Bull Racing",
+          "teamNationality": "Austria",
+          "firstAppeareance": 2005,
+          "constructorsChampionships": 6,
+          "driversChampionships": 8,
+          "url": "https://en.wikipedia.org/wiki/Red_Bull_Racing"
+        }
+      },
+      {
+        "sprintRaceId": 5,
+        "driverId": "hamilton",
+        "teamId": "mercedes",
+        "position": 2,
+        "gridPosition": 2,
+        "points": 7,
+        "driver": {
+          "driverId": "hamilton",
+          "number": 44,
+          "name": "Lewis",
+          "surname": "Hamilton",
+          "shortName": "HAM",
+          "url": "https://en.wikipedia.org/wiki/Lewis_Hamilton",
+          "nationality": "Great Britain",
+          "birthday": "07/01/1985"
+        },
+        "team": {
+          "teamId": "mercedes",
+          "teamName": "Mercedes Formula 1 Team",
+          "teamNationality": "Germany",
+          "firstAppeareance": 1954,
+          "constructorsChampionships": 8,
+          "driversChampionships": 9,
+          "url": "https://en.wikipedia.org/wiki/Mercedes-Benz_in_Formula_One"
+        }
+      },
+      {
+        "sprintRaceId": 4,
+        "driverId": "perez",
+        "teamId": "red_bull",
+        "position": 3,
+        "gridPosition": 6,
+        "points": 6,
+        "driver": {
+          "driverId": "perez",
+          "number": 11,
+          "name": "Sergio",
+          "surname": "Pérez",
+          "shortName": "PER",
+          "url": "https://en.wikipedia.org/wiki/Sergio_P%C3%A9rez",
+          "nationality": "Mexico",
+          "birthday": "1990-01-26"
+        },
+        "team": {
+          "teamId": "red_bull",
+          "teamName": "Red Bull Racing",
+          "teamNationality": "Austria",
+          "firstAppeareance": 2005,
+          "constructorsChampionships": 6,
+          "driversChampionships": 8,
+          "url": "https://en.wikipedia.org/wiki/Red_Bull_Racing"
+        }
+      },
+      {
+        "sprintRaceId": 19,
+        "driverId": "leclerc",
+        "teamId": "ferrari",
+        "position": 4,
+        "gridPosition": 7,
+        "points": 5,
+        "driver": {
+          "driverId": "leclerc",
+          "number": 16,
+          "name": "Charles",
+          "surname": "Leclerc",
+          "shortName": "LEC",
+          "url": "https://en.wikipedia.org/wiki/Charles_Leclerc",
+          "nationality": "Monaco",
+          "birthday": "16/10/1997"
+        },
+        "team": {
+          "teamId": "ferrari",
+          "teamName": "Scuderia Ferrari",
+          "teamNationality": "Italy",
+          "firstAppeareance": 1950,
+          "constructorsChampionships": 16,
+          "driversChampionships": 15,
+          "url": "https://en.wikipedia.org/wiki/Scuderia_Ferrari"
+        }
+      },
+      {
+        "sprintRaceId": 20,
+        "driverId": "sainz",
+        "teamId": "ferrari",
+        "position": 5,
+        "gridPosition": 5,
+        "points": 4,
+        "driver": {
+          "driverId": "sainz",
+          "number": 55,
+          "name": "Carlos",
+          "surname": "Sainz",
+          "shortName": "SAI",
+          "url": "https://en.wikipedia.org/wiki/Carlos_Sainz_Jr.",
+          "nationality": "Spain",
+          "birthday": "01/09/1994"
+        },
+        "team": {
+          "teamId": "ferrari",
+          "teamName": "Scuderia Ferrari",
+          "teamNationality": "Italy",
+          "firstAppeareance": 1950,
+          "constructorsChampionships": 16,
+          "driversChampionships": 15,
+          "url": "https://en.wikipedia.org/wiki/Scuderia_Ferrari"
+        }
+      },
+      {
+        "sprintRaceId": 18,
+        "driverId": "norris",
+        "teamId": "mclaren",
+        "position": 6,
+        "gridPosition": 1,
+        "points": 3,
+        "driver": {
+          "driverId": "norris",
+          "number": 4,
+          "name": "Lando",
+          "surname": "Norris",
+          "shortName": "NOR",
+          "url": "https://en.wikipedia.org/wiki/Lando_Norris",
+          "nationality": "Great Britain",
+          "birthday": "13/11/1999"
+        },
+        "team": {
+          "teamId": "mclaren",
+          "teamName": "McLaren Formula 1 Team",
+          "teamNationality": "Great Britain",
+          "firstAppeareance": 1966,
+          "constructorsChampionships": 9,
+          "driversChampionships": 12,
+          "url": "https://en.wikipedia.org/wiki/McLaren"
+        }
+      },
+      {
+        "sprintRaceId": 16,
+        "driverId": "piastri",
+        "teamId": "mclaren",
+        "position": 7,
+        "gridPosition": 8,
+        "points": 2,
+        "driver": {
+          "driverId": "piastri",
+          "number": 81,
+          "name": "Oscar",
+          "surname": "Piastri",
+          "shortName": "PIA",
+          "url": "https://en.wikipedia.org/wiki/Oscar_Piastri",
+          "nationality": "Australia",
+          "birthday": "06/04/2001"
+        },
+        "team": {
+          "teamId": "mclaren",
+          "teamName": "McLaren Formula 1 Team",
+          "teamNationality": "Great Britain",
+          "firstAppeareance": 1966,
+          "constructorsChampionships": 9,
+          "driversChampionships": 12,
+          "url": "https://en.wikipedia.org/wiki/McLaren"
+        }
+      },
+      {
+        "sprintRaceId": 15,
+        "driverId": "russell",
+        "teamId": "mercedes",
+        "position": 8,
+        "gridPosition": 11,
+        "points": 1,
+        "driver": {
+          "driverId": "russell",
+          "number": 63,
+          "name": "George",
+          "surname": "Russell",
+          "shortName": "RUS",
+          "url": "https://en.wikipedia.org/wiki/George_Russell_(racing_driver)",
+          "nationality": "Great Britain",
+          "birthday": "15/02/1998"
+        },
+        "team": {
+          "teamId": "mercedes",
+          "teamName": "Mercedes Formula 1 Team",
+          "teamNationality": "Germany",
+          "firstAppeareance": 1954,
+          "constructorsChampionships": 8,
+          "driversChampionships": 9,
+          "url": "https://en.wikipedia.org/wiki/Mercedes-Benz_in_Formula_One"
+        }
+      },
+      {
+        "sprintRaceId": 10,
+        "driverId": "guanyu",
+        "teamId": "sauber",
+        "position": 9,
+        "gridPosition": 10,
+        "points": 0,
+        "driver": {
+          "driverId": "guanyu",
+          "number": 24,
+          "name": "Zhou",
+          "surname": "Guanyu",
+          "shortName": "ZHO",
+          "url": "https://en.wikipedia.org/wiki/Zhou_Guanyu",
+          "nationality": "China",
+          "birthday": "1999-05-30"
+        },
+        "team": {
+          "teamId": "sauber",
+          "teamName": "Sauber F1 Team",
+          "teamNationality": "Switzerland",
+          "firstAppeareance": 1993,
+          "constructorsChampionships": null,
+          "driversChampionships": null,
+          "url": "https://en.wikipedia.org/wiki/Sauber_Motorsport"
+        }
+      },
+      {
+        "sprintRaceId": 17,
+        "driverId": "magnussen",
+        "teamId": "haas",
+        "position": 10,
+        "gridPosition": 12,
+        "points": 0,
+        "driver": {
+          "driverId": "magnussen",
+          "number": 20,
+          "name": "Kevin",
+          "surname": "Magnussen",
+          "shortName": "MAG",
+          "url": "https://en.wikipedia.org/wiki/Kevin_Magnussen",
+          "nationality": "Denmark",
+          "birthday": "05/10/1992"
+        },
+        "team": {
+          "teamId": "haas",
+          "teamName": "Haas F1 Team",
+          "teamNationality": "United States",
+          "firstAppeareance": 2016,
+          "constructorsChampionships": null,
+          "driversChampionships": null,
+          "url": "https://en.wikipedia.org/wiki/Haas_F1_Team"
+        }
+      },
+      {
+        "sprintRaceId": 6,
+        "driverId": "ricciardo",
+        "teamId": "rb",
+        "position": 11,
+        "gridPosition": 14,
+        "points": 0,
+        "driver": {
+          "driverId": "ricciardo",
+          "number": 3,
+          "name": "Daniel",
+          "surname": "Ricciardo",
+          "shortName": "RIC",
+          "url": "https://en.wikipedia.org/wiki/Daniel_Ricciardo",
+          "nationality": "Australia",
+          "birthday": "01/07/1989"
+        },
+        "team": {
+          "teamId": "rb",
+          "teamName": "RB F1 Team",
+          "teamNationality": "Italy",
+          "firstAppeareance": 2024,
+          "constructorsChampionships": null,
+          "driversChampionships": null,
+          "url": "https://en.wikipedia.org/wiki/RB_Formula_One_Team"
+        }
+      },
+      {
+        "sprintRaceId": 8,
+        "driverId": "bottas",
+        "teamId": "sauber",
+        "position": 12,
+        "gridPosition": 9,
+        "points": 0,
+        "driver": {
+          "driverId": "bottas",
+          "number": 77,
+          "name": "Valtteri",
+          "surname": "Bottas",
+          "shortName": "BOT",
+          "url": "https://en.wikipedia.org/wiki/Valtteri_Bottas",
+          "nationality": "Finland",
+          "birthday": "1989-08-28"
+        },
+        "team": {
+          "teamId": "sauber",
+          "teamName": "Sauber F1 Team",
+          "teamNationality": "Switzerland",
+          "firstAppeareance": 1993,
+          "constructorsChampionships": null,
+          "driversChampionships": null,
+          "url": "https://en.wikipedia.org/wiki/Sauber_Motorsport"
+        }
+      },
+      {
+        "sprintRaceId": 13,
+        "driverId": "ocon",
+        "teamId": "alpine",
+        "position": 13,
+        "gridPosition": 17,
+        "points": 0,
+        "driver": {
+          "driverId": "ocon",
+          "number": 31,
+          "name": "Esteban",
+          "surname": "Ocon",
+          "shortName": "OCO",
+          "url": "https://en.wikipedia.org/wiki/Esteban_Ocon",
+          "nationality": "France",
+          "birthday": "17/09/1996"
+        },
+        "team": {
+          "teamId": "alpine",
+          "teamName": "Alpine F1 Team",
+          "teamNationality": "France",
+          "firstAppeareance": 2021,
+          "constructorsChampionships": null,
+          "driversChampionships": null,
+          "url": "https://en.wikipedia.org/wiki/Alpine_F1_Team"
+        }
+      },
+      {
+        "sprintRaceId": 11,
+        "driverId": "stroll",
+        "teamId": "aston_martin",
+        "position": 14,
+        "gridPosition": 15,
+        "points": 0,
+        "driver": {
+          "driverId": "stroll",
+          "number": 18,
+          "name": "Lance",
+          "surname": "Stroll",
+          "shortName": "STR",
+          "url": "https://en.wikipedia.org/wiki/Lance_Stroll",
+          "nationality": "Canada",
+          "birthday": "1998-10-29"
+        },
+        "team": {
+          "teamId": "aston_martin",
+          "teamName": "Aston Martin F1 Team",
+          "teamNationality": "Great Britain",
+          "firstAppeareance": 1959,
+          "constructorsChampionships": null,
+          "driversChampionships": null,
+          "url": "https://en.wikipedia.org/wiki/Aston_Martin_in_Formula_One"
+        }
+      },
+      {
+        "sprintRaceId": 9,
+        "driverId": "gasly",
+        "teamId": "alpine",
+        "position": 15,
+        "gridPosition": 16,
+        "points": 0,
+        "driver": {
+          "driverId": "gasly",
+          "number": 10,
+          "name": "Pierre",
+          "surname": "Gasly",
+          "shortName": "GAS",
+          "url": "https://en.wikipedia.org/wiki/Pierre_Gasly",
+          "nationality": "France",
+          "birthday": "07/02/1996"
+        },
+        "team": {
+          "teamId": "alpine",
+          "teamName": "Alpine F1 Team",
+          "teamNationality": "France",
+          "firstAppeareance": 2021,
+          "constructorsChampionships": null,
+          "driversChampionships": null,
+          "url": "https://en.wikipedia.org/wiki/Alpine_F1_Team"
+        }
+      },
+      {
+        "sprintRaceId": 7,
+        "driverId": "tsunoda",
+        "teamId": "rb",
+        "position": 16,
+        "gridPosition": 19,
+        "points": 0,
+        "driver": {
+          "driverId": "tsunoda",
+          "number": 22,
+          "name": "Yuki",
+          "surname": "Tsunoda",
+          "shortName": "TSU",
+          "url": "https://en.wikipedia.org/wiki/Yuki_Tsunoda",
+          "nationality": "Japan",
+          "birthday": "11/05/2000"
+        },
+        "team": {
+          "teamId": "rb",
+          "teamName": "RB F1 Team",
+          "teamNationality": "Italy",
+          "firstAppeareance": 2024,
+          "constructorsChampionships": null,
+          "driversChampionships": null,
+          "url": "https://en.wikipedia.org/wiki/RB_Formula_One_Team"
+        }
+      },
+      {
+        "sprintRaceId": 12,
+        "driverId": "albon",
+        "teamId": "williams",
+        "position": 17,
+        "gridPosition": 18,
+        "points": 0,
+        "driver": {
+          "driverId": "albon",
+          "number": 23,
+          "name": "Alex",
+          "surname": "Albon",
+          "shortName": "ALB",
+          "url": "https://en.wikipedia.org/wiki/Alex_Albon",
+          "nationality": "Thailand",
+          "birthday": "1996-03-23"
+        },
+        "team": {
+          "teamId": "williams",
+          "teamName": "Williams Racing",
+          "teamNationality": "Great Britain",
+          "firstAppeareance": 1977,
+          "constructorsChampionships": 9,
+          "driversChampionships": 7,
+          "url": "https://en.wikipedia.org/wiki/Williams_Grand_Prix_Engineering"
+        }
+      },
+      {
+        "sprintRaceId": 14,
+        "driverId": "sargeant",
+        "teamId": "williams",
+        "position": 18,
+        "gridPosition": 20,
+        "points": 0,
+        "driver": {
+          "driverId": "sargeant",
+          "number": 2,
+          "name": "Logan",
+          "surname": "Sargeant",
+          "shortName": "SAR",
+          "url": "https://en.wikipedia.org/wiki/Logan_Sargeant",
+          "nationality": "United States",
+          "birthday": "2000-12-31"
+        },
+        "team": {
+          "teamId": "williams",
+          "teamName": "Williams Racing",
+          "teamNationality": "Great Britain",
+          "firstAppeareance": 1977,
+          "constructorsChampionships": 9,
+          "driversChampionships": 7,
+          "url": "https://en.wikipedia.org/wiki/Williams_Grand_Prix_Engineering"
+        }
+      },
+      {
+        "sprintRaceId": 2,
+        "driverId": "hulkenberg",
+        "teamId": "haas",
+        "position": 19,
+        "gridPosition": 13,
+        "points": 0,
+        "driver": {
+          "driverId": "hulkenberg",
+          "number": 27,
+          "name": "Nico",
+          "surname": "Hulkenberg",
+          "shortName": "HUL",
+          "url": "https://en.wikipedia.org/wiki/Nico_H%C3%BClkenberg",
+          "nationality": "Germany",
+          "birthday": "19/08/1987"
+        },
+        "team": {
+          "teamId": "haas",
+          "teamName": "Haas F1 Team",
+          "teamNationality": "United States",
+          "firstAppeareance": 2016,
+          "constructorsChampionships": null,
+          "driversChampionships": null,
+          "url": "https://en.wikipedia.org/wiki/Haas_F1_Team"
+        }
+      },
+      {
+        "sprintRaceId": 3,
+        "driverId": "alonso",
+        "teamId": "aston_martin",
+        "position": 20,
+        "gridPosition": 3,
+        "points": 0,
+        "driver": {
+          "driverId": "alonso",
+          "number": 14,
+          "name": "Fernando",
+          "surname": "Alonso",
+          "shortName": "ALO",
+          "url": "https://en.wikipedia.org/wiki/Fernando_Alonso",
+          "nationality": "Spain",
+          "birthday": "1981-07-29"
+        },
+        "team": {
+          "teamId": "aston_martin",
+          "teamName": "Aston Martin F1 Team",
+          "teamNationality": "Great Britain",
+          "firstAppeareance": 1959,
+          "constructorsChampionships": null,
+          "driversChampionships": null,
+          "url": "https://en.wikipedia.org/wiki/Aston_Martin_in_Formula_One"
+        }
+      }
+    ]
+  }
+}

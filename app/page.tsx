@@ -1,363 +1,297 @@
 import Link from "next/link";
+
 import {
-  CalendarClock,
-  Check,
-  Flag,
-  Gauge,
-  LineChart,
-  Trophy,
-  Zap,
-} from "lucide-react";
-
-import { NextRaceCountdown } from "@/components/home/NextRaceCountdown";
-import { RaceResultsTable } from "@/components/home/RaceResultTable";
-import { LastQualifyingPreview } from "@/components/home/LastQualifyingPreview";
-import { StandingsPreview } from "@/components/home/StandingsPreview";
-import { UpcomingRaces } from "@/components/home/UpcomingRaces";
-import { DotPattern } from "@/components/magicui/dot-pattern";
-import { Badge } from "@/components/ui/badge";
+  fetchRaceResults,
+  fetchRaceSchedule,
+  fetchRaces,
+} from "@/lib/api/race";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+  fetchConstructorStandings,
+  fetchDriverStandings,
+} from "@/lib/api/standings";
+import { isPastRace } from "@/lib/utils/date";
+import { countryToFlagEmoji } from "@/lib/utils/flags";
+import { getConstructorColor } from "@/lib/utils/colors";
+import { SectionEyebrow } from "@/components/paddock/SectionEyebrow";
+import { HatchOverlay } from "@/components/paddock/HatchOverlay";
+import { GhostNumber } from "@/components/paddock/GhostNumber";
+import { HeroCountdown } from "@/components/home/HeroCountdown";
+import { StandingsToggleList } from "@/components/home/StandingsToggleList";
 
-export default function HomePage() {
-  const features = [
-    {
-      title: "Résultats instantanés",
-      description:
-        "Analysez chaque Grand Prix avec des tableaux clairs, des écarts tour par tour et une mise à jour continue des classements.",
-      icon: <LineChart className="h-5 w-5" aria-hidden />,
-    },
-    {
-      title: "Calendrier intelligent",
-      description:
-        "Visualisez la saison complète, repérez les back-to-back et laissez CleanLap vous prévenir avant le départ de la prochaine course.",
-      icon: <CalendarClock className="h-5 w-5" aria-hidden />,
-    },
-    {
-      title: "Suivi des performances",
-      description:
-        "Comparez les pilotes et les écuries, identifiez les progressions et mesurez l&apos;impact d&apos;un week-end sur le championnat.",
-      icon: <Trophy className="h-5 w-5" aria-hidden />,
-    },
-    {
-      title: "Pensé pour la vitesse",
-      description:
-        "Un design épuré, sombre ou clair, optimisé pour mobile comme desktop afin de consulter vos données sans friction.",
-      icon: <Zap className="h-5 w-5" aria-hidden />,
-    },
-  ];
+function formatSessionTime(session?: {
+  date: string | null;
+  time: string | null;
+}) {
+  if (!session?.date) return null;
+  const d = new Date(`${session.date}T${session.time ?? "00:00:00Z"}`);
+  if (Number.isNaN(d.getTime())) return null;
+  return {
+    weekday: d.toLocaleDateString("fr-FR", { weekday: "short" }),
+    time: session.time
+      ? d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
+      : null,
+  };
+}
 
-  const highlights = [
-    {
-      value: "24",
-      label: "courses couvertes",
-      description: "De Bahreïn à Abu Dhabi pour la saison 2024.",
-    },
-    {
-      value: "< 2 s",
-      label: "pour charger les résultats",
-      description:
-        "Un accès immédiat aux classements détaillés après chaque drapeau à damier.",
-    },
-    {
-      value: "100 %",
-      label: "compatible mobile",
-      description:
-        "Consultez CleanLap depuis le paddock, le canapé ou le métro.",
-    },
-  ];
+export default async function HomePage() {
+  const races = await fetchRaces("current");
+  const completedCount = races.filter((race) => isPastRace(race.date)).length;
+  const nextIndex = Math.min(completedCount, Math.max(races.length - 1, 0));
+  const nextRace = races[nextIndex];
+  const nextRound = nextIndex + 1;
+  const upcomingRaces = races.slice(nextIndex + 1, nextIndex + 5);
 
-  const steps = [
-    {
-      title: "Choisissez une course",
-      description:
-        "Accédez en un clic aux faits marquants, aux horaires et aux infos circuit de chaque week-end.",
-    },
-    {
-      title: "Analysez les classements",
-      description:
-        "Passez du classement pilotes aux constructeurs, filtrez par saison et suivez les points clés.",
-    },
-    {
-      title: "Passez à l\'action",
-      description:
-        "Activez vos rappels et partagez vos statistiques favorites avec vos amis fans de F1.",
-    },
-  ];
+  const [schedule, lastRace, driverStandings, constructorStandings] =
+    await Promise.all([
+      fetchRaceSchedule("current", String(nextRound)),
+      fetchRaceResults("current", "last"),
+      fetchDriverStandings("current"),
+      fetchConstructorStandings("current"),
+    ]);
+
+  const flag = nextRace
+    ? countryToFlagEmoji(nextRace.location.split(", ").at(-1) || "")
+    : "";
+
+  const sessionItems = schedule
+    ? [
+        { key: "fp1", label: "FP1", session: schedule.schedule.fp1 },
+        { key: "fp2", label: "FP2", session: schedule.schedule.fp2 },
+        { key: "fp3", label: "FP3", session: schedule.schedule.fp3 },
+        { key: "qualy", label: "Qualif", session: schedule.schedule.qualy },
+        { key: "race", label: "Course", session: schedule.schedule.race },
+      ]
+    : [];
+
+  const lastRacePodium = (lastRace?.results ?? []).slice(0, 6).map((r, i) => ({
+    ...r,
+    teamColor: getConstructorColor(r.constructor),
+    numColor: i === 0 ? "var(--primary)" : "rgba(244,244,242,0.35)",
+  }));
 
   return (
-    <div className="space-y-24">
-      <section className="relative overflow-hidden rounded-3xl border bg-gradient-to-br from-primary/10 via-background to-transparent">
-        <DotPattern className="text-primary/40 [mask-image:radial-gradient(circle_at_top,white,transparent_65%)]" />
+    <div className="flex flex-col">
+      {/* HERO */}
+      <section className="relative overflow-hidden border-b border-border px-6 py-14 md:px-12 md:py-16">
+        <HatchOverlay />
+        <GhostNumber className="-bottom-2 left-6 hidden text-[220px] md:left-12 md:block">
+          R{nextRound}
+        </GhostNumber>
+        <div className="relative flex flex-col gap-8">
+          <SectionEyebrow>
+            Manche {nextRound} / {races.length || "—"} — Ce week-end
+          </SectionEyebrow>
 
-        <div className="relative grid gap-12 px-6 py-16 md:grid-cols-[3fr_2fr] md:px-12 lg:px-16">
-          <div className="space-y-8">
-            <Badge variant="secondary" className="w-fit">
-              Tableau de bord F1
-            </Badge>
-            <div className="space-y-4">
-              <h1 className="text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
-                La façon la plus claire de suivre la Formule 1 est
-                <span className="block bg-gradient-to-r from-primary via-primary/70 to-primary/40 bg-clip-text text-transparent">
-                  CleanLap
-                </span>
+          {nextRace ? (
+            <>
+              <h1 className="max-w-4xl text-4xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl md:text-7xl">
+                {nextRace.name}
               </h1>
-              <p className="text-balance text-muted-foreground">
-                Données officielles, insights limpides et une interface pensée
-                pour aller à l&apos;essentiel. Que vous soyez fan du dimanche ou
-                analyste invétéré, CleanLap vous accompagne tout au long de la
-                saison.
-              </p>
-            </div>
-
-            <div className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
-              {[
-                "Alertes avant chaque départ",
-                "Comparaison des pilotes en temps réel",
-                "Mode sombre pour les sessions de nuit",
-                "Historique des saisons depuis 2014",
-              ].map((item) => (
-                <div
-                  key={item}
-                  className="flex items-start gap-2 rounded-xl border bg-card/60 p-4 backdrop-blur"
-                >
-                  <Check className="mt-0.5 h-4 w-4 text-primary" aria-hidden />
-                  <span>{item}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button asChild size="lg">
-                <Link href="/calendar">Explorer la saison </Link>
-              </Button>
-              <Button
-                asChild
-                variant="ghost"
-                size="lg"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <Link href="#fonctionnalites">
-                  Découvrir les fonctionnalités
-                </Link>
-              </Button>
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            <Card className="border-primary/20 bg-background/80 backdrop-blur">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Gauge className="h-5 w-5 text-primary" aria-hidden />
-                  Prochaine course
-                </CardTitle>
-                <CardDescription>
-                  Préparez-vous avec le compte à rebours officiel et les infos
-                  circuit.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <NextRaceCountdown />
-                <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-4 text-sm text-muted-foreground">
-                  Utilisez CleanLap pour activer un rappel personnalisé et ne
-                  plus manquer un départ.
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-          <LastQualifyingPreview limit={5} />
-        </div>
-      </section>
-
-      <section
-        className="space-y-8"
-        aria-label="Accès rapide aux informations clés"
-      >
-        <div className="space-y-3">
-          <Badge variant="secondary" className="w-fit">
-            Toujours à jour
-          </Badge>
-          <div className="space-y-2">
-            <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-              L&apos;essentiel du championnat en un clin d&apos;œil
-            </h2>
-            <p className="max-w-2xl text-muted-foreground">
-              Un trio de tableaux condensés pour revivre la dernière arrivée,
-              surveiller les prochaines étapes et suivre la bataille aux
-              classements.
-            </p>
-          </div>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Card className="border-primary/20 bg-background/80 backdrop-blur">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Flag className="h-5 w-5 text-primary" aria-hidden />
-                Résultat de la dernière course
-              </CardTitle>
-              <CardDescription>
-                Les trois premiers du Grand Prix précédent et leurs points
-                marqués.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <RaceResultsTable
-                season="current"
-                round="last"
-                limit={6}
-                ctaHref="/results/current/last"
-                ctaLabel="Analyser le Grand Prix"
-              />
-            </CardContent>
-          </Card>
-
-          <Card className="border-primary/20 bg-background/80 backdrop-blur">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <LineChart className="h-5 w-5 text-primary" aria-hidden />
-                Classement courant
-              </CardTitle>
-              <CardDescription>
-                Les leaders pilotes et constructeurs, en attendant le prochain
-                drapeau à damier.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <StandingsPreview driverLimit={5} constructorLimit={5} />
-            </CardContent>
-          </Card>
-        </div>
-        <Card className="border-primary/20 bg-background/80 backdrop-blur">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <CalendarClock className="h-5 w-5 text-primary" aria-hidden />
-              Courses à suivre
-            </CardTitle>
-            <CardDescription>
-              Anticipez les prochaines manches du calendrier officiel.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <UpcomingRaces limit={4} />
-          </CardContent>
-        </Card>
-      </section>
-
-      <section className="grid gap-6 md:grid-cols-3" aria-label="Chiffres clés">
-        {highlights.map((highlight) => (
-          <Card key={highlight.label} className="bg-card/80 backdrop-blur">
-            <CardHeader>
-              <CardTitle className="text-3xl font-semibold text-primary">
-                {highlight.value}
-              </CardTitle>
-              <CardDescription className="uppercase tracking-wide text-xs">
-                {highlight.label}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              {highlight.description}
-            </CardContent>
-          </Card>
-        ))}
-      </section>
-
-      <section id="fonctionnalites" className="space-y-8">
-        <div className="flex flex-col gap-4 text-center">
-          <Badge variant="secondary" className="mx-auto w-fit">
-            Fonctionnalités principales
-          </Badge>
-          <h2 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
-            Tout ce dont vous avez besoin pour vivre la saison à 360°
-          </h2>
-          <p className="mx-auto max-w-2xl text-balance text-muted-foreground">
-            CleanLap rassemble calendrier, classements et statistiques avancées
-            dans un seul espace pour rester informé avant, pendant et après
-            chaque Grand Prix.
-          </p>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          {features.map((feature) => (
-            <Card
-              key={feature.title}
-              className="bg-card/80 backdrop-blur transition hover:-translate-y-1 hover:shadow-lg"
-            >
-              <CardHeader className="flex flex-row items-start gap-4">
-                <div className="rounded-full bg-primary/10 p-3 text-primary">
-                  {feature.icon}
-                </div>
-                <div>
-                  <CardTitle>{feature.title}</CardTitle>
-                  <CardDescription className="mt-2 text-sm">
-                    {feature.description}
-                  </CardDescription>
-                </div>
-              </CardHeader>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      <section
-        className="grid gap-6 md:grid-cols-3"
-        aria-label="Comment utiliser CleanLap"
-      >
-        {steps.map((step, index) => (
-          <Card key={step.title} className="bg-background/80 backdrop-blur">
-            <CardHeader className="space-y-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-primary/40 bg-primary/10 text-lg font-semibold text-primary">
-                {index + 1}
+              <div className="flex flex-wrap items-center gap-4 text-sm text-foreground/70 sm:gap-6">
+                <span className="font-semibold">
+                  {flag} {nextRace.circuit}
+                </span>
+                <span className="hidden h-4 w-px bg-white/20 sm:block" />
+                <span>
+                  {new Date(
+                    `${nextRace.date}T${nextRace.time ?? "00:00:00Z"}`,
+                  ).toLocaleDateString("fr-FR", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                  })}{" "}
+                  ·{" "}
+                  {new Date(
+                    `${nextRace.date}T${nextRace.time ?? "00:00:00Z"}`,
+                  ).toLocaleTimeString("fr-FR", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+                {schedule?.circuitDetails?.circuitLength && (
+                  <>
+                    <span className="hidden h-4 w-px bg-white/20 sm:block" />
+                    <span className="font-mono text-xs">
+                      {schedule.circuitDetails.circuitLength}
+                    </span>
+                  </>
+                )}
               </div>
-              <CardTitle>{step.title}</CardTitle>
-              <CardDescription className="text-sm text-muted-foreground">
-                {step.description}
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        ))}
+
+              <div className="flex flex-wrap items-end justify-between gap-8">
+                <HeroCountdown
+                  targetIso={`${nextRace.date}T${nextRace.time ?? "00:00:00Z"}`}
+                />
+                <div className="flex gap-4">
+                  <Link
+                    href="/calendar"
+                    className="inline-flex h-[52px] items-center bg-primary px-9 text-sm font-extrabold uppercase italic tracking-[0.08em] text-primary-foreground transition-colors hover:bg-primary/90"
+                  >
+                    Voir le week-end →
+                  </Link>
+                  <Link
+                    href="/calendar"
+                    className="inline-flex h-[52px] items-center border border-white/20 px-9 text-sm font-bold uppercase tracking-[0.08em] transition-colors hover:border-white/50"
+                  >
+                    Calendrier complet
+                  </Link>
+                </div>
+              </div>
+
+              {sessionItems.length > 0 && (
+                <div className="flex w-fit flex-wrap gap-px bg-white/8 border border-white/8">
+                  {sessionItems.map((item) => {
+                    const formatted = formatSessionTime(item.session);
+                    return (
+                      <div
+                        key={item.key}
+                        className={
+                          item.key === "race"
+                            ? "flex flex-col gap-0.5 border-t-2 border-primary bg-[#16181d] px-6 py-3.5"
+                            : "flex flex-col gap-0.5 bg-background px-6 py-3.5"
+                        }
+                      >
+                        <span
+                          className={
+                            "text-[11px] font-bold uppercase tracking-[0.15em] " +
+                            (item.key === "race"
+                              ? "text-primary"
+                              : "text-foreground/45")
+                          }
+                        >
+                          {item.label}
+                        </span>
+                        <span className="font-mono text-[13px]">
+                          {formatted
+                            ? `${formatted.weekday} ${formatted.time ?? ""}`.trim()
+                            : "—"}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          ) : (
+            <p className="text-foreground/60">
+              Aucune course à venir pour le moment.
+            </p>
+          )}
+        </div>
       </section>
 
-      <section className="relative overflow-hidden rounded-3xl border bg-gradient-to-br from-background via-primary/10 to-primary/20 p-10 text-center">
-        <DotPattern
-          className="text-primary/30"
-          width={24}
-          height={24}
-          cx={2}
-          cy={2}
-          cr={1}
-        />
-        <div className="relative mx-auto flex max-w-2xl flex-col items-center gap-6">
-          <Badge variant="secondary" className="w-fit">
-            Prêt à prendre le départ ?
-          </Badge>
-          <h2 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
-            Rejoignez la communauté CleanLap et vivez chaque tour comme si vous
-            étiez sur le muret.
-          </h2>
-          <p className="text-balance text-muted-foreground">
-            Renseignez-vous sur les prochaines courses, revivez les résultats et
-            partagez vos analyses. CleanLap est gratuit et accessible partout.
-          </p>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Button asChild size="lg">
-              <Link href="/standings">Consulter les classements en direct</Link>
-            </Button>
-            <Button
-              asChild
-              variant="ghost"
-              size="lg"
-              className="text-muted-foreground hover:text-foreground"
+      {/* DERNIER GP + CHAMPIONNAT */}
+      <section className="grid border-b border-border md:grid-cols-2">
+        <div className="flex flex-col gap-6 border-b border-border px-6 py-10 md:border-b-0 md:border-r md:px-12">
+          <div className="flex items-baseline justify-between">
+            <SectionEyebrow>
+              Dernier GP {lastRace ? `— ${lastRace.raceName}` : ""}
+            </SectionEyebrow>
+            <Link
+              href="/results"
+              className="text-xs font-bold uppercase tracking-[0.1em] text-primary hover:text-primary/80"
             >
-              <Link href="/results">Voir les derniers résultats</Link>
-            </Button>
+              Résultats →
+            </Link>
           </div>
+          <div className="flex flex-col">
+            {lastRacePodium.length === 0 && (
+              <p className="py-4 text-sm text-foreground/50">
+                Résultats non disponibles.
+              </p>
+            )}
+            {lastRacePodium.map((r) => (
+              <div
+                key={r.position}
+                className="flex items-center gap-5 border-b border-border py-[13px]"
+              >
+                <span
+                  className="w-9 text-2xl font-black italic"
+                  style={{ color: r.numColor }}
+                >
+                  {r.position}
+                </span>
+                <span className="h-8 w-1" style={{ background: r.teamColor }} />
+                <div className="flex flex-1 flex-col">
+                  <span className="text-[15px] font-bold uppercase tracking-wide">
+                    {r.driver}
+                  </span>
+                  <span className="text-xs text-foreground/50">
+                    {r.constructor}
+                  </span>
+                </div>
+                <span className="font-mono text-[13px] text-foreground/70">
+                  {r.time}
+                </span>
+                <span className="w-16 text-right text-[15px] font-extrabold">
+                  {r.points}{" "}
+                  <span className="text-[11px] font-semibold text-foreground/50">
+                    PTS
+                  </span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="px-6 py-10 md:px-12">
+          <StandingsToggleList
+            drivers={driverStandings}
+            constructors={constructorStandings}
+          />
+        </div>
+      </section>
+
+      {/* PROCHAINES MANCHES */}
+      <section className="flex flex-col gap-6 px-6 py-10 md:px-12">
+        <div className="flex items-baseline justify-between">
+          <SectionEyebrow>Prochaines manches</SectionEyebrow>
+          <Link
+            href="/calendar"
+            className="text-xs font-bold uppercase tracking-[0.1em] text-primary hover:text-primary/80"
+          >
+            Calendrier complet →
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 gap-px border border-white/8 bg-white/8 sm:grid-cols-2 lg:grid-cols-4">
+          {upcomingRaces.map((race, i) => {
+            const round = nextIndex + 2 + i;
+            const raceFlag = countryToFlagEmoji(
+              race.location.split(", ").at(-1) || "",
+            );
+            return (
+              <div
+                key={race.name}
+                className="relative flex flex-col gap-3.5 bg-background p-6 transition-colors hover:bg-[#12151a]"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xl font-black italic text-foreground/25">
+                    R{round}
+                  </span>
+                  <span className="text-xl">{raceFlag}</span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-base font-extrabold uppercase leading-tight tracking-wide">
+                    {race.name}
+                  </span>
+                  <span className="text-xs text-foreground/50">
+                    {race.circuit}
+                  </span>
+                </div>
+                <span className="font-mono text-xs text-foreground/70">
+                  {new Date(race.date).toLocaleDateString("fr-FR", {
+                    day: "2-digit",
+                    month: "short",
+                  })}
+                </span>
+              </div>
+            );
+          })}
+          {upcomingRaces.length === 0 && (
+            <p className="col-span-full py-4 text-sm text-foreground/50">
+              Aucune autre course programmée pour le moment.
+            </p>
+          )}
         </div>
       </section>
     </div>
