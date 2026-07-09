@@ -1,26 +1,9 @@
-import {
-  ArrowUpRight,
-  CalendarClock,
-  Flag,
-  MapPin,
-  Timer,
-  Trophy,
-} from "lucide-react";
+import Link from "next/link";
+import { clsx } from "clsx";
 
-import { DotPattern } from "@/components/magicui/dot-pattern";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PodiumBlock } from "@/app/results/PodiumBlock";
 import { ResultTable } from "@/app/results/ResultTable";
-import { getRaceResults } from "@/features/results/hooks";
+import { getRaceResults, getRacesWithWinner } from "@/features/results/hooks";
 import {
   fetchFreePracticeResults,
   fetchQualifyingResults,
@@ -33,26 +16,40 @@ import {
   columnsSprint,
   columnsFreePractice,
 } from "@/lib/config/columns";
-import { isPastRace } from "@/lib/utils/date";
 import { countryToFlagEmoji } from "@/lib/utils/flags";
-import { clsx } from "clsx";
+import { SectionEyebrow } from "@/components/paddock/SectionEyebrow";
+import { HatchOverlay } from "@/components/paddock/HatchOverlay";
+import { GhostNumber } from "@/components/paddock/GhostNumber";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default async function ResultsPage({ params }: any) {
   const { season, round } = await params;
-  const { raceName, location, date, results, time, circuit } =
-    await getRaceResults(season, round);
+  const { raceName, location, date, results, circuit } = await getRaceResults(
+    season,
+    round,
+  );
   const scheduleData = await fetchRaceSchedule(season, round);
-  const schedule = scheduleData?.schedule;
   const circuitDetails = scheduleData?.circuitDetails;
 
   const country = location.split(", ").at(-1) || "";
   const flag = countryToFlagEmoji(country);
-  const circuitFlag = countryToFlagEmoji(circuit.country);
   const sprintResults = await fetchSprintResults(season, round);
   const qualifyingResults = await fetchQualifyingResults(season, round);
   const fp1Results = await fetchFreePracticeResults(season, round, "fp1");
   const fp2Results = await fetchFreePracticeResults(season, round, "fp2");
   const fp3Results = await fetchFreePracticeResults(season, round, "fp3");
+  const seasonRaces = round !== "last" ? await getRacesWithWinner(season) : [];
+
+  const roundNum = Number(round);
+  const prevRace = seasonRaces.find((r) => Number(r.round) === roundNum - 1);
+  const nextRace = seasonRaces.find((r) => Number(r.round) === roundNum + 1);
+
+  const fastestLapEntry = results.find(
+    (r) => r.fastestLap?.rank === "1" && r.fastestLap?.time,
+  );
+  const fastestLap = fastestLapEntry?.fastestLap
+    ? { time: fastestLapEntry.fastestLap.time, driver: fastestLapEntry.driver }
+    : null;
 
   const formattedDate = new Date(date).toLocaleDateString("fr-FR", {
     day: "numeric",
@@ -60,371 +57,224 @@ export default async function ResultsPage({ params }: any) {
     year: "numeric",
   });
 
-  const formattedTime = new Date(`${date}T${time}`).toLocaleTimeString(
-    "fr-FR",
-    {
-      hour: "2-digit",
-      minute: "2-digit",
-    },
-  );
-
   const hasSprint = sprintResults.results.length > 0;
-  const tabCount = (hasSprint ? 3 : 2) + 3; // course, qualif, sprint? + FP1/2/3
+  const tabCount = (hasSprint ? 3 : 2) + 3;
   const tabsGridCols = tabCount === 6 ? "grid-cols-6" : "grid-cols-5";
 
-  const formatSession = (session?: {
-    date: string | null;
-    time: string | null;
-  }) => {
-    if (!session?.date) return null;
-    const dateObj = new Date(`${session.date}T${session.time ?? "00:00:00Z"}`);
-    if (Number.isNaN(dateObj.getTime())) {
-      return { date: session.date, time: session.time ?? null };
-    }
-    return {
-      date: dateObj.toLocaleDateString("fr-FR", {
-        weekday: "short",
-        day: "2-digit",
-        month: "short",
-      }),
-      time: session.time
-        ? dateObj.toLocaleTimeString("fr-FR", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        : null,
-    };
-  };
-
-  const scheduleItems = [
-    { key: "fp1", label: "Essais libres 1", session: schedule?.fp1 },
-    { key: "fp2", label: "Essais libres 2", session: schedule?.fp2 },
-    { key: "fp3", label: "Essais libres 3", session: schedule?.fp3 },
-    { key: "qualy", label: "Qualifications", session: schedule?.qualy },
-    {
-      key: "sprintQualy",
-      label: "Sprint qualifs",
-      session: schedule?.sprintQualy,
-    },
-    { key: "sprintRace", label: "Sprint", session: schedule?.sprintRace },
-    { key: "race", label: "Course", session: schedule?.race },
-  ];
-
   return (
-    <div className="space-y-12">
-      <section className="relative overflow-hidden rounded-3xl border bg-gradient-to-br from-primary/10 via-background to-transparent">
-        <DotPattern className="text-primary/40 [mask-image:radial-gradient(circle_at_top,white,transparent_65%)]" />
+    <div className="flex flex-col">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border px-6 py-5 md:px-12">
+        <div className="flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.1em] text-foreground/50">
+          <Link href="/results" className="hover:text-foreground">
+            Résultats
+          </Link>
+          <span>/</span>
+          <Link href={`/results/${season}`} className="hover:text-foreground">
+            {season}
+          </Link>
+          <span>/</span>
+          <span className="text-foreground">
+            Manche {round === "last" ? "précédente" : round}
+          </span>
+        </div>
+        <div className="flex gap-px border border-white/8 bg-white/8">
+          <Link
+            href={prevRace ? `/results/${season}/${prevRace.round}` : "#"}
+            aria-disabled={!prevRace}
+            className={clsx(
+              "inline-flex items-center gap-2 bg-background px-4.5 py-2.5 text-xs font-bold uppercase tracking-[0.1em]",
+              prevRace
+                ? "text-foreground/70 hover:bg-[#12151a] hover:text-foreground"
+                : "pointer-events-none text-foreground/25",
+            )}
+          >
+            {prevRace ? `← R${prevRace.round} ${prevRace.name}` : "← —"}
+          </Link>
+          <Link
+            href={nextRace ? `/results/${season}/${nextRace.round}` : "#"}
+            aria-disabled={!nextRace}
+            className={clsx(
+              "inline-flex items-center gap-2 bg-background px-4.5 py-2.5 text-xs font-bold uppercase tracking-[0.1em]",
+              nextRace
+                ? "text-foreground/70 hover:bg-[#12151a] hover:text-foreground"
+                : "pointer-events-none text-foreground/25",
+            )}
+          >
+            {nextRace ? `R${nextRace.round} ${nextRace.name} →` : "— →"}
+          </Link>
+        </div>
+      </div>
 
-        <div className="relative grid gap-10 px-6 py-12 md:grid-cols-[3fr_2fr] md:px-12">
-          <div className="space-y-6">
-            <div className="flex flex-wrap items-center gap-3">
-              <Badge variant="secondary" className="bg-primary/10 text-primary">
-                Saison {season === "current" ? "en cours" : season}
-              </Badge>
-              <Badge
-                variant="outline"
-                className="border-primary/40 text-primary"
-              >
-                Manche {round === "last" ? "précédente" : round}
-              </Badge>
-              {isPastRace(date) && (
-                <Badge
-                  variant="outline"
-                  className="border-green-500/40 text-green-500"
-                >
-                  Course passée
-                </Badge>
-              )}
-            </div>
-
-            <div className="space-y-4">
-              <h1 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
-                <span className="text-4xl">{flag}</span> {raceName}
-              </h1>
-              <p className="max-w-2xl text-muted-foreground">
-                Revivez le week-end du Grand Prix avec les classements complets,
-                le podium et les détails du circuit.
-              </p>
-            </div>
-
-            <div className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
-              <div className="flex items-center gap-2 rounded-xl border bg-card/60 p-4 backdrop-blur">
-                <MapPin className="h-4 w-4 text-primary" aria-hidden />
-                <span>{location}</span>
-              </div>
-              <div className="flex items-center gap-2 rounded-xl border bg-card/60 p-4 backdrop-blur">
-                <CalendarClock className="h-4 w-4 text-primary" aria-hidden />
-                <span>{formattedDate}</span>
-              </div>
-              <div className="flex items-center gap-2 rounded-xl border bg-card/60 p-4 backdrop-blur sm:col-span-2">
-                <Timer className="h-4 w-4 text-primary" aria-hidden />
-                <span>Départ à {formattedTime}</span>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-3">
-              <Button asChild size="sm">
-                <a
-                  href={`https://en.wikipedia.org/wiki/${raceName.replace(/ /g, "_")}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2"
-                >
-                  Page Wikipedia
-                  <ArrowUpRight className="h-4 w-4" aria-hidden />
-                </a>
-              </Button>
+      <section className="relative overflow-hidden border-b border-border px-6 py-14 md:px-12">
+        <HatchOverlay />
+        <GhostNumber className="left-6 -bottom-8 text-[220px] md:left-12">
+          R{round === "last" ? "" : round}
+        </GhostNumber>
+        <div className="relative flex flex-wrap items-end justify-between gap-10">
+          <div className="flex flex-col gap-5">
+            <SectionEyebrow>
+              {round === "last" ? "Manche précédente" : `Manche ${round}`} —{" "}
+              {formattedDate}
+            </SectionEyebrow>
+            <h1 className="max-w-3xl text-5xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl md:text-7xl">
+              {raceName}
+            </h1>
+            <div className="flex flex-wrap items-center gap-4 text-sm text-foreground/70">
+              <span className="font-semibold">
+                {flag} {circuit.name}
+              </span>
+              <span className="hidden h-4 w-px bg-white/20 sm:block" />
+              <span>{location}</span>
             </div>
           </div>
-          <Card className="border-primary/20 bg-background/80 backdrop-blur">
-            <CardHeader className="space-y-1">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Flag className="h-5 w-5 text-primary" aria-hidden />
-                Circuit {circuit.name}
-              </CardTitle>
-              <CardDescription className="flex items-center gap-2">
-                <span className="text-base">{circuitFlag}</span>
-                {circuit.locality}, {circuit.country}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-5 text-sm text-muted-foreground">
-              <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-4">
-                <p>
-                  Un tracé emblématique qui accueille la Formule 1 depuis des
-                  décennies. Consultez les informations officielles du circuit
-                  pour préparer votre analyse.
-                </p>
-              </div>
-              <div className="grid gap-3 rounded-xl border border-dashed bg-card/60 p-4 text-sm sm:grid-cols-2">
-                {[
-                  {
-                    label: "Longueur",
-                    value: circuitDetails?.circuitLength ?? "N/A",
-                  },
-                  {
-                    label: "Virages",
-                    value:
-                      circuitDetails?.corners !== null &&
-                      circuitDetails?.corners !== undefined
-                        ? circuitDetails.corners
-                        : "N/A",
-                  },
-                  {
-                    label: "Record du tour",
-                    value: circuitDetails?.lapRecord ?? "N/A",
-                  },
-                  {
-                    label: "Première année",
-                    value: circuitDetails?.firstParticipationYear ?? "N/A",
-                  },
-                ].map((item) => (
-                  <div
-                    key={item.label}
-                    className="flex items-center justify-between rounded-lg bg-muted/40 px-3 py-2"
-                  >
-                    <span className="text-muted-foreground">{item.label}</span>
-                    <span className="font-medium text-foreground">
-                      {item.value}
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <Button asChild variant="secondary" className="w-full">
-                <a href={circuit.url} target="_blank" rel="noreferrer">
-                  Voir la fiche circuit
-                  <ArrowUpRight className="ml-2 h-4 w-4" aria-hidden />
-                </a>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
 
-        <div className="px-6 pb-12 md:pb-16 md:px-12">
-          <div className="space-y-4 md:grid md:grid-cols-1 md:gap-6">
-            <Card className=" border-primary/20 bg-background/80 backdrop-blur">
-              <CardHeader className="space-y-1">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <CalendarClock className="h-5 w-5 text-primary" aria-hidden />
-                  Programme du week-end
-                </CardTitle>
-                <CardDescription>
-                  Horaires officiels (heure locale de votre navigateur).
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
-                {scheduleItems.map((item) => {
-                  const formatted = formatSession(item.session);
-                  return (
-                    <div
-                      key={item.key}
-                      className="flex items-center justify-between rounded-lg border bg-card/50 px-3 py-2"
-                    >
-                      <span className="font-medium text-foreground">
-                        {item.label}
-                      </span>
-                      {formatted ? (
-                        <span className="mt-1 text-left">
-                          <span className="block">{formatted.date}</span>
-                          {formatted.time && (
-                            <span className="block text-xs">
-                              {formatted.time}
-                            </span>
-                          )}
-                        </span>
-                      ) : (
-                        <span className="mt-1 text-muted-foreground">
-                          Non programmé
-                        </span>
-                      )}
-                    </div>
-                  );
-                })}
-              </CardContent>
-            </Card>
+          <div className="flex flex-wrap gap-px border border-white/8 bg-white/8">
+            {circuitDetails?.circuitLength && (
+              <div className="flex flex-col gap-1 bg-background px-6 py-4">
+                <span className="text-2xl font-extrabold leading-none">
+                  {circuitDetails.circuitLength}
+                </span>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.15em] text-foreground/50">
+                  Longueur circuit
+                </span>
+              </div>
+            )}
+            {fastestLap?.time && (
+              <div className="flex flex-col gap-1 bg-background px-6 py-4">
+                <span className="text-2xl font-extrabold leading-none text-primary">
+                  {fastestLap.time}
+                </span>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.15em] text-foreground/50">
+                  Meilleur tour
+                  {fastestLap.driver ? ` · ${fastestLap.driver}` : ""}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </section>
 
-      <section className="space-y-6">
-        <div className="space-y-2">
-          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            Résultats du week-end
-          </h2>
-          <p className="max-w-2xl text-muted-foreground">
-            Basculez entre course, sprint et qualifications pour analyser les
-            performances des pilotes et des écuries.
-          </p>
+      <section className="grid grid-cols-1 border-b border-border sm:grid-cols-3">
+        <PodiumBlock results={results} />
+      </section>
+
+      <section className="flex flex-col gap-6 px-6 py-10 md:px-12">
+        <div className="flex items-baseline justify-between">
+          <SectionEyebrow>
+            Classement de la course — {results.length} partants
+          </SectionEyebrow>
         </div>
 
-        <Card className="border-primary/20 bg-background/80 backdrop-blur">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Trophy className="h-5 w-5 text-primary" aria-hidden />
-              Classements détaillés
-            </CardTitle>
-            <CardDescription>
-              Les résultats officiels fournis par la FIA, mis en forme pour un
-              décryptage rapide.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="results">
-              <TabsList
-                className={clsx(
-                  "grid w-full gap-2 bg-muted/40 p-1 text-muted-foreground",
-                  tabsGridCols,
-                )}
-              >
-                <TabsTrigger
-                  value="results"
-                  className="data-[state=active]:bg-background"
-                >
-                  Course
-                </TabsTrigger>
-                <TabsTrigger
-                  hidden={!hasSprint}
-                  value="sprint"
-                  className="data-[state=active]:bg-background"
-                >
-                  Sprint
-                </TabsTrigger>
-                <TabsTrigger
-                  value="qualif"
-                  className="data-[state=active]:bg-background"
-                >
-                  Qualifications
-                </TabsTrigger>
-                <TabsTrigger
-                  value="fp1"
-                  className="data-[state=active]:bg-background"
-                >
-                  FP1
-                </TabsTrigger>
-                <TabsTrigger
-                  value="fp2"
-                  className="data-[state=active]:bg-background"
-                >
-                  FP2
-                </TabsTrigger>
-                <TabsTrigger
-                  value="fp3"
-                  className="data-[state=active]:bg-background"
-                >
-                  FP3
-                </TabsTrigger>
-              </TabsList>
+        <Tabs defaultValue="results">
+          <TabsList
+            className={clsx(
+              "grid w-full gap-px border border-white/8 bg-white/8",
+              tabsGridCols,
+            )}
+          >
+            <TabsTrigger
+              value="results"
+              className="rounded-none bg-background font-mono text-xs uppercase tracking-wide data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
+              Course
+            </TabsTrigger>
+            <TabsTrigger
+              hidden={!hasSprint}
+              value="sprint"
+              className="rounded-none bg-background font-mono text-xs uppercase tracking-wide data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
+              Sprint
+            </TabsTrigger>
+            <TabsTrigger
+              value="qualif"
+              className="rounded-none bg-background font-mono text-xs uppercase tracking-wide data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
+              Qualifications
+            </TabsTrigger>
+            <TabsTrigger
+              value="fp1"
+              className="rounded-none bg-background font-mono text-xs uppercase tracking-wide data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
+              FP1
+            </TabsTrigger>
+            <TabsTrigger
+              value="fp2"
+              className="rounded-none bg-background font-mono text-xs uppercase tracking-wide data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
+              FP2
+            </TabsTrigger>
+            <TabsTrigger
+              value="fp3"
+              className="rounded-none bg-background font-mono text-xs uppercase tracking-wide data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
+              FP3
+            </TabsTrigger>
+          </TabsList>
 
-              <TabsContent value="results" className="mt-6 space-y-6">
-                <PodiumBlock results={results} />
-                <ResultTable data={results} columns={columnsRace} />
-              </TabsContent>
-              <TabsContent value="sprint" className="mt-6">
-                {!hasSprint ? (
-                  <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-6 text-sm text-muted-foreground">
-                    Pas de sprint pour ce Grand Prix.
-                  </div>
-                ) : (
-                  <ResultTable
-                    data={sprintResults.results}
-                    columns={columnsSprint}
-                  />
-                )}
-              </TabsContent>
-
-              <TabsContent value="qualif" className="mt-6">
-                {!qualifyingResults ? (
-                  <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-6 text-sm text-muted-foreground">
-                    Pas de qualifications disponibles.
-                  </div>
-                ) : (
-                  <ResultTable
-                    data={qualifyingResults.results}
-                    columns={columnsQualif}
-                  />
-                )}
-              </TabsContent>
-
-              <TabsContent value="fp1" className="mt-6">
-                {fp1Results.results.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-6 text-sm text-muted-foreground">
-                    Pas de données pour la FP1.
-                  </div>
-                ) : (
-                  <ResultTable
-                    data={fp1Results.results}
-                    columns={columnsFreePractice}
-                  />
-                )}
-              </TabsContent>
-
-              <TabsContent value="fp2" className="mt-6">
-                {fp2Results.results.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-6 text-sm text-muted-foreground">
-                    Pas de données pour la FP2.
-                  </div>
-                ) : (
-                  <ResultTable
-                    data={fp2Results.results}
-                    columns={columnsFreePractice}
-                  />
-                )}
-              </TabsContent>
-
-              <TabsContent value="fp3" className="mt-6">
-                {fp3Results.results.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-6 text-sm text-muted-foreground">
-                    Pas de données pour la FP3.
-                  </div>
-                ) : (
-                  <ResultTable
-                    data={fp3Results.results}
-                    columns={columnsFreePractice}
-                  />
-                )}
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
+          <TabsContent value="results" className="mt-6">
+            <ResultTable data={results} columns={columnsRace} />
+          </TabsContent>
+          <TabsContent value="sprint" className="mt-6">
+            {!hasSprint ? (
+              <div className="border border-dashed border-white/15 p-6 text-sm text-foreground/50">
+                Pas de sprint pour ce Grand Prix.
+              </div>
+            ) : (
+              <ResultTable
+                data={sprintResults.results}
+                columns={columnsSprint}
+              />
+            )}
+          </TabsContent>
+          <TabsContent value="qualif" className="mt-6">
+            {!qualifyingResults ? (
+              <div className="border border-dashed border-white/15 p-6 text-sm text-foreground/50">
+                Pas de qualifications disponibles.
+              </div>
+            ) : (
+              <ResultTable
+                data={qualifyingResults.results}
+                columns={columnsQualif}
+              />
+            )}
+          </TabsContent>
+          <TabsContent value="fp1" className="mt-6">
+            {fp1Results.results.length === 0 ? (
+              <div className="border border-dashed border-white/15 p-6 text-sm text-foreground/50">
+                Pas de données pour la FP1.
+              </div>
+            ) : (
+              <ResultTable
+                data={fp1Results.results}
+                columns={columnsFreePractice}
+              />
+            )}
+          </TabsContent>
+          <TabsContent value="fp2" className="mt-6">
+            {fp2Results.results.length === 0 ? (
+              <div className="border border-dashed border-white/15 p-6 text-sm text-foreground/50">
+                Pas de données pour la FP2.
+              </div>
+            ) : (
+              <ResultTable
+                data={fp2Results.results}
+                columns={columnsFreePractice}
+              />
+            )}
+          </TabsContent>
+          <TabsContent value="fp3" className="mt-6">
+            {fp3Results.results.length === 0 ? (
+              <div className="border border-dashed border-white/15 p-6 text-sm text-foreground/50">
+                Pas de données pour la FP3.
+              </div>
+            ) : (
+              <ResultTable
+                data={fp3Results.results}
+                columns={columnsFreePractice}
+              />
+            )}
+          </TabsContent>
+        </Tabs>
       </section>
     </div>
   );

@@ -1,13 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Github } from "lucide-react";
-import { useEffect, useState } from "react";
-import Image from "next/image";
-import { LineShadowText } from "@/components/magicui/line-shadow-text";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { useSeasonProgress } from "@/features/season/useSeasonProgress";
 
 const navItems = [
   { name: "Accueil", href: "/" },
@@ -19,64 +16,46 @@ const navItems = [
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 10);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const { data: progress } = useSeasonProgress();
 
   return (
-    <header
-      className={cn(
-        "flex h-16 items-center space-x-4 sm:justify-around sm:space-x-0",
-        scrolled && "shadow-sm backdrop-blur-lg bg-background/80 border-b",
-      )}
-    >
-      <div className=" container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0">
-        <Link href="/" className="flex items-center gap-2">
-          <Image
-            src="/cleanlaplogo.png"
-            alt="CleanLap"
-            width={48}
-            height={48}
-            priority
-          />
-          <h1 className="text-balance text-2xl font-semibold leading-none tracking-tighter">
-            Clean
-            <LineShadowText className="italic" shadowColor="white">
-              Lap
-            </LineShadowText>
-          </h1>
-        </Link>
+    <header className="sticky top-0 z-50 flex h-[72px] items-center justify-between border-b border-border bg-background/92 px-6 backdrop-blur-md md:px-12">
+      <Link href="/" className="flex items-center gap-3">
+        <Image
+          src="/cleanlaplogo.png"
+          alt="CleanLap"
+          width={36}
+          height={36}
+          priority
+        />
+        <span className="text-xl font-black italic uppercase tracking-tight">
+          CleanLap
+        </span>
+      </Link>
 
-        <nav className="hidden md:flex items-center flex-1 px-6 gap-4 text-sm font-medium font-sans">
-          {navItems.map((item) => (
+      <nav className="hidden items-center gap-8 text-[13px] font-semibold uppercase tracking-[0.1em] text-foreground/55 md:flex">
+        {navItems.map((item) => {
+          const isActive = pathname === item.href;
+          return (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                "text-muted-foreground hover:text-foreground transition-colors",
-                pathname === item.href && "text-foreground font-semibold",
+                "border-b-2 border-transparent py-[26px] transition-colors hover:text-foreground",
+                isActive && "border-primary text-foreground",
               )}
             >
               {item.name}
             </Link>
-          ))}
-        </nav>
+          );
+        })}
+      </nav>
 
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          <Link
-            href="https://github.com/tmaurie/clean-lap"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-primary transition-colors"
-          >
-            <Github className="h-5 w-5" />
-          </Link>
-        </div>
+      <div className="hidden items-center gap-2 font-mono text-[11px] text-foreground/55 sm:flex">
+        <span className="h-[7px] w-[7px] animate-blink rounded-full bg-[#2fbf5f]" />
+        {progress
+          ? `SAISON ${progress.year} · R${progress.round}/${progress.total}`
+          : "—"}
       </div>
     </header>
   );

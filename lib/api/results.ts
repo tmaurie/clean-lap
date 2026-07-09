@@ -166,8 +166,11 @@ export async function fetchRacesWithWinner(season: string): Promise<
     round: string;
     name: string;
     date: string;
+    time?: string;
+    circuit?: string;
     location: string;
     winner?: string;
+    winnerTeam?: string;
   }[]
 > {
   const json = await fetchJson<{ races?: any[] }>(
@@ -182,10 +185,13 @@ export async function fetchRacesWithWinner(season: string): Promise<
       round: race.round?.toString() ?? "-",
       name: race.raceName ?? "Grand Prix",
       date: race.schedule?.race?.date ?? race.date ?? "",
+      time: race.schedule?.race?.time ?? undefined,
+      circuit: race.circuit?.circuitName ?? undefined,
       location: race.circuit
         ? `${race.circuit.city}, ${race.circuit.country}`
         : "Lieu inconnu",
       winner: winnerName || undefined,
+      winnerTeam: race?.teamWinner?.teamName ?? undefined,
     };
   });
 }

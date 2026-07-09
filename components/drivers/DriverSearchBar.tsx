@@ -31,12 +31,14 @@ export function DriverSearchBar({
 
   return (
     <div className="relative">
-      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground/40" />
       <Input
         value={internal}
         onChange={(e) => setInternal(e.target.value)}
-        placeholder={placeholder}
-        className={cn("pl-9")}
+        placeholder={placeholder.toUpperCase()}
+        className={cn(
+          "h-11 w-[300px] border-white/15 pl-10 font-mono text-xs font-semibold tracking-[0.08em] placeholder:text-foreground/35",
+        )}
       />
     </div>
   );

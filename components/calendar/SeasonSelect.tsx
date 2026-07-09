@@ -27,7 +27,7 @@ export function SeasonSelect({
     <Select value={value} onValueChange={action}>
       <SelectTrigger
         className={cn(
-          "w-[160px] rounded-xl border border-primary/20 bg-background/80 backdrop-blur transition-colors hover:border-primary/40 focus:ring-2 focus:ring-primary/30",
+          "h-11 w-[160px] border border-white/15 bg-transparent font-mono text-xs font-bold uppercase tracking-[0.1em] transition-colors hover:border-white/40 hover:text-foreground",
           triggerClassName,
         )}
       >

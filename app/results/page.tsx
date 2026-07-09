@@ -1,20 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { CalendarClock, History, Loader2, Trophy } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 import { ResultsPageClient } from "@/app/results/ResultsPageClient";
-import { DotPattern } from "@/components/magicui/dot-pattern";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { SectionEyebrow } from "@/components/paddock/SectionEyebrow";
+import { HatchOverlay } from "@/components/paddock/HatchOverlay";
 import { Season } from "@/entities/season/model";
 import { getSeasonsWithRaceCount } from "@/features/results/hooks";
 
@@ -158,167 +149,37 @@ export default function ResultsIndexPage() {
         : `${oldestSeason} – ${newestSeason}`
       : "—";
 
-  const highlights = [
-    {
-      title: "Chronologie interactive",
-      description:
-        "Explorez chaque saison depuis la page de résultats dédiée et retrouvez rapidement un Grand Prix précis.",
-      icon: <History className="h-5 w-5 text-primary" aria-hidden />,
-    },
-    {
-      title: "Champions mis en avant",
-      description:
-        "Visualisez en un coup d'œil les champions pilotes et constructeurs pour contextualiser chaque année.",
-      icon: <Trophy className="h-5 w-5 text-primary" aria-hidden />,
-    },
-    {
-      title: "Navigation rapide",
-      description:
-        "Chargez progressivement les saisons sans recharger la page grâce à un système de pagination fluide.",
-      icon: <CalendarClock className="h-5 w-5 text-primary" aria-hidden />,
-    },
-  ];
-
   return (
-    <div className="space-y-12">
-      <section className="relative overflow-hidden rounded-3xl border bg-gradient-to-br from-background via-primary/10 to-primary/20">
-        <DotPattern className="text-primary/40 [mask-image:radial-gradient(circle_at_top,white,transparent_65%)]" />
-
-        <div className="relative grid gap-12 px-6 py-16 md:grid-cols-[3fr_2fr] md:px-12 lg:px-16">
-          <div className="space-y-8">
-            <Badge variant="secondary" className="w-fit">
-              Archives officielles de la FIA
-            </Badge>
-
-            <div className="space-y-4 text-balance">
-              <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-                Résultats de Formule 1, saison par saison
-              </h1>
-              <p className="text-muted-foreground">
-                Remontez le temps et redécouvrez chaque Grand Prix disputé
-                depuis 1950. Les champions pilotes et constructeurs vous guident
-                pour comprendre les enjeux de chaque saison.
-              </p>
-            </div>
-
-            <div className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-2">
-              {highlights.map((highlight) => (
-                <div
-                  key={highlight.title}
-                  className="flex h-full items-start gap-3 rounded-xl border bg-card/60 p-4 backdrop-blur"
-                >
-                  <div className="rounded-full bg-primary/10 p-2 text-primary">
-                    {highlight.icon}
-                  </div>
-                  <div className="space-y-1">
-                    <p className="font-medium text-foreground">
-                      {highlight.title}
-                    </p>
-                    <p>{highlight.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+    <div className="flex flex-col">
+      <section className="relative overflow-hidden border-b border-border px-6 py-14 md:px-12">
+        <HatchOverlay />
+        <div className="relative flex flex-wrap items-end justify-between gap-8">
+          <div className="flex max-w-2xl flex-col gap-5">
+            <SectionEyebrow>
+              Archives — {coverageLabel} · {totalRaces || "—"} Grands Prix
+            </SectionEyebrow>
+            <h1 className="text-5xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl">
+              Résultats
+            </h1>
+            <p className="text-sm leading-relaxed text-foreground/55">
+              Remontez le temps saison par saison. Champions pilotes et
+              constructeurs en un coup d&apos;œil, résultats complets de chaque
+              Grand Prix en un clic.
+            </p>
           </div>
-
-          <Card className="border-primary/20 bg-background/80 backdrop-blur">
-            <CardHeader className="space-y-2">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <History className="h-5 w-5 text-primary" aria-hidden />
-                Archives dynamiques
-              </CardTitle>
-              <CardDescription>
-                Un aperçu des saisons déjà chargées et des données disponibles.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 text-sm">
-              <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-4 text-muted-foreground">
-                {isInitialLoading ? (
-                  <Skeleton className="h-4 w-48" />
-                ) : (
-                  <p>
-                    {`Parcourez ${seasons.length.toString()} saison${
-                      seasons.length > 1 ? "s" : ""
-                    } et accédez aux classements détaillés en quelques clics.`}
-                  </p>
-                )}
-              </div>
-
-              <div className="grid gap-3">
-                <div className="flex items-center justify-between rounded-xl border border-muted-foreground/20 bg-card/60 px-4 py-3 backdrop-blur">
-                  <span className="text-muted-foreground">
-                    Saisons chargées
-                  </span>
-                  {isInitialLoading ? (
-                    <Skeleton className="h-4 w-10" />
-                  ) : (
-                    <span className="font-medium text-foreground">
-                      {seasons.length || "—"}
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center justify-between rounded-xl border border-muted-foreground/20 bg-card/60 px-4 py-3 backdrop-blur">
-                  <span className="text-muted-foreground">
-                    Période couverte
-                  </span>
-                  {isInitialLoading ? (
-                    <Skeleton className="h-4 w-24" />
-                  ) : (
-                    <span className="font-medium text-foreground">
-                      {coverageLabel}
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center justify-between rounded-xl border border-muted-foreground/20 bg-card/60 px-4 py-3 backdrop-blur">
-                  <span className="text-muted-foreground">
-                    Grands Prix cumulés
-                  </span>
-                  {isInitialLoading ? (
-                    <Skeleton className="h-4 w-14" />
-                  ) : (
-                    <span className="font-medium text-foreground">
-                      {totalRaces || "—"}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </section>
 
-      <section className="space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div className="space-y-2">
-            <h2 className="text-2xl font-semibold tracking-tight">
-              Sélectionnez une saison
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Accédez aux résultats officiels de chaque Grand Prix, avec
-              podiums, classements complets et détails du circuit.
-            </p>
-          </div>
-          {!isInitialLoading && (
-            <p className="text-sm text-muted-foreground">
-              {hasMore
-                ? "Plus de saisons sont disponibles dans l’archive."
-                : "Toutes les saisons disponibles ont été chargées."}
-            </p>
-          )}
-        </div>
-
+      <section className="flex flex-col gap-6 px-6 py-10 md:px-12">
         {error && (
-          <div className="flex flex-col gap-3 rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+          <div className="flex flex-col gap-3 border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
             <p>{error}</p>
-            <div>
-              <Button
-                variant="ghost"
-                onClick={handleRetry}
-                className="w-fit text-destructive hover:text-destructive"
-              >
-                Réessayer le chargement
-              </Button>
-            </div>
+            <button
+              onClick={handleRetry}
+              className="w-fit text-xs font-bold uppercase tracking-[0.1em] text-destructive hover:text-destructive/80"
+            >
+              Réessayer le chargement
+            </button>
           </div>
         )}
 
@@ -329,13 +190,12 @@ export default function ResultsIndexPage() {
         />
 
         {!isInitialLoading && (
-          <div className="flex justify-center">
+          <div className="flex justify-center pt-4">
             {hasMore ? (
-              <Button
+              <button
                 onClick={handleLoadMore}
                 disabled={isLoading}
-                variant="outline"
-                className="min-w-[200px]"
+                className="inline-flex h-[52px] min-w-[220px] items-center justify-center border border-white/20 px-10 text-sm font-bold uppercase tracking-[0.08em] transition-colors hover:border-white/50 disabled:opacity-50"
               >
                 {isLoading ? (
                   <>
@@ -348,10 +208,10 @@ export default function ResultsIndexPage() {
                 ) : (
                   "Charger plus de saisons"
                 )}
-              </Button>
+              </button>
             ) : (
               seasons.length > 0 && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-foreground/50">
                   Toutes les saisons disponibles sont visibles.
                 </p>
               )

@@ -1,47 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import React, { useEffect, useMemo, useState } from "react";
-import {
-  ArrowRight,
-  CalendarDays,
-  Flag as FlagIcon,
-  MapPin,
-  Trophy,
-} from "lucide-react";
+import React, { useEffect, useState } from "react";
 
-import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { PageHeader } from "@/components/ui/page-header";
+import { SectionEyebrow } from "@/components/paddock/SectionEyebrow";
+import { HatchOverlay } from "@/components/paddock/HatchOverlay";
 import { getRacesWithWinner } from "@/features/results/hooks";
+import { getConstructorColor } from "@/lib/utils/colors";
 import { countryToFlagEmoji } from "@/lib/utils/flags";
 
-type RaceWithWinner = {
-  date: string;
-  location: string;
-  name: string;
-  round: string;
-  winner?: string | null;
-};
-
-function formatRaceDate(
-  date: string,
-  options?: Intl.DateTimeFormatOptions,
-): string {
-  return new Date(date).toLocaleDateString("fr-FR", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    ...options,
-  });
-}
+type RaceWithWinner = Awaited<ReturnType<typeof getRacesWithWinner>>[number];
 
 export default function SeasonResultsPage({
   params,
@@ -60,240 +28,129 @@ export default function SeasonResultsPage({
     fetchRaces();
   }, [season]);
 
-  const {
-    completedRaces,
-    highlightRace,
-    highlightLabel,
-    totalRaces,
-    uniqueWinnerCount,
-  } = useMemo(() => {
-    if (!races || races.length === 0) {
-      return {
-        completedRaces: 0,
-        highlightRace: undefined,
-        highlightLabel: "",
-        totalRaces: 0,
-        uniqueWinnerCount: 0,
-      } as const;
-    }
-
-    const finished = races.filter((race) => Boolean(race.winner));
-    const upcoming = races.find((race) => !race.winner);
-    const lastFinished = [...races].reverse().find((race) => race.winner);
-
-    return {
-      completedRaces: finished.length,
-      highlightRace: upcoming ?? lastFinished,
-      highlightLabel: upcoming ? "Prochaine course" : "Dernière course courue",
-      totalRaces: races.length,
-      uniqueWinnerCount: new Set(
-        finished.map((race) => race.winner).filter(Boolean) as string[],
-      ).size,
-    } as const;
-  }, [races]);
-
   if (!races) {
-    return <div>Chargement des résultats...</div>;
-  }
-
-  if (races.length === 0) {
     return (
-      <div className="space-y-6">
-        <PageHeader
-          title={`Saison ${season}`}
-          description="Aucune course n'est encore disponible pour cette saison. Revenez bientôt !"
-        />
+      <div className="px-6 py-14 text-sm text-foreground/50 md:px-12">
+        Chargement des résultats...
       </div>
     );
   }
 
+  const completedRaces = races.filter((race) => Boolean(race.winner));
+  const remainingRaces = races.filter((race) => !race.winner);
+
   return (
-    <div className="space-y-10">
-      <section className="overflow-hidden rounded-3xl border bg-gradient-to-br from-background via-background to-muted/40 p-8 shadow-sm">
-        <div className="grid gap-8 md:grid-cols-[1.6fr_1fr] md:items-end">
-          <div className="space-y-6">
-            <div className="flex flex-wrap items-center gap-3">
-              <Badge variant="secondary">Saison {season}</Badge>
-              <span className="text-sm text-muted-foreground">
-                {completedRaces} courses terminées sur {totalRaces}
-              </span>
-            </div>
-
-            <div className="space-y-3">
-              <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-                Revivez chaque manche de la saison
-              </h1>
-              <p className="text-base text-muted-foreground sm:max-w-xl">
-                Explorez les résultats course par course, découvrez les
-                vainqueurs et replongez dans les moments forts de la saison{" "}
-                {season}.
-              </p>
-            </div>
-
-            <dl className="grid gap-4 sm:grid-cols-3">
-              <div className="rounded-2xl border border-primary/10 bg-background/70 p-4 shadow-sm">
-                <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Courses disputées
-                </dt>
-                <dd className="mt-2 text-2xl font-semibold">
-                  {completedRaces}
-                  <span className="text-base font-medium text-muted-foreground">
-                    /{totalRaces}
-                  </span>
-                </dd>
-              </div>
-              <div className="rounded-2xl border border-primary/10 bg-background/70 p-4 shadow-sm">
-                <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Vainqueurs différents
-                </dt>
-                <dd className="mt-2 text-2xl font-semibold">
-                  {uniqueWinnerCount}
-                </dd>
-              </div>
-              <div className="rounded-2xl border border-primary/10 bg-background/70 p-4 shadow-sm">
-                <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Courses restantes
-                </dt>
-                <dd className="mt-2 text-2xl font-semibold">
-                  {Math.max(totalRaces - completedRaces, 0)}
-                </dd>
-              </div>
-            </dl>
+    <div className="flex flex-col">
+      <section className="relative overflow-hidden border-b border-border px-6 py-14 md:px-12">
+        <HatchOverlay />
+        <div className="relative flex flex-wrap items-end justify-between gap-8">
+          <div className="flex flex-col gap-5">
+            <SectionEyebrow>
+              Saison {season} — {completedRaces.length}/{races.length} disputées
+            </SectionEyebrow>
+            <h1 className="text-5xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl">
+              Saison {season}
+            </h1>
           </div>
-
-          {highlightRace && (
-            <div className="rounded-2xl border border-primary/20 bg-background/80 p-6 shadow-md backdrop-blur">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <Badge
-                  variant="secondary"
-                  className="bg-primary/15 text-primary"
-                >
-                  {highlightLabel}
-                </Badge>
-                <span className="text-sm font-medium text-muted-foreground">
-                  Manche {highlightRace.round}
-                </span>
-              </div>
-              <p className="mt-4 text-xl font-semibold">
-                {countryToFlagEmoji(
-                  highlightRace.location.split(", ").at(-1) || "",
-                )}{" "}
-                {highlightRace.name}
-              </p>
-              <div className="mt-4 space-y-3 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <CalendarDays className="size-4" />
-                  <span>
-                    {formatRaceDate(highlightRace.date, {
-                      weekday: "long",
-                    })}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="size-4" />
-                  <span>{highlightRace.location}</span>
-                </div>
-                {highlightRace.winner && (
-                  <div className="flex items-center gap-2 text-foreground">
-                    <Trophy className="size-4" />
-                    <span>{highlightRace.winner}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
         </div>
       </section>
 
-      <section className="space-y-4">
-        <PageHeader
-          title="Toutes les courses"
-          description="Sélectionnez une course pour consulter les classements complets et les temps forts."
-        />
-
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {races.map((race) => {
-            const isCompleted = Boolean(race.winner);
-            const flag = countryToFlagEmoji(
-              race.location.split(", ").at(-1) || "",
-            );
-
-            return (
-              <Link
-                key={race.round}
-                href={`/results/${season}/${race.round}`}
-                className="group block h-full"
-              >
-                <Card className="h-full transition-all duration-200 group-hover:border-primary/50 group-hover:shadow-lg">
-                  <CardHeader className="space-y-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <Badge variant="secondary">Manche {race.round}</Badge>
-                      <Badge
-                        variant={isCompleted ? "outline" : "secondary"}
-                        className={
-                          isCompleted
-                            ? "text-foreground"
-                            : "bg-primary/10 text-primary"
-                        }
-                      >
-                        {isCompleted ? (
-                          <>
-                            <Trophy className="size-3.5" />
-                            <span>Résultats</span>
-                          </>
-                        ) : (
-                          <>
-                            <CalendarDays className="size-3.5" />
-                            <span>À venir</span>
-                          </>
-                        )}
-                      </Badge>
-                    </div>
-                    <div className="space-y-2">
-                      <CardTitle className="text-lg sm:text-xl">
-                        <span className="mr-2 text-xl">{flag}</span>
-                        {race.name}
-                      </CardTitle>
-                      <CardDescription className="flex items-center gap-2">
-                        <MapPin className="size-3.5" />
-                        <span>{race.location}</span>
-                      </CardDescription>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-3 pb-6">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="flex items-center gap-2 text-muted-foreground">
-                        <CalendarDays className="size-4" />
-                        Date
-                      </span>
-                      <span className="font-medium">
-                        {formatRaceDate(race.date)}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="flex items-center gap-2 text-muted-foreground">
-                        <FlagIcon className="size-4" />
-                        Statut
-                      </span>
-                      <span className="font-medium">
-                        {isCompleted
-                          ? `🏆 ${race.winner}`
-                          : "En attente de départ"}
-                      </span>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="border-t pt-4">
-                    <span className="flex items-center gap-2 text-sm font-medium text-primary transition group-hover:gap-3">
-                      Voir la course
-                      <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-1" />
+      {races.length === 0 ? (
+        <div className="px-6 py-10 text-sm text-foreground/50 md:px-12">
+          Aucune course n&apos;est encore disponible pour cette saison.
+        </div>
+      ) : (
+        <section className="flex flex-col gap-10 px-6 py-10 md:px-12">
+          <div className="flex flex-col gap-4">
+            <SectionEyebrow>Toutes les courses</SectionEyebrow>
+            <div className="flex flex-col border-t border-border">
+              {completedRaces.map((race) => {
+                const flag = countryToFlagEmoji(
+                  race.location.split(", ").at(-1) || "",
+                );
+                const winnerColor = getConstructorColor(race.winnerTeam || "");
+                return (
+                  <div
+                    key={race.round}
+                    className="flex items-center gap-8 border-b border-border py-5 transition-colors hover:bg-[#12151a]"
+                  >
+                    <span className="w-[70px] text-3xl font-black italic text-foreground/20">
+                      R{race.round}
                     </span>
-                  </CardFooter>
-                </Card>
-              </Link>
-            );
-          })}
-        </div>
-      </section>
+                    <span className="w-8 text-2xl">{flag}</span>
+                    <div className="flex flex-1 flex-col gap-0.5">
+                      <span className="text-[17px] font-extrabold uppercase tracking-wide">
+                        {race.name}
+                      </span>
+                      <span className="text-xs text-foreground/50">
+                        {race.circuit ? `${race.circuit} — ` : ""}
+                        {race.location}
+                      </span>
+                    </div>
+                    {race.winner && (
+                      <div className="flex items-center gap-2.5">
+                        <span
+                          className="h-5 w-1"
+                          style={{ background: winnerColor }}
+                        />
+                        <span className="text-[13px] font-semibold uppercase">
+                          {race.winner}
+                        </span>
+                      </div>
+                    )}
+                    <span className="w-[100px] text-right font-mono text-[13px] text-foreground/50">
+                      {new Date(race.date).toLocaleDateString("fr-FR", {
+                        day: "2-digit",
+                        month: "short",
+                      })}
+                    </span>
+                    <Link
+                      href={`/results/${season}/${race.round}`}
+                      className="whitespace-nowrap text-xs font-bold uppercase tracking-[0.1em] text-primary hover:text-primary/80"
+                    >
+                      Résultats →
+                    </Link>
+                  </div>
+                );
+              })}
+              {remainingRaces.map((race) => {
+                const flag = countryToFlagEmoji(
+                  race.location.split(", ").at(-1) || "",
+                );
+                return (
+                  <div
+                    key={race.round}
+                    className="flex items-center gap-8 border-b border-border py-5 opacity-60"
+                  >
+                    <span className="w-[70px] text-3xl font-black italic text-foreground/20">
+                      R{race.round}
+                    </span>
+                    <span className="w-8 text-2xl">{flag}</span>
+                    <div className="flex flex-1 flex-col gap-0.5">
+                      <span className="text-[17px] font-extrabold uppercase tracking-wide">
+                        {race.name}
+                      </span>
+                      <span className="text-xs text-foreground/50">
+                        {race.circuit ? `${race.circuit} — ` : ""}
+                        {race.location}
+                      </span>
+                    </div>
+                    <span className="text-xs font-semibold uppercase tracking-wide text-foreground/40">
+                      En attente de départ
+                    </span>
+                    <span className="w-[100px] text-right font-mono text-[13px] text-foreground/50">
+                      {new Date(race.date).toLocaleDateString("fr-FR", {
+                        day: "2-digit",
+                        month: "short",
+                      })}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
