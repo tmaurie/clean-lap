@@ -16,17 +16,14 @@ export async function fetchDriverStandings(
   const json = await res.json();
   const standings = json?.drivers_championship ?? [];
 
-  return standings.map(
-    (entry: any): DriverStanding => ({
-      position: entry.position?.toString() ?? "-",
-      wins: entry.wins ?? 0,
-      points: entry.points?.toString() ?? "0",
-      driver:
-        `${entry.driver?.name ?? ""} ${entry.driver?.surname ?? ""}`.trim(),
-      constructor: entry.team?.teamName ?? "N/A",
-      nationality: entry.driver?.nationality ?? entry.driver?.country ?? "N/A",
-    }),
-  );
+  return standings.map((entry: any): DriverStanding => ({
+    position: entry.position?.toString() ?? "-",
+    wins: entry.wins ?? 0,
+    points: entry.points?.toString() ?? "0",
+    driver: `${entry.driver?.name ?? ""} ${entry.driver?.surname ?? ""}`.trim(),
+    constructor: entry.team?.teamName ?? "N/A",
+    nationality: entry.driver?.nationality ?? entry.driver?.country ?? "N/A",
+  }));
 }
 
 export async function fetchConstructorStandings(
@@ -42,13 +39,11 @@ export async function fetchConstructorStandings(
   const json = await res.json();
   const standings = json?.constructors_championship ?? [];
 
-  return standings.map(
-    (entry: any): ConstructorStanding => ({
-      position: entry.position?.toString() ?? "-",
-      points: entry.points?.toString() ?? "0",
-      wins: entry.wins ?? 0,
-      constructor: entry.team?.teamName ?? "N/A",
-      nationality: entry.team?.country ?? "N/A",
-    }),
-  );
+  return standings.map((entry: any): ConstructorStanding => ({
+    position: entry.position?.toString() ?? "-",
+    points: entry.points?.toString() ?? "0",
+    wins: entry.wins ?? 0,
+    constructor: entry.team?.teamName ?? "N/A",
+    nationality: entry.team?.country ?? "N/A",
+  }));
 }

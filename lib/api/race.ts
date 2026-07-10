@@ -55,12 +55,12 @@ export type RaceCircuitDetails = {
 // f1api.dev is slow (~4-5s per call). Past seasons are immutable, so we can
 // cache them indefinitely; only the live season needs to stay fresh.
 function isLiveSeason(season: string): boolean {
-  return (
-    season === "current" || season === new Date().getFullYear().toString()
-  );
+  return season === "current" || season === new Date().getFullYear().toString();
 }
 
-function cacheOptions(season: string): { next: { revalidate: number | false } } {
+function cacheOptions(season: string): {
+  next: { revalidate: number | false };
+} {
   return isLiveSeason(season)
     ? { next: { revalidate: 60 } }
     : { next: { revalidate: false } };
@@ -180,7 +180,9 @@ export async function fetchRaceResults(
   // f1api.dev returns `circuit` as a single-element array when queried by an
   // explicit round number, but as a plain object for "last" or the season
   // list endpoint. Normalize so both shapes work.
-  const circuit = Array.isArray(race?.circuit) ? race.circuit[0] : race?.circuit;
+  const circuit = Array.isArray(race?.circuit)
+    ? race.circuit[0]
+    : race?.circuit;
   const results = race?.results ?? [];
   const fastestLapValue = (time: string | null | undefined) => {
     if (!time) return null;
@@ -196,9 +198,7 @@ export async function fetchRaceResults(
 
   return {
     raceName: race?.raceName ?? "Grand Prix inconnu",
-    location: circuit
-      ? `${circuit.city}, ${circuit.country}`
-      : "Lieu inconnu",
+    location: circuit ? `${circuit.city}, ${circuit.country}` : "Lieu inconnu",
     date: race?.date,
     time: race?.time,
     circuit: {
@@ -207,29 +207,27 @@ export async function fetchRaceResults(
       country: circuit?.country,
       url: circuit?.url,
     },
-    results: results.map(
-      (r: any): RaceResult => ({
-        position: r.position?.toString(),
-        driver: `${r.driver?.name ?? ""} ${r.driver?.surname ?? ""}`.trim(),
-        driverNationality: r.driver?.nationality,
-        constructor: r.team?.teamName,
-        time: r.time ?? r.retired ?? "N/A",
-        points: r.points?.toString() ?? "0",
-        fastestLap: r.fastLap
-          ? {
-              rank:
-                bestFastestLap !== null &&
-                fastestLapValue(r.fastLap) === bestFastestLap
-                  ? "1"
-                  : (r.fastestLapRank?.toString() ?? "-"),
-              lap: r.fastestLapLap?.toString() ?? "-",
-              time: r.fastLap,
-              averageSpeed: r.fastLapSpeed,
-            }
-          : undefined,
-        grid: r.grid?.toString() ?? "-",
-      }),
-    ),
+    results: results.map((r: any): RaceResult => ({
+      position: r.position?.toString(),
+      driver: `${r.driver?.name ?? ""} ${r.driver?.surname ?? ""}`.trim(),
+      driverNationality: r.driver?.nationality,
+      constructor: r.team?.teamName,
+      time: r.time ?? r.retired ?? "N/A",
+      points: r.points?.toString() ?? "0",
+      fastestLap: r.fastLap
+        ? {
+            rank:
+              bestFastestLap !== null &&
+              fastestLapValue(r.fastLap) === bestFastestLap
+                ? "1"
+                : (r.fastestLapRank?.toString() ?? "-"),
+            lap: r.fastestLapLap?.toString() ?? "-",
+            time: r.fastLap,
+            averageSpeed: r.fastLapSpeed,
+          }
+        : undefined,
+      grid: r.grid?.toString() ?? "-",
+    })),
   };
 }
 
