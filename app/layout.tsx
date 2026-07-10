@@ -1,7 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { Archivo, IBM_Plex_Mono } from "next/font/google";
-import { ThemeProviders } from "@/providers/theme-providers";
+import { QueryProvider } from "@/providers/query-provider";
 import { Shell } from "@/components/layout/Shell";
 import NextTopLoader from "nextjs-toploader";
 import React from "react";
@@ -42,9 +42,9 @@ export default function RootLayout({
     <html lang="fr" className={`${archivo.variable} ${plexMono.variable}`}>
       <body className={archivo.className}>
         <NextTopLoader color="#ff2c2c" height={2} showSpinner={false} />
-        <ThemeProviders>
+        <QueryProvider>
           <Shell>{children}</Shell>
-        </ThemeProviders>
+        </QueryProvider>
       </body>
     </html>
   );
