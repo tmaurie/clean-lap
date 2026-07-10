@@ -148,17 +148,9 @@ export async function fetchSeasonDetailsPage(
     return [];
   }
 
-  const result: Season[] = [];
-
-  for (const season of seasons) {
-    if (signal?.aborted) {
-      throw new DOMException("Aborted", "AbortError");
-    }
-
-    result.push(await fetchSeasonSnapshot(season, signal));
-  }
-
-  return result;
+  return Promise.all(
+    seasons.map((season) => fetchSeasonSnapshot(season, signal)),
+  );
 }
 
 export async function fetchRacesWithWinner(season: string): Promise<
