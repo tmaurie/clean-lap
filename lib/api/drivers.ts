@@ -114,15 +114,19 @@ export async function fetchDrivers(options?: {
         ? `https://f1api.dev/api/${season}/drivers`
         : "https://f1api.dev/api/drivers";
 
-  const url =
-    search && search.trim().length > 0
-      ? `https://f1api.dev/api/drivers/search?q=${encodeURIComponent(search)}`
-      : base;
-
   try {
-    const json = await fetchJSON(url);
+    const json = await fetchJSON(base);
     const list = json?.drivers ?? json?.driver ?? [];
-    return list.map(mapDriver);
+    const drivers: Driver[] = list.map(mapDriver);
+
+    const query = search?.trim().toLowerCase();
+    if (!query) return drivers;
+
+    return drivers.filter((d) =>
+      `${d.name} ${d.surname} ${d.shortName ?? ""} ${d.id}`
+        .toLowerCase()
+        .includes(query),
+    );
   } catch (error) {
     console.error("[fetchDrivers] failed", error);
     return [];
