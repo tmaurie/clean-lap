@@ -15,6 +15,7 @@ import {
 import { SectionEyebrow } from "@/components/paddock/SectionEyebrow";
 import { HatchOverlay } from "@/components/paddock/HatchOverlay";
 import { useDrivers } from "@/features/drivers/useDrivers";
+import { getConstructorLabel } from "@/lib/utils/colors";
 import type { Driver } from "@/entities/driver/model";
 
 const seasons = ["current", "2025", "2024", "2023", "2022", "2021", "2020"];
@@ -61,7 +62,7 @@ export function DriversPageClient() {
                 <SelectItem value="all">Écurie : toutes</SelectItem>
                 {teams.map((t) => (
                   <SelectItem key={t} value={t}>
-                    {t}
+                    {getConstructorLabel(t)}
                   </SelectItem>
                 ))}
               </SelectContent>

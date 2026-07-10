@@ -114,15 +114,19 @@ export async function fetchDrivers(options?: {
         ? `https://f1api.dev/api/${season}/drivers`
         : "https://f1api.dev/api/drivers";
 
-  const url =
-    search && search.trim().length > 0
-      ? `https://f1api.dev/api/drivers/search?q=${encodeURIComponent(search)}`
-      : base;
-
   try {
-    const json = await fetchJSON(url);
+    const json = await fetchJSON(base);
     const list = json?.drivers ?? json?.driver ?? [];
-    return list.map(mapDriver);
+    const drivers: Driver[] = list.map(mapDriver);
+
+    const query = search?.trim().toLowerCase();
+    if (!query) return drivers;
+
+    return drivers.filter((d) =>
+      `${d.name} ${d.surname} ${d.shortName ?? ""} ${d.id}`
+        .toLowerCase()
+        .includes(query),
+    );
   } catch (error) {
     console.error("[fetchDrivers] failed", error);
     return [];
@@ -151,9 +155,14 @@ export async function fetchDriverSeason(
       (sum, r) => sum + (Number(r.points) || 0),
       0,
     );
+    const validGrids = races
+      .filter((r) => r.grid !== null && r.grid !== undefined && r.grid !== "")
+      .map((r) => Number(r.grid))
+      .filter((g) => Number.isFinite(g));
     const avgGrid =
-      races.reduce((sum, r) => sum + (Number(r.grid) || 0), 0) /
-      (races.filter((r) => Number(r.grid)).length || 1);
+      validGrids.length > 0
+        ? validGrids.reduce((sum, g) => sum + g, 0) / validGrids.length
+        : null;
 
     return {
       season,
@@ -165,7 +174,7 @@ export async function fetchDriverSeason(
         wins,
         podiums,
         points: pointsTotal,
-        avgGrid: Number.isFinite(avgGrid) ? Number(avgGrid.toFixed(1)) : null,
+        avgGrid: avgGrid !== null ? Number(avgGrid.toFixed(1)) : null,
       },
     };
   } catch (error) {

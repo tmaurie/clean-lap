@@ -3,7 +3,7 @@
 import { PropsWithChildren, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-export function ThemeProviders({ children }: PropsWithChildren) {
+export function QueryProvider({ children }: PropsWithChildren) {
   const [queryClient] = useState(() => new QueryClient());
 
   return (

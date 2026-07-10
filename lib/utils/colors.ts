@@ -34,9 +34,56 @@ const TEAM_COLORS_BY_ID: Record<string, string> = {
   sauber: TEAM_COLORS_BY_NAME["Sauber F1 Team"],
 };
 
+const TEAM_NAMES_BY_ID: Record<string, string> = {
+  ferrari: "Ferrari",
+  mercedes: "Mercedes",
+  red_bull: "Red Bull Racing",
+  mclaren: "McLaren",
+  alpine: "Alpine",
+  aston_martin: "Aston Martin",
+  haas: "Haas",
+  williams: "Williams",
+  alphatauri: "AlphaTauri",
+  rb: "RB F1 Team",
+  sauber: "Sauber",
+};
+
+/**
+ * Deterministic fallback color for constructors we don't have an official
+ * brand color for (mostly historical teams, since the app lets you browse
+ * seasons back to 1950). Keeps distinct teams visually distinguishable
+ * instead of collapsing them all onto the same grey.
+ */
+function hashColor(input: string): string {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    hash = input.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const hue = Math.abs(hash) % 360;
+  return `hsl(${hue}, 60%, 55%)`;
+}
+
+function humanizeId(id: string): string {
+  return id
+    .split(/[_-]/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
 export function getConstructorColor(constructorOrId: string): string {
   if (!constructorOrId) return "#999";
   const key = constructorOrId.trim();
   if (TEAM_COLORS_BY_ID[key]) return TEAM_COLORS_BY_ID[key];
-  return TEAM_COLORS_BY_NAME[key] ?? "#999";
+  if (TEAM_COLORS_BY_NAME[key]) return TEAM_COLORS_BY_NAME[key];
+  return hashColor(key);
+}
+
+/** Human-readable constructor name, given either a full name or a team id/slug. */
+export function getConstructorLabel(constructorOrId: string): string {
+  if (!constructorOrId) return "";
+  const key = constructorOrId.trim();
+  if (TEAM_NAMES_BY_ID[key]) return TEAM_NAMES_BY_ID[key];
+  if (TEAM_COLORS_BY_NAME[key]) return key;
+  return humanizeId(key);
 }

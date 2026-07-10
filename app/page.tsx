@@ -18,6 +18,8 @@ import { GhostNumber } from "@/components/paddock/GhostNumber";
 import { HeroCountdown } from "@/components/home/HeroCountdown";
 import { StandingsToggleList } from "@/components/home/StandingsToggleList";
 
+export const revalidate = 60;
+
 function formatSessionTime(session?: {
   date: string | null;
   time: string | null;
@@ -36,14 +38,17 @@ function formatSessionTime(session?: {
 export default async function HomePage() {
   const races = await fetchRaces("current");
   const completedCount = races.filter((race) => isPastRace(race.date)).length;
-  const nextIndex = Math.min(completedCount, Math.max(races.length - 1, 0));
-  const nextRace = races[nextIndex];
+  const hasNextRace = races.length > 0 && completedCount < races.length;
+  const nextIndex = hasNextRace ? completedCount : races.length;
+  const nextRace = hasNextRace ? races[nextIndex] : undefined;
   const nextRound = nextIndex + 1;
-  const upcomingRaces = races.slice(nextIndex + 1, nextIndex + 5);
+  const upcomingRaces = hasNextRace
+    ? races.slice(nextIndex + 1, nextIndex + 5)
+    : [];
 
   const [schedule, lastRace, driverStandings, constructorStandings] =
     await Promise.all([
-      fetchRaceSchedule("current", String(nextRound)),
+      nextRace ? fetchRaceSchedule("current", String(nextRound)) : null,
       fetchRaceResults("current", "last"),
       fetchDriverStandings("current"),
       fetchConstructorStandings("current"),
@@ -75,11 +80,15 @@ export default async function HomePage() {
       <section className="relative overflow-hidden border-b border-border px-6 py-14 md:px-12 md:py-16">
         <HatchOverlay />
         <GhostNumber className="-bottom-2 left-6 hidden text-[220px] md:left-12 md:block">
-          R{nextRound}
+          {hasNextRace ? `R${nextRound}` : "🏁"}
         </GhostNumber>
         <div className="relative flex flex-col gap-8">
           <SectionEyebrow>
-            Manche {nextRound} / {races.length || "—"} — Ce week-end
+            {hasNextRace
+              ? `Manche ${nextRound} / ${races.length || "—"} — Ce week-end`
+              : races.length > 0
+                ? `Saison terminée — ${races.length} manches disputées`
+                : "Aucune course programmée"}
           </SectionEyebrow>
 
           {nextRace ? (
