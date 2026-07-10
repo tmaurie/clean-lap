@@ -35,7 +35,10 @@ export function SiteHeader() {
 
       <nav className="hidden items-center gap-8 text-[13px] font-semibold uppercase tracking-[0.1em] text-foreground/55 md:flex">
         {navItems.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive =
+            item.href === "/"
+              ? pathname === "/"
+              : pathname.startsWith(item.href);
           return (
             <Link
               key={item.href}

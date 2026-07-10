@@ -155,9 +155,14 @@ export async function fetchDriverSeason(
       (sum, r) => sum + (Number(r.points) || 0),
       0,
     );
+    const validGrids = races
+      .filter((r) => r.grid !== null && r.grid !== undefined && r.grid !== "")
+      .map((r) => Number(r.grid))
+      .filter((g) => Number.isFinite(g));
     const avgGrid =
-      races.reduce((sum, r) => sum + (Number(r.grid) || 0), 0) /
-      (races.filter((r) => Number(r.grid)).length || 1);
+      validGrids.length > 0
+        ? validGrids.reduce((sum, g) => sum + g, 0) / validGrids.length
+        : null;
 
     return {
       season,
@@ -169,7 +174,7 @@ export async function fetchDriverSeason(
         wins,
         podiums,
         points: pointsTotal,
-        avgGrid: Number.isFinite(avgGrid) ? Number(avgGrid.toFixed(1)) : null,
+        avgGrid: avgGrid !== null ? Number(avgGrid.toFixed(1)) : null,
       },
     };
   } catch (error) {
