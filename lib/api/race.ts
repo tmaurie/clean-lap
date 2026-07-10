@@ -1,3 +1,5 @@
+import { unstable_cache } from "next/cache";
+
 import { Race, RaceResult } from "@/entities/race/model";
 
 export type QualifyingResult = {
@@ -50,8 +52,22 @@ export type RaceCircuitDetails = {
   url?: string | null;
 };
 
-async function fetchJSON(url: string): Promise<any> {
-  const res = await fetch(url);
+// f1api.dev is slow (~4-5s per call). Past seasons are immutable, so we can
+// cache them indefinitely; only the live season needs to stay fresh.
+function isLiveSeason(season: string): boolean {
+  return (
+    season === "current" || season === new Date().getFullYear().toString()
+  );
+}
+
+function cacheOptions(season: string): { next: { revalidate: number | false } } {
+  return isLiveSeason(season)
+    ? { next: { revalidate: 60 } }
+    : { next: { revalidate: false } };
+}
+
+async function fetchJSON(url: string, season: string): Promise<any> {
+  const res = await fetch(url, cacheOptions(season));
   if (!res.ok) {
     throw new Error(`Failed to fetch ${url}: ${res.status} ${res.statusText}`);
   }
@@ -135,7 +151,7 @@ function normalizeScheduleEntry(session: any | undefined): {
 }
 
 export async function fetchRaces(season: string): Promise<Race[]> {
-  const json = await fetchJSON(`https://f1api.dev/api/${season}`);
+  const json = await fetchJSON(`https://f1api.dev/api/${season}`, season);
   const rawRaces = json.races ?? [];
   return rawRaces.map(mapRace);
 }
@@ -156,8 +172,15 @@ export async function fetchRaceResults(
   };
   results: RaceResult[];
 }> {
-  const json = await fetchJSON(`https://f1api.dev/api/${season}/${round}/race`);
+  const json = await fetchJSON(
+    `https://f1api.dev/api/${season}/${round}/race`,
+    season,
+  );
   const race = json?.races;
+  // f1api.dev returns `circuit` as a single-element array when queried by an
+  // explicit round number, but as a plain object for "last" or the season
+  // list endpoint. Normalize so both shapes work.
+  const circuit = Array.isArray(race?.circuit) ? race.circuit[0] : race?.circuit;
   const results = race?.results ?? [];
   const fastestLapValue = (time: string | null | undefined) => {
     if (!time) return null;
@@ -173,16 +196,16 @@ export async function fetchRaceResults(
 
   return {
     raceName: race?.raceName ?? "Grand Prix inconnu",
-    location: race?.circuit
-      ? `${race.circuit.city}, ${race.circuit.country}`
+    location: circuit
+      ? `${circuit.city}, ${circuit.country}`
       : "Lieu inconnu",
     date: race?.date,
     time: race?.time,
     circuit: {
-      name: race?.circuit?.circuitName,
-      locality: race?.circuit?.city,
-      country: race?.circuit?.country,
-      url: race?.circuit?.url,
+      name: circuit?.circuitName,
+      locality: circuit?.city,
+      country: circuit?.country,
+      url: circuit?.url,
     },
     results: results.map(
       (r: any): RaceResult => ({
@@ -224,29 +247,41 @@ export async function fetchSprintResults(
     points: string;
   }[];
 }> {
-  const url = `https://f1api.dev/api/${season}/${round}/sprint/race`;
-  const res = await fetch(url);
-  if (res.status === 404) {
-    return { results: [] };
-  }
-  if (!res.ok) {
-    throw new Error(`Failed to fetch ${url}: ${res.status} ${res.statusText}`);
-  }
+  // Many seasons/rounds simply have no sprint (404). Next.js's fetch Data
+  // Cache only caches 2xx responses, so a 404 would otherwise be re-fetched
+  // (and pay the ~5s f1api.dev latency) on every single request. Cache the
+  // resolved value ourselves instead, regardless of the underlying status.
+  return unstable_cache(
+    async () => {
+      const url = `https://f1api.dev/api/${season}/${round}/sprint/race`;
+      const res = await fetch(url);
+      if (res.status === 404) {
+        return { results: [] };
+      }
+      if (!res.ok) {
+        throw new Error(
+          `Failed to fetch ${url}: ${res.status} ${res.statusText}`,
+        );
+      }
 
-  const json = await res.json();
-  const results = json?.races?.sprintRaceResults ?? [];
+      const json = await res.json();
+      const results = json?.races?.sprintRaceResults ?? [];
 
-  return {
-    results: results.map((r: any) => ({
-      position: r.position?.toString() ?? "-",
-      driver: `${r.driver?.name ?? ""} ${r.driver?.surname ?? ""}`.trim(),
-      constructor: r.team?.teamName ?? "N/A",
-      laps: "-", // non fourni par la nouvelle API sprint
-      grid: r.gridPosition?.toString() ?? "-",
-      time: r.time ?? r.retired ?? "N/A",
-      points: r.points?.toString() ?? "0",
-    })),
-  };
+      return {
+        results: results.map((r: any) => ({
+          position: r.position?.toString() ?? "-",
+          driver: `${r.driver?.name ?? ""} ${r.driver?.surname ?? ""}`.trim(),
+          constructor: r.team?.teamName ?? "N/A",
+          laps: "-", // non fourni par la nouvelle API sprint
+          grid: r.gridPosition?.toString() ?? "-",
+          time: r.time ?? r.retired ?? "N/A",
+          points: r.points?.toString() ?? "0",
+        })),
+      };
+    },
+    ["fetchSprintResults", season, round],
+    { revalidate: isLiveSeason(season) ? 60 : false },
+  )();
 }
 
 export async function fetchFreePracticeResults(
@@ -254,24 +289,34 @@ export async function fetchFreePracticeResults(
   round: string,
   session: "fp1" | "fp2" | "fp3",
 ): Promise<{ results: FreePracticeResult[] }> {
-  const url = `https://f1api.dev/api/${season}/${round}/${session}`;
-  const res = await fetch(url);
+  // Same reasoning as fetchSprintResults: old seasons 404 on FP endpoints,
+  // and 404s never hit the fetch Data Cache, so cache the value ourselves.
+  return unstable_cache(
+    async () => {
+      const url = `https://f1api.dev/api/${season}/${round}/${session}`;
+      const res = await fetch(url);
 
-  if (res.status === 404) {
-    return { results: [] };
-  }
-  if (!res.ok) {
-    throw new Error(`Failed to fetch ${url}: ${res.status} ${res.statusText}`);
-  }
+      if (res.status === 404) {
+        return { results: [] };
+      }
+      if (!res.ok) {
+        throw new Error(
+          `Failed to fetch ${url}: ${res.status} ${res.statusText}`,
+        );
+      }
 
-  const json = await res.json();
-  const results =
-    json?.races?.[`${session}Results`] ??
-    json?.races?.results ??
-    json?.races ??
-    [];
+      const json = await res.json();
+      const results =
+        json?.races?.[`${session}Results`] ??
+        json?.races?.results ??
+        json?.races ??
+        [];
 
-  return { results: mapFreePracticeResults(results) };
+      return { results: mapFreePracticeResults(results) };
+    },
+    ["fetchFreePracticeResults", season, round, session],
+    { revalidate: isLiveSeason(season) ? 60 : false },
+  )();
 }
 
 export async function fetchQualifyingResults(
@@ -282,6 +327,7 @@ export async function fetchQualifyingResults(
 }> {
   const json = await fetchJSON(
     `https://f1api.dev/api/${season}/${round}/qualy`,
+    season,
   );
   const results = json?.races?.qualyResults ?? [];
 
@@ -302,7 +348,7 @@ export async function fetchRaceSchedule(
       season === "current"
         ? "https://f1api.dev/api/current"
         : `https://f1api.dev/api/${season}`;
-    const json = await fetchJSON(baseUrl);
+    const json = await fetchJSON(baseUrl, season);
     const races = json?.races ?? [];
 
     const byRound =

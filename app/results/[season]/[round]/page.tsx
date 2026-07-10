@@ -24,21 +24,32 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default async function ResultsPage({ params }: any) {
   const { season, round } = await params;
-  const { raceName, location, date, results, circuit } = await getRaceResults(
-    season,
-    round,
-  );
-  const scheduleData = await fetchRaceSchedule(season, round);
+
+  const [
+    raceResult,
+    scheduleData,
+    sprintResults,
+    qualifyingResults,
+    fp1Results,
+    fp2Results,
+    fp3Results,
+    seasonRaces,
+  ] = await Promise.all([
+    getRaceResults(season, round),
+    fetchRaceSchedule(season, round),
+    fetchSprintResults(season, round),
+    fetchQualifyingResults(season, round),
+    fetchFreePracticeResults(season, round, "fp1"),
+    fetchFreePracticeResults(season, round, "fp2"),
+    fetchFreePracticeResults(season, round, "fp3"),
+    round !== "last" ? getRacesWithWinner(season) : Promise.resolve([]),
+  ]);
+
+  const { raceName, location, date, results, circuit } = raceResult;
   const circuitDetails = scheduleData?.circuitDetails;
 
   const country = location.split(", ").at(-1) || "";
   const flag = countryToFlagEmoji(country);
-  const sprintResults = await fetchSprintResults(season, round);
-  const qualifyingResults = await fetchQualifyingResults(season, round);
-  const fp1Results = await fetchFreePracticeResults(season, round, "fp1");
-  const fp2Results = await fetchFreePracticeResults(season, round, "fp2");
-  const fp3Results = await fetchFreePracticeResults(season, round, "fp3");
-  const seasonRaces = round !== "last" ? await getRacesWithWinner(season) : [];
 
   const roundNum = Number(round);
   const prevRace = seasonRaces.find((r) => Number(r.round) === roundNum - 1);
@@ -64,7 +75,7 @@ export default async function ResultsPage({ params }: any) {
   return (
     <div className="flex flex-col">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border px-6 py-5 md:px-12">
-        <div className="flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.1em] text-foreground/50">
+        <div className="flex items-center gap-2.5 text-xs font-semibold uppercase tracking-widest text-foreground/50">
           <Link href="/results" className="hover:text-foreground">
             Résultats
           </Link>
@@ -82,7 +93,7 @@ export default async function ResultsPage({ params }: any) {
             href={prevRace ? `/results/${season}/${prevRace.round}` : "#"}
             aria-disabled={!prevRace}
             className={clsx(
-              "inline-flex items-center gap-2 bg-background px-4.5 py-2.5 text-xs font-bold uppercase tracking-[0.1em]",
+              "inline-flex items-center gap-2 bg-background px-4.5 py-2.5 text-xs font-bold uppercase tracking-widest",
               prevRace
                 ? "text-foreground/70 hover:bg-[#12151a] hover:text-foreground"
                 : "pointer-events-none text-foreground/25",
@@ -94,7 +105,7 @@ export default async function ResultsPage({ params }: any) {
             href={nextRace ? `/results/${season}/${nextRace.round}` : "#"}
             aria-disabled={!nextRace}
             className={clsx(
-              "inline-flex items-center gap-2 bg-background px-4.5 py-2.5 text-xs font-bold uppercase tracking-[0.1em]",
+              "inline-flex items-center gap-2 bg-background px-4.5 py-2.5 text-xs font-bold uppercase tracking-widest",
               nextRace
                 ? "text-foreground/70 hover:bg-[#12151a] hover:text-foreground"
                 : "pointer-events-none text-foreground/25",
