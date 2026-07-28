@@ -207,27 +207,29 @@ export async function fetchRaceResults(
       country: circuit?.country,
       url: circuit?.url,
     },
-    results: results.map((r: any): RaceResult => ({
-      position: r.position?.toString(),
-      driver: `${r.driver?.name ?? ""} ${r.driver?.surname ?? ""}`.trim(),
-      driverNationality: r.driver?.nationality,
-      constructor: r.team?.teamName,
-      time: r.time ?? r.retired ?? "N/A",
-      points: r.points?.toString() ?? "0",
-      fastestLap: r.fastLap
-        ? {
-            rank:
-              bestFastestLap !== null &&
-              fastestLapValue(r.fastLap) === bestFastestLap
-                ? "1"
-                : (r.fastestLapRank?.toString() ?? "-"),
-            lap: r.fastestLapLap?.toString() ?? "-",
-            time: r.fastLap,
-            averageSpeed: r.fastLapSpeed,
-          }
-        : undefined,
-      grid: r.grid?.toString() ?? "-",
-    })),
+    results: results.map(
+      (r: any): RaceResult => ({
+        position: r.position?.toString(),
+        driver: `${r.driver?.name ?? ""} ${r.driver?.surname ?? ""}`.trim(),
+        driverNationality: r.driver?.nationality,
+        constructor: r.team?.teamName,
+        time: r.time ?? r.retired ?? "N/A",
+        points: r.points?.toString() ?? "0",
+        fastestLap: r.fastLap
+          ? {
+              rank:
+                bestFastestLap !== null &&
+                fastestLapValue(r.fastLap) === bestFastestLap
+                  ? "1"
+                  : (r.fastestLapRank?.toString() ?? "-"),
+              lap: r.fastestLapLap?.toString() ?? "-",
+              time: r.fastLap,
+              averageSpeed: r.fastLapSpeed,
+            }
+          : undefined,
+        grid: r.grid?.toString() ?? "-",
+      }),
+    ),
   };
 }
 
