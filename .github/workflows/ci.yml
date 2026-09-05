@@ -34,3 +34,34 @@ jobs:
 
       - name: Build (Next.js)
         run: npm run build
+
+  e2e:
+    runs-on: ubuntu-latest
+    # Job séparé : le smoke e2e traverse f1api.dev, une API publique externe.
+    # Un hoquet de leur côté ne doit pas masquer le signal lint/types/build.
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install deps
+        run: npm install
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Smoke e2e
+        run: npm run test:e2e
+
+      - name: Upload report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
