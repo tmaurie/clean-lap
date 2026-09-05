@@ -1,13 +1,27 @@
-type ResultTableProps = {
-  data: any[];
-  columns: {
-    key: string;
+import type { ReactNode } from "react";
+
+/**
+ * Une colonne est liée à une clé de `T`, et son `render` reçoit la valeur
+ * réellement typée pour cette clé (plus `any`). Le type mappé distribue sur
+ * chaque clé pour conserver ce lien entre `key` et le type de `value`.
+ */
+export type ResultColumn<T> = {
+  [K in Extract<keyof T, string>]: {
+    key: K;
     label: string;
-    render?: (value: any, row: any) => React.ReactNode;
-  }[];
+    render?: (value: T[K], row: T) => ReactNode;
+  };
+}[Extract<keyof T, string>];
+
+type ResultTableProps<T> = {
+  data: T[];
+  columns: readonly ResultColumn<T>[];
 };
 
-export function ResultTable({ data, columns }: ResultTableProps) {
+export function ResultTable<T extends { position?: string }>({
+  data,
+  columns,
+}: ResultTableProps<T>) {
   const hasData = Array.isArray(data) && data.length > 0;
 
   return (
@@ -18,6 +32,7 @@ export function ResultTable({ data, columns }: ResultTableProps) {
             {columns.map((col) => (
               <th
                 key={col.key}
+                scope="col"
                 className="px-5 py-3.5 text-left text-[11px] font-bold uppercase tracking-[0.15em] text-foreground/45"
               >
                 {col.label}
@@ -53,7 +68,15 @@ export function ResultTable({ data, columns }: ResultTableProps) {
                   const value = row[col.key];
                   return (
                     <td key={col.key} className="px-5 py-3.5 align-middle">
-                      {col.render ? col.render(value, row) : String(value)}
+                      {col.render
+                        ? // Le type mappé garantit déjà que `value` correspond
+                          // à `col.key`, mais TS perd le lien une fois la
+                          // colonne extraite de l'union.
+                          (col.render as (v: unknown, r: T) => ReactNode)(
+                            value,
+                            row,
+                          )
+                        : String(value)}
                     </td>
                   );
                 })}

@@ -9,7 +9,7 @@ import {
   fetchConstructorStandings,
   fetchDriverStandings,
 } from "@/lib/api/standings";
-import { isPastRace } from "@/lib/utils/date";
+import { isPastRace, toRaceDate } from "@/lib/utils/date";
 import { countryToFlagEmoji } from "@/lib/utils/flags";
 import { getConstructorColor } from "@/lib/utils/colors";
 import { SectionEyebrow } from "@/components/paddock/SectionEyebrow";
@@ -37,18 +37,34 @@ function formatSessionTime(session?: {
 
 export default async function HomePage() {
   const races = await fetchRaces("current");
-  const completedCount = races.filter((race) => isPastRace(race.date)).length;
-  const hasNextRace = races.length > 0 && completedCount < races.length;
-  const nextIndex = hasNextRace ? completedCount : races.length;
-  const nextRace = hasNextRace ? races[nextIndex] : undefined;
-  const nextRound = nextIndex + 1;
+
+  // On trie sur l'horaire réel plutôt que de faire confiance à l'ordre du
+  // tableau, et la prochaine manche est la première qui n'est pas terminée —
+  // pas "le nombre de courses passées", qui supposait aussi que l'index du
+  // tableau valait le numéro de manche.
+  const calendar = [...races].sort(
+    (a, b) =>
+      (toRaceDate(a.date, a.time)?.getTime() ?? 0) -
+      (toRaceDate(b.date, b.time)?.getTime() ?? 0),
+  );
+  const nextIndex = calendar.findIndex(
+    (race) => !isPastRace(race.date, race.time),
+  );
+  const hasNextRace = nextIndex !== -1;
+  const nextRace = hasNextRace ? calendar[nextIndex] : undefined;
+  const nextRound = nextRace ? (nextRace.round ?? nextIndex + 1) : null;
+  const nextRaceDate = nextRace
+    ? toRaceDate(nextRace.date, nextRace.time)
+    : null;
   const upcomingRaces = hasNextRace
-    ? races.slice(nextIndex + 1, nextIndex + 5)
+    ? calendar.slice(nextIndex + 1, nextIndex + 5)
     : [];
 
   const [schedule, lastRace, driverStandings, constructorStandings] =
     await Promise.all([
-      nextRace ? fetchRaceSchedule("current", String(nextRound)) : null,
+      nextRound !== null
+        ? fetchRaceSchedule("current", String(nextRound))
+        : null,
       fetchRaceResults("current", "last"),
       fetchDriverStandings("current"),
       fetchConstructorStandings("current"),
@@ -102,20 +118,22 @@ export default async function HomePage() {
                 </span>
                 <span className="hidden h-4 w-px bg-white/20 sm:block" />
                 <span>
-                  {new Date(
-                    `${nextRace.date}T${nextRace.time ?? "00:00:00Z"}`,
-                  ).toLocaleDateString("fr-FR", {
-                    weekday: "long",
-                    day: "numeric",
-                    month: "long",
-                  })}{" "}
-                  ·{" "}
-                  {new Date(
-                    `${nextRace.date}T${nextRace.time ?? "00:00:00Z"}`,
-                  ).toLocaleTimeString("fr-FR", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  {nextRaceDate
+                    ? nextRaceDate.toLocaleDateString("fr-FR", {
+                        weekday: "long",
+                        day: "numeric",
+                        month: "long",
+                      })
+                    : nextRace.date}
+                  {nextRace.time && nextRaceDate ? (
+                    <>
+                      {" · "}
+                      {nextRaceDate.toLocaleTimeString("fr-FR", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </>
+                  ) : null}
                 </span>
                 {schedule?.circuitDetails?.circuitLength && (
                   <>
@@ -128,9 +146,9 @@ export default async function HomePage() {
               </div>
 
               <div className="flex flex-wrap items-end justify-between gap-8">
-                <HeroCountdown
-                  targetIso={`${nextRace.date}T${nextRace.time ?? "00:00:00Z"}`}
-                />
+                {nextRaceDate && (
+                  <HeroCountdown targetIso={nextRaceDate.toISOString()} />
+                )}
                 <div className="flex gap-4">
                   <Link
                     href="/calendar"
@@ -264,7 +282,7 @@ export default async function HomePage() {
         </div>
         <div className="grid grid-cols-1 gap-px border border-white/8 bg-white/8 sm:grid-cols-2 lg:grid-cols-4">
           {upcomingRaces.map((race, i) => {
-            const round = nextIndex + 2 + i;
+            const round = race.round ?? nextIndex + 2 + i;
             const raceFlag = countryToFlagEmoji(
               race.location.split(", ").at(-1) || "",
             );
@@ -288,10 +306,10 @@ export default async function HomePage() {
                   </span>
                 </div>
                 <span className="font-mono text-xs text-foreground/70">
-                  {new Date(race.date).toLocaleDateString("fr-FR", {
-                    day: "2-digit",
-                    month: "short",
-                  })}
+                  {toRaceDate(race.date, race.time)?.toLocaleDateString(
+                    "fr-FR",
+                    { day: "2-digit", month: "short" },
+                  ) ?? race.date}
                 </span>
               </div>
             );

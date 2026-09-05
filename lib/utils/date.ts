@@ -39,8 +39,30 @@ export function getTimeUntilLabel(
   return null;
 }
 
-export function isPastRace(dateString: string): boolean {
-  const now = new Date();
-  const target = new Date(dateString);
-  return target.getTime() < now.getTime();
+/**
+ * f1api.dev expose la date ("2025-03-16") et l'heure ("04:00:00Z") dans deux
+ * champs distincts. Sans heure connue, on vise la fin de la journée UTC :
+ * sinon une course programmée aujourd'hui à 15 h est datée de minuit et
+ * considérée comme déjà courue pendant toute la journée.
+ */
+export function toRaceDate(
+  date?: string | null,
+  time?: string | null,
+): Date | null {
+  if (!date) return null;
+
+  const normalizedTime = time
+    ? time.endsWith("Z")
+      ? time
+      : `${time}Z`
+    : "23:59:59Z";
+
+  const parsed = new Date(`${date}T${normalizedTime}`);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+export function isPastRace(date: string, time?: string | null): boolean {
+  const target = toRaceDate(date, time);
+  if (!target) return false;
+  return target.getTime() < Date.now();
 }

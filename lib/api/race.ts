@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 
 import { Race, RaceResult } from "@/entities/race/model";
+import { fastestLapTimeMs, isFastestTime } from "@/lib/utils/time";
 
 export type QualifyingResult = {
   position: string;
@@ -12,7 +13,23 @@ export type QualifyingResult = {
   q1?: string;
   q2?: string;
   q3?: string;
-  bestTimes?: { q1: number | null; q2: number | null; q3: number | null };
+  /**
+   * Meilleur temps de la session, résolu ici plutôt que dans la couche de
+   * rendu : les colonnes n'ont pas à re-parser des chaînes de temps.
+   */
+  isFastestQ1: boolean;
+  isFastestQ2: boolean;
+  isFastestQ3: boolean;
+};
+
+export type SprintResult = {
+  position: string;
+  driver: string;
+  constructor: string;
+  laps: string;
+  grid: string;
+  time: string;
+  points: string;
 };
 
 export type FreePracticeResult = {
@@ -79,44 +96,26 @@ function mapRace(race: any): Race {
     .filter(Boolean)
     .join(", ");
 
+  const round = Number(race.round);
+
   return {
+    round: Number.isFinite(round) ? round : null,
     name: race.raceName,
     date: race.schedule?.race?.date ?? race.date,
-    time: race.schedule?.race?.time ?? race.time,
+    time: race.schedule?.race?.time ?? race.time ?? null,
     circuit: race.circuit?.circuitName,
     location,
   };
 }
 
-function fastest(value?: string | null) {
-  if (!value) return null;
-  const numeric = Number(value.replace(/[:.]/g, ""));
-  return Number.isNaN(numeric) ? null : numeric;
-}
-
 function mapQualifyingResults(results: any[]): QualifyingResult[] {
-  const bestTimes = results.reduce(
-    (
-      acc: { q1: number | null; q2: number | null; q3: number | null },
-      r: any,
-    ) => ({
-      q1:
-        fastest(r.q1) !== null && (acc.q1 === null || fastest(r.q1)! < acc.q1)
-          ? fastest(r.q1)
-          : acc.q1,
-      q2:
-        fastest(r.q2) !== null && (acc.q2 === null || fastest(r.q2)! < acc.q2)
-          ? fastest(r.q2)
-          : acc.q2,
-      q3:
-        fastest(r.q3) !== null && (acc.q3 === null || fastest(r.q3)! < acc.q3)
-          ? fastest(r.q3)
-          : acc.q3,
-    }),
-    { q1: null, q2: null, q3: null },
-  );
+  const bestQ1 = fastestLapTimeMs(results.map((r: any) => r.q1));
+  const bestQ2 = fastestLapTimeMs(results.map((r: any) => r.q2));
+  const bestQ3 = fastestLapTimeMs(results.map((r: any) => r.q3));
 
   return results.map((q: any) => ({
+    // Sur l'endpoint qualy, `gridPosition` est le classement de la séance
+    // (`classificationId` n'est qu'un identifiant d'enregistrement).
     position: q.gridPosition?.toString() ?? q.position?.toString() ?? "-",
     driver: `${q.driver?.name ?? ""} ${q.driver?.surname ?? ""}`.trim(),
     driverNationality: q.driver?.nationality,
@@ -126,7 +125,9 @@ function mapQualifyingResults(results: any[]): QualifyingResult[] {
     q2: q.q2 ?? undefined,
     q3: q.q3 ?? undefined,
     points: "0",
-    bestTimes,
+    isFastestQ1: isFastestTime(q.q1, bestQ1),
+    isFastestQ2: isFastestTime(q.q2, bestQ2),
+    isFastestQ3: isFastestTime(q.q3, bestQ3),
   }));
 }
 
@@ -184,17 +185,7 @@ export async function fetchRaceResults(
     ? race.circuit[0]
     : race?.circuit;
   const results = race?.results ?? [];
-  const fastestLapValue = (time: string | null | undefined) => {
-    if (!time) return null;
-    const numeric = Number(time.replace(/[:.]/g, ""));
-    return Number.isNaN(numeric) ? null : numeric;
-  };
-  const bestFastestLap = results.reduce((best: number | null, r: any) => {
-    const lapTime = fastestLapValue(r.fastLap);
-    if (lapTime === null) return best;
-    if (best === null || lapTime < best) return lapTime;
-    return best;
-  }, null);
+  const bestFastestLap = fastestLapTimeMs(results.map((r: any) => r.fastLap));
 
   return {
     raceName: race?.raceName ?? "Grand Prix inconnu",
@@ -207,28 +198,25 @@ export async function fetchRaceResults(
       country: circuit?.country,
       url: circuit?.url,
     },
-    results: results.map(
-      (r: any): RaceResult => ({
-        position: r.position?.toString(),
-        driver: `${r.driver?.name ?? ""} ${r.driver?.surname ?? ""}`.trim(),
-        driverNationality: r.driver?.nationality,
-        constructor: r.team?.teamName,
-        time: r.time ?? r.retired ?? "N/A",
-        points: r.points?.toString() ?? "0",
-        fastestLap: r.fastLap
-          ? {
-              rank:
-                bestFastestLap !== null &&
-                fastestLapValue(r.fastLap) === bestFastestLap
-                  ? "1"
-                  : (r.fastestLapRank?.toString() ?? "-"),
-              lap: r.fastestLapLap?.toString() ?? "-",
-              time: r.fastLap,
-              averageSpeed: r.fastLapSpeed,
-            }
-          : undefined,
-        grid: r.grid?.toString() ?? "-",
-      }),
+    results: results.map((r: any): RaceResult => ({
+      position: r.position?.toString(),
+      driver: `${r.driver?.name ?? ""} ${r.driver?.surname ?? ""}`.trim(),
+      driverNationality: r.driver?.nationality,
+      constructor: r.team?.teamName,
+      time: r.time ?? r.retired ?? "N/A",
+      points: r.points?.toString() ?? "0",
+      fastestLap: r.fastLap
+        ? {
+            rank: isFastestTime(r.fastLap, bestFastestLap)
+              ? "1"
+              : (r.fastestLapRank?.toString() ?? "-"),
+            lap: r.fastestLapLap?.toString() ?? "-",
+            time: r.fastLap,
+            averageSpeed: r.fastLapSpeed,
+          }
+        : undefined,
+      grid: r.grid?.toString() ?? "-",
+    }),
     ),
   };
 }
@@ -236,17 +224,7 @@ export async function fetchRaceResults(
 export async function fetchSprintResults(
   season: string,
   round: string,
-): Promise<{
-  results: {
-    position: string;
-    driver: string;
-    constructor: string;
-    laps: string;
-    grid: string;
-    time: string;
-    points: string;
-  }[];
-}> {
+): Promise<{ results: SprintResult[] }> {
   // Many seasons/rounds simply have no sprint (404). Next.js's fetch Data
   // Cache only caches 2xx responses, so a 404 would otherwise be re-fetched
   // (and pay the ~5s f1api.dev latency) on every single request. Cache the
@@ -268,7 +246,7 @@ export async function fetchSprintResults(
       const results = json?.races?.sprintRaceResults ?? [];
 
       return {
-        results: results.map((r: any) => ({
+        results: results.map((r: any): SprintResult => ({
           position: r.position?.toString() ?? "-",
           driver: `${r.driver?.name ?? ""} ${r.driver?.surname ?? ""}`.trim(),
           constructor: r.team?.teamName ?? "N/A",

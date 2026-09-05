@@ -103,7 +103,7 @@ export function DriversPageClient() {
         )}
 
         <div className="grid grid-cols-1 gap-px border border-white/8 bg-white/8 sm:grid-cols-2 lg:grid-cols-4">
-          {filteredDrivers.map((driver: any) => (
+          {filteredDrivers.map((driver) => (
             <DriverCard key={driver.id} driver={driver} />
           ))}
         </div>

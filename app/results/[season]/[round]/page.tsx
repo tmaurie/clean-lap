@@ -22,7 +22,11 @@ import { HatchOverlay } from "@/components/paddock/HatchOverlay";
 import { GhostNumber } from "@/components/paddock/GhostNumber";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-export default async function ResultsPage({ params }: any) {
+type ResultsPageProps = {
+  params: Promise<{ season: string; round: string }>;
+};
+
+export default async function ResultsPage({ params }: ResultsPageProps) {
   const { season, round } = await params;
 
   const [

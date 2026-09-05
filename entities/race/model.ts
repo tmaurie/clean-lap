@@ -1,8 +1,10 @@
 export type Race = {
+  /** Numéro de manche tel que renvoyé par l'API (pas l'index du tableau). */
+  round: number | null;
   name: string;
   circuit: string;
-  date: string; // ISO
-  time: string; // UTC time
+  date: string; // ISO (YYYY-MM-DD)
+  time: string | null; // heure UTC ("14:00:00Z"), absente sur certaines saisons
   location: string;
 };
 

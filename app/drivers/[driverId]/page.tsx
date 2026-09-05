@@ -23,7 +23,15 @@ function formatBirthday(birthday?: string | null) {
   return `Né le ${label} · ${age} ans`;
 }
 
-export default async function DriverPage({ params, searchParams }: any) {
+type DriverPageProps = {
+  params: Promise<{ driverId: string }>;
+  searchParams: Promise<{ season?: string }>;
+};
+
+export default async function DriverPage({
+  params,
+  searchParams,
+}: DriverPageProps) {
   const { driverId } = await params;
   const { season } = await searchParams;
 
