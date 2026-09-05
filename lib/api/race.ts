@@ -198,25 +198,26 @@ export async function fetchRaceResults(
       country: circuit?.country,
       url: circuit?.url,
     },
-    results: results.map((r: any): RaceResult => ({
-      position: r.position?.toString(),
-      driver: `${r.driver?.name ?? ""} ${r.driver?.surname ?? ""}`.trim(),
-      driverNationality: r.driver?.nationality,
-      constructor: r.team?.teamName,
-      time: r.time ?? r.retired ?? "N/A",
-      points: r.points?.toString() ?? "0",
-      fastestLap: r.fastLap
-        ? {
-            rank: isFastestTime(r.fastLap, bestFastestLap)
-              ? "1"
-              : (r.fastestLapRank?.toString() ?? "-"),
-            lap: r.fastestLapLap?.toString() ?? "-",
-            time: r.fastLap,
-            averageSpeed: r.fastLapSpeed,
-          }
-        : undefined,
-      grid: r.grid?.toString() ?? "-",
-    }),
+    results: results.map(
+      (r: any): RaceResult => ({
+        position: r.position?.toString(),
+        driver: `${r.driver?.name ?? ""} ${r.driver?.surname ?? ""}`.trim(),
+        driverNationality: r.driver?.nationality,
+        constructor: r.team?.teamName,
+        time: r.time ?? r.retired ?? "N/A",
+        points: r.points?.toString() ?? "0",
+        fastestLap: r.fastLap
+          ? {
+              rank: isFastestTime(r.fastLap, bestFastestLap)
+                ? "1"
+                : (r.fastestLapRank?.toString() ?? "-"),
+              lap: r.fastestLapLap?.toString() ?? "-",
+              time: r.fastLap,
+              averageSpeed: r.fastLapSpeed,
+            }
+          : undefined,
+        grid: r.grid?.toString() ?? "-",
+      }),
     ),
   };
 }
@@ -246,15 +247,17 @@ export async function fetchSprintResults(
       const results = json?.races?.sprintRaceResults ?? [];
 
       return {
-        results: results.map((r: any): SprintResult => ({
-          position: r.position?.toString() ?? "-",
-          driver: `${r.driver?.name ?? ""} ${r.driver?.surname ?? ""}`.trim(),
-          constructor: r.team?.teamName ?? "N/A",
-          laps: "-", // non fourni par la nouvelle API sprint
-          grid: r.gridPosition?.toString() ?? "-",
-          time: r.time ?? r.retired ?? "N/A",
-          points: r.points?.toString() ?? "0",
-        })),
+        results: results.map(
+          (r: any): SprintResult => ({
+            position: r.position?.toString() ?? "-",
+            driver: `${r.driver?.name ?? ""} ${r.driver?.surname ?? ""}`.trim(),
+            constructor: r.team?.teamName ?? "N/A",
+            laps: "-", // non fourni par la nouvelle API sprint
+            grid: r.gridPosition?.toString() ?? "-",
+            time: r.time ?? r.retired ?? "N/A",
+            points: r.points?.toString() ?? "0",
+          }),
+        ),
       };
     },
     ["fetchSprintResults", season, round],
