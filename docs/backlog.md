@@ -73,7 +73,8 @@ Légende effort : **S** ≈ ½ journée · **M** ≈ 1-2 jours · **L** ≈ 3 jo
       Job CI séparé, pour qu'un hoquet de f1api.dev ne masque pas le signal lint/types/build.
       ⚠️ Limite assumée : les pages qui chargent leurs données côté client (`/results`, `/calendar`, `/drivers`) ne sont vérifiées que sur leur coquille rendue, pas sur le contenu asynchrone.
 - [x] **CI durcie** — `npm ci` au lieu de `npm install` (échoue si le lockfile a divergé, là où `npm install` le réécrivait), étape `npm run lint` ajoutée, Node épinglé à 22 via une variable de workflow, `actions/checkout` et `setup-node` en v4, et annulation des runs concurrents sur une même branche.
-- [ ] **Un seul lockfile** — `package-lock.json` versionné + `yarn.lock` non versionné à la racine : à trancher avant que les deux divergent. **S**
+- [x] **Un seul lockfile** — `yarn.lock` supprimé, le projet reste sur `package-lock.json`. Il n'avait jamais été commité et avait déjà divergé : **161 entrées contre 616**, soit un état antérieur à l'ajout de Vitest et Playwright et au retrait de React Query et `@f1api/sdk`.
+      Garde-fou : `yarn.lock`, `pnpm-lock.yaml` et `bun.lockb` sont ignorés par git, et `engines.node >= 22` dans `package.json` s'aligne sur la version épinglée en CI. `npm ci` échoue déjà si le lockfile diverge de `package.json`.
 - [x] **SEO — titres, sitemap, robots** — `app/sitemap.ts` (16 URL : pages fixes + 10 dernières saisons) et `app/robots.ts`, `metadataBase` sur le layout racine (sans elle Next avertit au build et émet des URL OpenGraph cassées), et un titre propre par page : toutes s'appelaient « CleanLap ».
       Un test e2e vérifie que les cinq pages principales ont des titres **tous distincts**.
       ⚠️ Reste à faire : l'image OpenGraph dynamique (`opengraph-image.tsx` via `next/og`). **S**

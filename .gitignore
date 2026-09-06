@@ -46,3 +46,10 @@ next-env.d.ts
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# lockfiles concurrents : ce projet utilise npm (package-lock.json).
+# Un second lockfile diverge en silence — celui de yarn était resté à
+# 161 entrées contre 616 côté npm.
+yarn.lock
+pnpm-lock.yaml
+bun.lockb
