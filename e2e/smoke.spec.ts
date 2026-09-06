@@ -37,6 +37,7 @@ const ROUTES = [
   { path: "/weekend", label: "Week-end" },
   { path: "/calendar", label: "Calendrier", heading: "Calendrier" },
   { path: "/drivers", label: "Pilotes", heading: "Pilotes" },
+  { path: "/teams", label: "Écuries", heading: "Écuries" },
   { path: "/standings", label: "Classements", heading: "Classements" },
   { path: "/results", label: "Résultats", heading: "Résultats" },
 ] as const;
@@ -497,4 +498,67 @@ test.describe("fiches écuries", () => {
     await expect(page).toHaveURL(/\/teams\//);
     await expect(page.getByText("Titres constructeurs")).toBeVisible();
   });
+});
+
+test.describe("index des écuries", () => {
+  test("liste les écuries de la saison et mène à leur fiche", async ({
+    page,
+  }) => {
+    const errors = watchForErrors(page);
+
+    const response = await page.goto("/teams?season=2024");
+    expect(response?.status()).toBe(200);
+
+    const cartes = page.locator("main").getByRole("listitem");
+    expect(await cartes.count()).toBeGreaterThanOrEqual(9);
+
+    await page
+      .getByRole("link", { name: /ferrari/i })
+      .first()
+      .click();
+    await expect(page).toHaveURL(/\/teams\/ferrari/);
+    await expect(page.getByText("Titres constructeurs")).toBeVisible();
+
+    expect(errors, "erreurs console sur /teams").toEqual([]);
+  });
+
+  test("une saison sans championnat constructeurs l'explique", async ({
+    page,
+  }) => {
+    // Le championnat constructeurs n'existe que depuis 1958 : mieux vaut le
+    // dire qu'afficher une liste vide.
+    await page.goto("/teams?season=1955");
+
+    await expect(page.getByText(/n'existe que depuis 1958/i)).toBeVisible();
+  });
+});
+
+test.describe("navigation responsive", () => {
+  // L'en-tête débordait dès 768 px, même avec cinq entrées : la page
+  // scrollait alors horizontalement. La bascule est passée à `lg`.
+  for (const width of [320, 768, 1023, 1024, 1440]) {
+    test(`aucun débordement horizontal à ${width} px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto("/teams");
+
+      const { scrollWidth, innerWidth } = await page.evaluate(() => ({
+        scrollWidth: document.documentElement.scrollWidth,
+        innerWidth: window.innerWidth,
+      }));
+      expect(scrollWidth, `débordement à ${width} px`).toBeLessThanOrEqual(
+        innerWidth,
+      );
+
+      // Exactement une navigation visible, jamais zéro ni deux.
+      const visibles = await page.evaluate(() => {
+        const navs = [...document.querySelectorAll("nav")];
+        const bas = navs.find((n) => n.className.includes("fixed bottom-0"));
+        const haut = document.querySelector("header nav");
+        const vu = (el: Element | null | undefined) =>
+          !!el && getComputedStyle(el).display !== "none";
+        return [vu(haut), vu(bas)].filter(Boolean).length;
+      });
+      expect(visibles, `navigations visibles à ${width} px`).toBe(1);
+    });
+  }
 });

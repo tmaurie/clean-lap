@@ -11,6 +11,7 @@ const navItems = [
   { name: "Week-end", href: "/weekend" },
   { name: "Calendrier", href: "/calendar" },
   { name: "Pilotes", href: "/drivers" },
+  { name: "Écuries", href: "/teams" },
   { name: "Classements", href: "/standings" },
   { name: "Résultats", href: "/results" },
 ];
@@ -33,7 +34,10 @@ export function SiteHeader({ progress }: { progress: SeasonProgress | null }) {
         </span>
       </Link>
 
-      <nav className="hidden items-center gap-8 text-[13px] font-semibold uppercase tracking-[0.1em] text-foreground/55 md:flex">
+      {/* `lg` et non `md` : à 768 px la barre débordait déjà avec cinq entrées
+          (783 px de contenu mesurés), et la page scrollait horizontalement.
+          En dessous de 1024 px, c'est la barre du bas qui prend le relais. */}
+      <nav className="hidden items-center gap-8 text-[13px] font-semibold uppercase tracking-[0.1em] text-foreground/55 lg:flex">
         {navItems.map((item) => {
           const isActive =
             item.href === "/"
@@ -54,7 +58,7 @@ export function SiteHeader({ progress }: { progress: SeasonProgress | null }) {
         })}
       </nav>
 
-      <div className="hidden items-center gap-2 font-mono text-[11px] text-foreground/55 sm:flex">
+      <div className="hidden items-center gap-2 font-mono text-[11px] text-foreground/55 lg:flex">
         <span className="h-[7px] w-[7px] animate-blink rounded-full bg-[#2fbf5f]" />
         {progress
           ? `SAISON ${progress.year} · R${progress.round}/${progress.total}`

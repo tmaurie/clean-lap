@@ -24,7 +24,8 @@ Légende effort : **S** ≈ ½ journée · **M** ≈ 1-2 jours · **L** ≈ 3 jo
       Les noms d'écurie étaient partout dans l'app sans être cliquables : ils mènent désormais à leur fiche depuis les deux onglets de classement et depuis les fiches pilotes, et l'effectif renvoie vers les pilotes.
       L'effectif est trié par classement au championnat — l'API le renvoie dans un ordre arbitraire (chez Ferrari 2024, le remplaçant en premier).
       ⚠️ Trouvaille au passage : `firstAppearance` s'écrit de **trois** façons différentes selon l'endpoint (`firstAppareance`, `firstAppeareance`, `firstAppearance`). Les trois sont gérées et testées.
-      ⚠️ Pas d'index `/teams` : la découverte passe par les liens. À ajouter si le besoin se fait sentir.
+      Index `/teams` ajouté : les écuries d'une saison avec position, points et victoires, construit sur le classement constructeurs (plus riche que `/api/{saison}/teams` pour un seul appel). Avant 1958 il n'y a ni championnat constructeurs ni liste d'écuries côté API — la page le dit au lieu d'afficher une liste vide.
+      Entrée « Écuries » dans les deux navigations.
 - [ ] **Notifications "course imminente"** — Web Notifications API + rappel 1h avant le départ (opt-in explicite). **M**
 
 ---
@@ -43,7 +44,8 @@ Légende effort : **S** ≈ ½ journée · **M** ≈ 1-2 jours · **L** ≈ 3 jo
       Le `test.fail()` du smoke e2e est retiré : le cas est devenu un test vert, accompagné de deux autres (URL inconnue, saison hors calendrier).
 - [ ] **Badges de date lisibles en dark mode** — `getTimeUntilLabel` (lib/utils/date.ts:11) renvoie des classes claires en dur (`bg-blue-100 text-blue-800`) alors que le thème est sombre.
       À noter : la fonction n'a **aucun appelant** aujourd'hui. Soit on la branche sur le calendrier en la passant sur les tokens du design system, soit on la supprime. **S**
-- [ ] **Faire de la place au week-end dans la nav mobile** — `/weekend` est dans la nav d'en-tête et sur le CTA de la home, mais pas dans la `BottomNav` : à 320 px, six libellés ne tiennent qu'en descendant la typo à 9 px (mesuré : 361 px de contenu pour 320 px de large). Piste : n'afficher le libellé que sur l'onglet actif, façon Material 3. **S**
+- [x] **Navigation mobile refondue** — la barre du bas affiche désormais le libellé du seul onglet actif, façon Material 3 : **sept** entrées tiennent en 222 px à 320 px de large, là où cinq en prenaient 324. `/weekend` et `/teams` y sont donc entrés.
+      Corrigé au passage : l'en-tête basculait sur sa navigation dès `md` (768 px) alors qu'elle n'y tenait pas — 783 px de contenu **déjà avec cinq entrées**, ce qui faisait scroller toute la page horizontalement. La bascule est passée à `lg`, et la barre du bas couvre l'intervalle. Cinq tests e2e vérifient qu'il n'y a aucun débordement et exactement une navigation visible à 320, 768, 1023, 1024 et 1440 px.
 - [ ] **Accessibilité** — 1 seul `aria-label` dans tout le projet. À traiter : `<caption>`/`scope` sur les tableaux de résultats, focus visible, contraste des `text-foreground/45`, `aria-live` sur le compte à rebours, info d'écurie pas véhiculée uniquement par la couleur. **M**
 - [ ] **Saison dans l'URL — reste `/calendar`** — `/standings` et `/drivers` sont passés par `?season=` avec la conversion en Server Components. `/calendar` garde un `useState`, donc pas de lien partageable ni de retour arrière. **S**
 - [ ] **Animations d'entrée** — `motion` est installé mais jamais importé. Transitions de page + apparition des lignes de classement, avec respect de `prefers-reduced-motion`. **S**
