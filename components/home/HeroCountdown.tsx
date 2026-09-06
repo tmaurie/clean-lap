@@ -22,7 +22,17 @@ function getRemaining(targetIso: string): Remaining | null {
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
-const LABELS = ["Jours", "Heures", "Minutes", "Secondes"] as const;
+/**
+ * Sur mobile, ce sont les libellés — pas les chiffres — qui font déborder le
+ * bloc : « Secondes » est plus large que « 59 ». D'où une version courte en
+ * dessous de `sm`, en CSS pur pour ne pas réintroduire d'écart serveur/client.
+ */
+const LABELS = [
+  { long: "Jours", short: "J" },
+  { long: "Heures", short: "H" },
+  { long: "Minutes", short: "Min" },
+  { long: "Secondes", short: "Sec" },
+] as const;
 
 export function HeroCountdown({ targetIso }: { targetIso: string }) {
   // Le rendu serveur est mis en cache (revalidate = 60) : calculer le restant
@@ -62,22 +72,23 @@ export function HeroCountdown({ targetIso }: { targetIso: string }) {
     >
       {LABELS.map((label, index) => (
         <div
-          key={label}
+          key={label.long}
           className={
-            "flex flex-col gap-1 px-6 py-5 sm:px-10" +
+            "flex flex-col gap-1 px-4 py-4 sm:px-10 sm:py-5" +
             (index < LABELS.length - 1 ? " border-r border-border" : "")
           }
         >
           <span
             className={
-              "font-mono text-3xl font-extrabold leading-none tabular-nums sm:text-[2.75rem]" +
+              "font-mono text-2xl font-extrabold leading-none tabular-nums sm:text-[2.75rem]" +
               (index === LABELS.length - 1 ? " text-primary" : "")
             }
           >
             {values ? pad(values[index]) : "--"}
           </span>
-          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/50">
-            {label}
+          <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-foreground/50 sm:tracking-[0.18em]">
+            <span className="sm:hidden">{label.short}</span>
+            <span className="hidden sm:inline">{label.long}</span>
           </span>
         </div>
       ))}

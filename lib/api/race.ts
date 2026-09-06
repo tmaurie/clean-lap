@@ -321,6 +321,12 @@ export async function fetchRaceSchedule(
   season: string,
   round: string,
 ): Promise<{
+  /**
+   * Année réelle de la saison. L'alias "current" fonctionne sur /api/current
+   * mais **pas** sur les sous-ressources (/api/current/13/qualy renvoie 404) :
+   * les appelants ont besoin de l'année pour aller chercher les résultats.
+   */
+  season: number | null;
   schedule: RaceSchedule;
   circuitDetails?: RaceCircuitDetails;
 } | null> {
@@ -345,7 +351,10 @@ export async function fetchRaceSchedule(
     const schedule = race?.schedule;
     if (!schedule) return null;
 
+    const resolvedSeason = Number(json?.season);
+
     return {
+      season: Number.isFinite(resolvedSeason) ? resolvedSeason : null,
       schedule: {
         fp1: normalizeScheduleEntry(schedule.fp1),
         fp2: normalizeScheduleEntry(schedule.fp2),

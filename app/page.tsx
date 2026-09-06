@@ -9,7 +9,8 @@ import {
   fetchConstructorStandings,
   fetchDriverStandings,
 } from "@/lib/api/standings";
-import { isPastRace, toRaceDate } from "@/lib/utils/date";
+import { toRaceDate } from "@/lib/utils/date";
+import { resolveCurrentRace } from "@/features/season/currentRace";
 import { countryToFlagEmoji } from "@/lib/utils/flags";
 import { getConstructorColor } from "@/lib/utils/colors";
 import { SectionEyebrow } from "@/components/paddock/SectionEyebrow";
@@ -38,21 +39,14 @@ function formatSessionTime(session?: {
 export default async function HomePage() {
   const races = await fetchRaces("current");
 
-  // On trie sur l'horaire réel plutôt que de faire confiance à l'ordre du
-  // tableau, et la prochaine manche est la première qui n'est pas terminée —
-  // pas "le nombre de courses passées", qui supposait aussi que l'index du
-  // tableau valait le numéro de manche.
-  const calendar = [...races].sort(
-    (a, b) =>
-      (toRaceDate(a.date, a.time)?.getTime() ?? 0) -
-      (toRaceDate(b.date, b.time)?.getTime() ?? 0),
-  );
-  const nextIndex = calendar.findIndex(
-    (race) => !isPastRace(race.date, race.time),
-  );
-  const hasNextRace = nextIndex !== -1;
-  const nextRace = hasNextRace ? calendar[nextIndex] : undefined;
-  const nextRound = nextRace ? (nextRace.round ?? nextIndex + 1) : null;
+  const {
+    calendar,
+    index: nextIndex,
+    race: nextRace,
+    round: nextRound,
+    total: raceCount,
+  } = resolveCurrentRace(races);
+  const hasNextRace = nextRace !== null;
   const nextRaceDate = nextRace
     ? toRaceDate(nextRace.date, nextRace.time)
     : null;
@@ -101,9 +95,9 @@ export default async function HomePage() {
         <div className="relative flex flex-col gap-8">
           <SectionEyebrow>
             {hasNextRace
-              ? `Manche ${nextRound} / ${races.length || "—"} — Ce week-end`
-              : races.length > 0
-                ? `Saison terminée — ${races.length} manches disputées`
+              ? `Manche ${nextRound} / ${raceCount || "—"} — Ce week-end`
+              : raceCount > 0
+                ? `Saison terminée — ${raceCount} manches disputées`
                 : "Aucune course programmée"}
           </SectionEyebrow>
 
@@ -151,7 +145,7 @@ export default async function HomePage() {
                 )}
                 <div className="flex gap-4">
                   <Link
-                    href="/calendar"
+                    href="/weekend"
                     className="inline-flex h-[52px] items-center bg-primary px-9 text-sm font-extrabold uppercase italic tracking-[0.08em] text-primary-foreground transition-colors hover:bg-primary/90"
                   >
                     Voir le week-end →

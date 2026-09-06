@@ -61,8 +61,40 @@ export function toRaceDate(
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
-export function isPastRace(date: string, time?: string | null): boolean {
+export function isPastRace(
+  date: string,
+  time?: string | null,
+  /** Injectable pour que tout un calcul partage la même horloge. */
+  now: Date = new Date(),
+): boolean {
   const target = toRaceDate(date, time);
   if (!target) return false;
-  return target.getTime() < Date.now();
+  return target.getTime() < now.getTime();
+}
+
+/**
+ * Fuseau d'affichage. L'app est francophone (`<html lang="fr">`), et les pages
+ * sont rendues côté serveur : sans fuseau explicite, les horaires prendraient
+ * celui de la machine — donc UTC une fois déployé sur Vercel. On fige donc le
+ * fuseau plutôt que de dépendre de l'hôte.
+ */
+export const DISPLAY_TIME_ZONE = "Europe/Paris";
+
+/** Ex. « sam. 5 sept. » */
+export function formatSessionDay(date: Date): string {
+  return date.toLocaleDateString("fr-FR", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    timeZone: DISPLAY_TIME_ZONE,
+  });
+}
+
+/** Ex. « 16:00 » */
+export function formatSessionTime(date: Date): string {
+  return date.toLocaleTimeString("fr-FR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: DISPLAY_TIME_ZONE,
+  });
 }

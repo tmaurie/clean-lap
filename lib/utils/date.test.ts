@@ -1,6 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { isPastRace, toRaceDate } from "./date";
+import {
+  formatSessionDay,
+  formatSessionTime,
+  isPastRace,
+  toRaceDate,
+} from "./date";
 
 // Le GP d'Italie 2026 part le 6 septembre à 15 h UTC : on fige l'horloge
 // pendant la matinée du jour de course, le cas que l'ancienne version ratait.
@@ -82,5 +87,25 @@ describe("isPastRace", () => {
   it("ne marque pas comme passée une date invalide", () => {
     expect(isPastRace("pas-une-date")).toBe(false);
     expect(isPastRace("")).toBe(false);
+  });
+});
+
+describe("formatage des horaires de session", () => {
+  // Monza 2026, départ à 13 h UTC — soit 15 h à Paris (heure d'été).
+  const start = new Date("2026-09-06T13:00:00Z");
+
+  it("affiche le jour en français", () => {
+    expect(formatSessionDay(start)).toBe("dim. 6 sept.");
+  });
+
+  it("affiche l'heure dans le fuseau d'affichage, pas celui de l'hôte", () => {
+    // Le test doit donner le même résultat sur une machine en UTC et sur une
+    // machine à Paris : c'est tout l'intérêt du fuseau figé.
+    expect(formatSessionTime(start)).toBe("15:00");
+  });
+
+  it("gère le passage à l'heure d'hiver", () => {
+    // Abou Dabi en décembre : 13 h UTC = 14 h à Paris.
+    expect(formatSessionTime(new Date("2026-12-06T13:00:00Z"))).toBe("14:00");
   });
 });

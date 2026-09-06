@@ -8,6 +8,7 @@ import { useSeasonProgress } from "@/features/season/useSeasonProgress";
 
 const navItems = [
   { name: "Accueil", href: "/" },
+  { name: "Week-end", href: "/weekend" },
   { name: "Calendrier", href: "/calendar" },
   { name: "Pilotes", href: "/drivers" },
   { name: "Classements", href: "/standings" },

@@ -7,6 +7,9 @@ import { cn } from "@/lib/utils";
 import { useScrollDirection } from "@/lib/hooks";
 
 const navItems = [
+  // Pas d'entrée "Week-end" ici : à 320 px, six libellés obligeraient à passer
+  // la typo à 9 px. La page reste accessible depuis le CTA de la home et
+  // depuis la nav d'en-tête. Voir docs/backlog.md.
   { name: "Accueil", href: "/", icon: Home },
   { name: "Calendrier", href: "/calendar", icon: CalendarDays },
   { name: "Pilotes", href: "/drivers", icon: User },

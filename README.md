@@ -6,6 +6,7 @@ Tableau de bord F1 construit avec Next.js, TypeScript et Shadcn/UI. L'app affich
 
 ## ✨ Fonctionnalités actuelles
 
+- 🏟️ **Page Week-end** : les sessions du week-end en cours (essais, sprint, qualifs, course) ordonnées chronologiquement, avec leur état — terminé / en direct / à venir — et le podium de celles déjà courues
 - ⏱️ Compte à rebours de la prochaine course avec infos circuit
 - 🏁 Résultat de la dernière course (aperçu + page détaillée)
 - 🏎️ Aperçu des qualifications du week-end courant (affichées seulement si la qualif est aujourd'hui ou demain)
@@ -18,7 +19,7 @@ Tableau de bord F1 construit avec Next.js, TypeScript et Shadcn/UI. L'app affich
 
 ## 🛠️ Stack technique
 
-- Next.js 15 (App Router) + React 19
+- Next.js 16 (App Router) + React 19
 - TypeScript
 - Tailwind CSS
 - Shadcn/UI
@@ -44,6 +45,13 @@ Tableau de bord F1 construit avec Next.js, TypeScript et Shadcn/UI. L'app affich
 ```bash
 npm install
 npm run dev
+```
+
+### Tests
+
+```bash
+npm test          # tests unitaires (Vitest)
+npm run test:e2e  # smoke end-to-end (Playwright, sur un build de prod)
 ```
 
 ---
