@@ -8,6 +8,15 @@ import {
   fetchApiOrNull,
   isLiveSeason,
 } from "@/lib/api/client";
+import type {
+  ApiFreePracticeResult,
+  ApiQualyResult,
+  ApiRace,
+  ApiRaceResponse,
+  ApiScheduleEntry,
+  ApiSeasonResponse,
+} from "@/lib/api/types";
+import { normalizeCircuit } from "@/lib/api/types";
 
 export type QualifyingResult = {
   position: string;
@@ -75,29 +84,30 @@ export type RaceCircuitDetails = {
   url?: string | null;
 };
 
-function mapRace(race: any): Race {
-  const location = [race.circuit?.city, race.circuit?.country]
-    .filter(Boolean)
-    .join(", ");
+function mapRace(race: ApiRace): Race {
+  const circuit = normalizeCircuit(race.circuit);
+  const location = [circuit?.city, circuit?.country].filter(Boolean).join(", ");
 
   const round = Number(race.round);
 
   return {
     round: Number.isFinite(round) ? round : null,
-    name: race.raceName,
-    date: race.schedule?.race?.date ?? race.date,
+    // Valeurs de repli : le modèle promet des chaînes, l'API ne les garantit
+    // pas. Sans elles on affichait « undefined » dans l'interface.
+    name: race.raceName ?? "Grand Prix",
+    date: race.schedule?.race?.date ?? race.date ?? "",
     time: race.schedule?.race?.time ?? race.time ?? null,
-    circuit: race.circuit?.circuitName,
+    circuit: circuit?.circuitName ?? "Circuit inconnu",
     location,
   };
 }
 
-function mapQualifyingResults(results: any[]): QualifyingResult[] {
-  const bestQ1 = fastestLapTimeMs(results.map((r: any) => r.q1));
-  const bestQ2 = fastestLapTimeMs(results.map((r: any) => r.q2));
-  const bestQ3 = fastestLapTimeMs(results.map((r: any) => r.q3));
+function mapQualifyingResults(results: ApiQualyResult[]): QualifyingResult[] {
+  const bestQ1 = fastestLapTimeMs(results.map((r) => r.q1));
+  const bestQ2 = fastestLapTimeMs(results.map((r) => r.q2));
+  const bestQ3 = fastestLapTimeMs(results.map((r) => r.q3));
 
-  return results.map((q: any) => ({
+  return results.map((q) => ({
     // Sur l'endpoint qualy, `gridPosition` est le classement de la séance
     // (`classificationId` n'est qu'un identifiant d'enregistrement).
     position: q.gridPosition?.toString() ?? q.position?.toString() ?? "-",
@@ -115,8 +125,10 @@ function mapQualifyingResults(results: any[]): QualifyingResult[] {
   }));
 }
 
-function mapFreePracticeResults(results: any[]): FreePracticeResult[] {
-  return results.map((fp: any, index: number) => ({
+function mapFreePracticeResults(
+  results: ApiFreePracticeResult[],
+): FreePracticeResult[] {
+  return results.map((fp, index) => ({
     position: fp.position?.toString() ?? (index + 1).toString(),
     driver: `${fp.driver?.name ?? ""} ${fp.driver?.surname ?? ""}`.trim(),
     driverNationality: fp.driver?.nationality,
@@ -125,7 +137,7 @@ function mapFreePracticeResults(results: any[]): FreePracticeResult[] {
   }));
 }
 
-function normalizeScheduleEntry(session: any | undefined): {
+function normalizeScheduleEntry(session: ApiScheduleEntry | undefined): {
   date: string | null;
   time: string | null;
 } {
@@ -136,7 +148,7 @@ function normalizeScheduleEntry(session: any | undefined): {
 }
 
 export async function fetchRaces(season: string): Promise<Race[]> {
-  const json = await fetchApi<any>(`${API_BASE_URL}/${season}`, {
+  const json = await fetchApi<ApiSeasonResponse>(`${API_BASE_URL}/${season}`, {
     season,
   });
   const rawRaces = json.races ?? [];
@@ -163,7 +175,7 @@ export async function fetchRaceResults(
   };
   results: RaceResult[];
 }> {
-  const json = await fetchApiOrNull<any>(
+  const json = await fetchApiOrNull<ApiRaceResponse>(
     `${API_BASE_URL}/${season}/${round}/race`,
     { season },
   );
@@ -177,25 +189,28 @@ export async function fetchRaceResults(
     ? race.circuit[0]
     : race?.circuit;
   const results = race?.results ?? [];
-  const bestFastestLap = fastestLapTimeMs(results.map((r: any) => r.fastLap));
+  const bestFastestLap = fastestLapTimeMs(results.map((r) => r.fastLap));
 
   return {
     raceName: race?.raceName ?? "Grand Prix inconnu",
     location: circuit ? `${circuit.city}, ${circuit.country}` : "Lieu inconnu",
-    date: race?.date,
-    time: race?.time,
+    date: race?.date ?? "",
+    time: race?.time ?? "",
     circuit: {
-      name: circuit?.circuitName,
-      locality: circuit?.city,
-      country: circuit?.country,
-      url: circuit?.url,
+      // Le typage a montré que ces quatre champs pouvaient être `undefined`
+      // alors que le modèle les annonce en `string` : on les comble ici
+      // plutôt que d'afficher « undefined ».
+      name: circuit?.circuitName ?? "Circuit inconnu",
+      locality: circuit?.city ?? "",
+      country: circuit?.country ?? "",
+      url: circuit?.url ?? "",
     },
     results: results.map(
-      (r: any): RaceResult => ({
-        position: r.position?.toString(),
+      (r): RaceResult => ({
+        position: r.position?.toString() ?? "-",
         driver: `${r.driver?.name ?? ""} ${r.driver?.surname ?? ""}`.trim(),
         driverNationality: r.driver?.nationality,
-        constructor: r.team?.teamName,
+        constructor: r.team?.teamName ?? "N/A",
         time: r.time ?? r.retired ?? "N/A",
         points: r.points?.toString() ?? "0",
         fastestLap: r.fastLap
@@ -205,7 +220,7 @@ export async function fetchRaceResults(
                 : (r.fastestLapRank?.toString() ?? "-"),
               lap: r.fastestLapLap?.toString() ?? "-",
               time: r.fastLap,
-              averageSpeed: r.fastLapSpeed,
+              averageSpeed: r.fastLapSpeed ?? "-",
             }
           : undefined,
         grid: r.grid?.toString() ?? "-",
@@ -224,7 +239,7 @@ export async function fetchSprintResults(
   // resolved value ourselves instead, regardless of the underlying status.
   return unstable_cache(
     async () => {
-      const json = await fetchApiOrNull<any>(
+      const json = await fetchApiOrNull<ApiRaceResponse>(
         `${API_BASE_URL}/${season}/${round}/sprint/race`,
         { season },
       );
@@ -234,7 +249,7 @@ export async function fetchSprintResults(
 
       return {
         results: results.map(
-          (r: any): SprintResult => ({
+          (r): SprintResult => ({
             position: r.position?.toString() ?? "-",
             driver: `${r.driver?.name ?? ""} ${r.driver?.surname ?? ""}`.trim(),
             constructor: r.team?.teamName ?? "N/A",
@@ -260,17 +275,19 @@ export async function fetchFreePracticeResults(
   // and 404s never hit the fetch Data Cache, so cache the value ourselves.
   return unstable_cache(
     async () => {
-      const json = await fetchApiOrNull<any>(
+      const json = await fetchApiOrNull<ApiRaceResponse>(
         `${API_BASE_URL}/${season}/${round}/${session}`,
         { season },
       );
       if (json === null) return { results: [] };
 
-      const results =
-        json?.races?.[`${session}Results`] ??
-        json?.races?.results ??
-        json?.races ??
-        [];
+      // Le dernier repli était `json?.races`, c'est-à-dire l'objet manche —
+      // pas un tableau. `mapFreePracticeResults` aurait appelé `.map()` dessus
+      // et levé. Révélé par le typage ; on garde deux formes connues, et on
+      // vérifie que c'en est bien une.
+      const candidate =
+        json?.races?.[`${session}Results` as const] ?? json?.races?.results;
+      const results = Array.isArray(candidate) ? candidate : [];
 
       return { results: mapFreePracticeResults(results) };
     },
@@ -287,7 +304,7 @@ export async function fetchQualifyingResults(
 }> {
   // Comme pour le sprint et les essais : une qualif non publiée renvoie 404,
   // ce qui n'est pas une raison de casser la page.
-  const json = await fetchApiOrNull<any>(
+  const json = await fetchApiOrNull<ApiRaceResponse>(
     `${API_BASE_URL}/${season}/${round}/qualy`,
     { season },
   );
@@ -316,7 +333,7 @@ export async function fetchRaceSchedule(
       season === "current"
         ? `${API_BASE_URL}/current`
         : `${API_BASE_URL}/${season}`;
-    const json = await fetchApi<any>(baseUrl, { season });
+    const json = await fetchApi<ApiSeasonResponse>(baseUrl, { season });
     const races = json?.races ?? [];
 
     const byRound =
@@ -324,13 +341,18 @@ export async function fetchRaceSchedule(
         ? races
             .slice()
             .sort(
-              (a: any, b: any) => Number(b.round ?? 0) - Number(a.round ?? 0),
+              (a: ApiRace, b: ApiRace) =>
+                Number(b.round ?? 0) - Number(a.round ?? 0),
             )[0]
-        : races.find((r: any) => String(r.round) === String(round));
+        : races.find((r: ApiRace) => String(r.round) === String(round));
 
     const race = byRound ?? null;
     const schedule = race?.schedule;
     if (!schedule) return null;
+
+    // Même normalisation que dans `mapRace` : ce site-ci lisait `circuit`
+    // directement et cassait sur la forme tableau.
+    const circuitDetails = normalizeCircuit(race?.circuit);
 
     const resolvedSeason = Number(json?.season);
 
@@ -345,19 +367,19 @@ export async function fetchRaceSchedule(
         sprintRace: normalizeScheduleEntry(schedule.sprintRace),
         race: normalizeScheduleEntry(schedule.race ?? race),
       },
-      circuitDetails: race?.circuit
+      circuitDetails: circuitDetails
         ? {
-            name: race.circuit.circuitName,
-            country: race.circuit.country,
-            city: race.circuit.city,
-            circuitLength: race.circuit.circuitLength,
-            lapRecord: race.circuit.lapRecord,
-            firstParticipationYear: race.circuit.firstParticipationYear,
-            corners: race.circuit.corners,
-            fastestLapDriverId: race.circuit.fastestLapDriverId,
-            fastestLapTeamId: race.circuit.fastestLapTeamId,
-            fastestLapYear: race.circuit.fastestLapYear,
-            url: race.circuit.url,
+            name: circuitDetails.circuitName,
+            country: circuitDetails.country,
+            city: circuitDetails.city,
+            circuitLength: circuitDetails.circuitLength,
+            lapRecord: circuitDetails.lapRecord,
+            firstParticipationYear: circuitDetails.firstParticipationYear,
+            corners: circuitDetails.corners,
+            fastestLapDriverId: circuitDetails.fastestLapDriverId,
+            fastestLapTeamId: circuitDetails.fastestLapTeamId,
+            fastestLapYear: circuitDetails.fastestLapYear,
+            url: circuitDetails.url,
           }
         : undefined,
     };

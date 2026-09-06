@@ -3,20 +3,24 @@ import {
   ConstructorStanding,
 } from "@/entities/standings/model";
 import { API_BASE_URL, fetchApi } from "@/lib/api/client";
+import type {
+  ApiConstructorChampionshipResponse,
+  ApiDriverChampionshipResponse,
+} from "@/lib/api/types";
 
 export async function fetchDriverStandings(
   season: string,
 ): Promise<DriverStanding[]> {
   // Ces appels n'avaient aucune option de cache : chaque rendu repayait les
   // ~4-5 s de f1api.dev, y compris pour des saisons closes et immuables.
-  const json = await fetchApi<any>(
+  const json = await fetchApi<ApiDriverChampionshipResponse>(
     `${API_BASE_URL}/${season}/drivers-championship`,
     { season },
   );
   const standings = json?.drivers_championship ?? [];
 
   return standings.map(
-    (entry: any): DriverStanding => ({
+    (entry): DriverStanding => ({
       position: entry.position?.toString() ?? "-",
       wins: entry.wins ?? 0,
       points: entry.points?.toString() ?? "0",
@@ -31,14 +35,14 @@ export async function fetchDriverStandings(
 export async function fetchConstructorStandings(
   season: string,
 ): Promise<ConstructorStanding[]> {
-  const json = await fetchApi<any>(
+  const json = await fetchApi<ApiConstructorChampionshipResponse>(
     `${API_BASE_URL}/${season}/constructors-championship`,
     { season },
   );
   const standings = json?.constructors_championship ?? [];
 
   return standings.map(
-    (entry: any): ConstructorStanding => ({
+    (entry): ConstructorStanding => ({
       position: entry.position?.toString() ?? "-",
       points: entry.points?.toString() ?? "0",
       wins: entry.wins ?? 0,

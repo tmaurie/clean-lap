@@ -1,5 +1,7 @@
 import { Season } from "@/entities/season/model";
 import { API_BASE_URL, fetchApi } from "@/lib/api/client";
+import type { ApiSeasonResponse } from "@/lib/api/types";
+import { normalizeCircuit } from "@/lib/api/types";
 
 const NEW_API_BASE_URL = API_BASE_URL;
 const EARLIEST_SEASON = 1950;
@@ -167,7 +169,7 @@ export async function fetchRacesWithWinner(season: string): Promise<
     winnerTeam?: string;
   }[]
 > {
-  const json = await fetchApi<{ races?: any[] }>(
+  const json = await fetchApi<ApiSeasonResponse>(
     `${NEW_API_BASE_URL}/${season}`,
     { season },
   );
@@ -176,14 +178,16 @@ export async function fetchRacesWithWinner(season: string): Promise<
     const winnerName = race?.winner
       ? `${race.winner.name ?? ""} ${race.winner.surname ?? ""}`.trim()
       : undefined;
+    const circuit = normalizeCircuit(race.circuit);
+
     return {
       round: race.round?.toString() ?? "-",
       name: race.raceName ?? "Grand Prix",
       date: race.schedule?.race?.date ?? race.date ?? "",
       time: race.schedule?.race?.time ?? undefined,
-      circuit: race.circuit?.circuitName ?? undefined,
-      location: race.circuit
-        ? `${race.circuit.city}, ${race.circuit.country}`
+      circuit: circuit?.circuitName ?? undefined,
+      location: circuit
+        ? [circuit.city, circuit.country].filter(Boolean).join(", ")
         : "Lieu inconnu",
       winner: winnerName || undefined,
       winnerTeam: race?.teamWinner?.teamName ?? undefined,

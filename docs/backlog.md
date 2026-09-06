@@ -50,8 +50,19 @@ Légende effort : **S** ≈ ½ journée · **M** ≈ 1-2 jours · **L** ≈ 3 jo
 
 ## 🔧 Tech
 
-- [ ] **Validation runtime des réponses API (zod)** — 20 `: any` restants, tous dans `lib/api/`. Un changement de shape côté f1api.dev passe inaperçu et se transforme en `"N/A"` silencieux.
-      ⚠️ Devenu plus urgent : le PR #40 a désactivé `@typescript-eslint/no-explicit-any` dans `eslint.config.mjs`, donc plus rien ne signale ces `any`. Les tests des mappers couvrent maintenant les formes connues de l'API, mais pas les dérives futures. **M**
+- [x] **Couche API typée (sans zod)** — `lib/api/types.ts` décrit les réponses de f1api.dev d'après les fixtures réelles de `docs/api/`, incohérences comprises (`circuit` objet **ou** tableau, champs numériques en `number | string`, `"NC"` et `"not available"`, `firstAppareance` avec sa faute de frappe côté API, noms de circuit différents sur l'endpoint pilote-saison).
+      **30 `any` → 0** dans `lib/api/`, et la règle `@typescript-eslint/no-explicit-any` est réactivée sur ce périmètre (elle avait été désactivée globalement par le PR #40) pour que ça le reste.
+      Vérifié par mutation : `r.fastLap` → `r.fastlap` et `driver.nationality` → `driver.nationalite` sont tous deux rejetés à la compilation, avec suggestion de correction.
+
+      Le typage a révélé **cinq défauts latents**, corrigés :
+      1. `mapRace`, `fetchRaceSchedule` et `fetchRacesWithWinner` lisaient `circuit.circuitName` sans normaliser la forme tableau — ils auraient lu `undefined` sur les endpoints qui la renvoient. Normaliseur partagé (`normalizeCircuit`).
+      2. `fetchFreePracticeResults` retombait sur `json.races`, c'est-à-dire l'**objet** manche, passé ensuite à `.map()` : ça aurait levé.
+      3. `mapDriverRaceResults` empilait une dizaine de replis inatteignables (`r.score`, `r.startingGrid`, `raceData.race.name`…). Réécrit sur la forme réelle : les 12 tests pilotes passent à l'identique, ce qui confirme qu'ils ne servaient à rien.
+      4. `fetchDriverSeason` avait deux replis morts (`json.driver?.[0]`, `json.driverRaces`).
+      5. Plusieurs champs pouvaient valoir `undefined` alors que le modèle promet `string` — l'interface aurait affiché « undefined ». Valeurs de repli ajoutées.
+
+      ⚠️ Choix assumé : pas de zod. Les types attrapent les erreurs de code à la compilation, ce qui est le risque quotidien ; ils ne voient pas une dérive de l'API à l'exécution. Si f1api.dev change de forme, ce sont les tests (sur fixtures) et l'affichage qui le diront. zod reste une option si la détection runtime devient utile.
+
 - [ ] **Route handlers proxy `/api/*`** — périmètre nettement réduit depuis le passage en Server Components : `/standings`, `/drivers` et `/results/[season]` ne tapent plus l'API depuis le navigateur. Il ne reste que `/calendar` et la liste `/results` (défilement infini). **S**
 - [x] **Tests unitaires (Vitest)** — 65 tests, 7 fichiers, ~250 ms : `lib/utils/time`, `lib/utils/date`, `lib/utils/colors`, `lib/utils/flags`, et les mappers `lib/api/race`, `lib/api/drivers`, `lib/api/standings` (fetch bouchonné sur les fixtures de `docs/api/`).
       Validés par mutation : en réintroduisant les anciennes implémentations de `isPastRace` et `parseLapTimeMs`, 13 tests tombent — ils gardent bien les bugs corrigés, ils ne décrivent pas seulement le code actuel.

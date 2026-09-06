@@ -4,10 +4,22 @@ import {
   DriverSeason,
 } from "@/entities/driver/model";
 import { API_BASE_URL, fetchApi } from "@/lib/api/client";
+import type {
+  ApiDriver,
+  ApiDriverSeasonEntry,
+  ApiDriverSeasonResponse,
+  ApiDriversResponse,
+} from "@/lib/api/types";
 
-function mapDriver(d: any): Driver {
+/** L'API renvoie tantôt un objet seul, tantôt un tableau. */
+function toArray<T>(value: T | T[] | undefined): T[] {
+  if (!value) return [];
+  return Array.isArray(value) ? value : [value];
+}
+
+function mapDriver(d: ApiDriver): Driver {
   return {
-    id: d?.driverId,
+    id: d?.driverId ?? "",
     name: d?.name ?? "",
     surname: d?.surname ?? "",
     nationality: d?.nationality ?? "",
@@ -19,77 +31,41 @@ function mapDriver(d: any): Driver {
   };
 }
 
-function mapDriverRaceResults(raw: any[]): DriverRaceResult[] {
-  return raw.map((r: any) => {
-    const raceData = r?.race ?? r;
-    const resultData = r?.result ?? r;
-    const sprintData = r?.sprintResult ?? r?.sprint ?? null;
-    const raceName =
-      raceData?.raceName ??
-      raceData?.name ??
-      raceData?.race?.name ??
-      "Grand Prix";
-    const round = raceData?.round ?? raceData?.race?.round ?? null;
-    const circuitData = raceData?.circuit ?? raceData?.race?.circuit;
-    const location = circuitData
-      ? `${circuitData.city ?? ""}${circuitData.city ? ", " : ""}${circuitData.country ?? ""}`.trim() ||
-        null
-      : (r?.location ?? null);
+/**
+ * L'ancienne version empilait une dizaine de replis spéculatifs (`r.score`,
+ * `r.startingGrid`, `raceData.race.name`…) pour des formes que l'endpoint ne
+ * renvoie pas. Le typage les a mis en évidence : ils ne pouvaient jamais être
+ * atteints, et ils masquaient la forme réelle.
+ *
+ * On s'en tient donc à ce que `/api/{saison}/drivers/{id}` renvoie
+ * effectivement (cf. docs/api/driver_result.json), tout en gardant les deux
+ * alias réellement observés : `name` ici contre `raceName` ailleurs, et
+ * `finishingPosition` / `position` sur le sprint.
+ */
+function mapDriverRaceResults(raw: ApiDriverSeasonEntry[]): DriverRaceResult[] {
+  return raw.map((entry) => {
+    const race = entry.race;
+    const result = entry.result;
+    const sprint = entry.sprintResult ?? null;
 
-    const grid =
-      resultData?.gridPosition ??
-      resultData?.grid ??
-      r?.gridPosition ??
-      r?.grid ??
-      r?.startingGrid ??
-      r?.qualyPosition ??
-      null;
-    const position =
-      resultData?.finishingPosition ??
-      resultData?.position ??
-      r?.position ??
-      r?.result ??
-      null;
+    const circuit = race?.circuit;
+    const location = circuit
+      ? [circuit.city, circuit.country].filter(Boolean).join(", ") || null
+      : null;
 
-    const pointsVal =
-      resultData?.pointsObtained ??
-      resultData?.points ??
-      r?.pointsObtained ??
-      r?.points ??
-      r?.score ??
-      r?.racePoints ??
-      null;
-    const racePoints = Number(pointsVal ?? 0);
-    const sprintPoints = Number(
-      sprintData?.pointsObtained ??
-        sprintData?.points ??
-        sprintData?.score ??
-        0,
-    );
-    const points = racePoints + sprintPoints;
-
-    const date =
-      raceData?.date ??
-      raceData?.race?.date ??
-      r?.date ??
-      r?.schedule?.race?.date ??
-      raceData?.schedule?.race?.date ??
-      null;
+    const racePoints = Number(result?.pointsObtained ?? 0);
+    const sprintPoints = Number(sprint?.pointsObtained ?? sprint?.points ?? 0);
 
     return {
-      round,
-      raceName,
-      date,
-      grid,
-      position,
-      sprintPosition:
-        sprintData?.finishingPosition ??
-        sprintData?.position ??
-        sprintData?.result ??
-        null,
+      round: race?.round ?? null,
+      raceName: race?.name ?? race?.raceName ?? "Grand Prix",
+      date: race?.date ?? race?.schedule?.race?.date ?? null,
+      grid: result?.gridPosition ?? null,
+      position: result?.finishingPosition ?? null,
+      sprintPosition: sprint?.finishingPosition ?? sprint?.position ?? null,
       sprintPoints,
-      points,
-      status: r?.retired ?? r?.status ?? null,
+      points: racePoints + sprintPoints,
+      status: result?.retired ?? null,
       location,
     };
   });
@@ -108,8 +84,10 @@ export async function fetchDrivers(options?: {
         : `${API_BASE_URL}/drivers`;
 
   try {
-    const json = await fetchApi<any>(base, { season });
-    const list = json?.drivers ?? json?.driver ?? [];
+    const json = await fetchApi<ApiDriversResponse>(base, { season });
+    // Selon l'endpoint, la liste arrive sous `drivers` ou sous `driver`, et
+    // `driver` est parfois un objet seul. Le typage a rendu ce cas explicite.
+    const list = json?.drivers ?? toArray(json?.driver);
     const drivers: Driver[] = list.map(mapDriver);
 
     const query = search?.trim().toLowerCase();
@@ -132,10 +110,12 @@ export async function fetchDriverSeason(
 ): Promise<DriverSeason | null> {
   try {
     const url = `${API_BASE_URL}/${season}/${driverId.includes("/") ? driverId : `drivers/${driverId}`}`;
-    const json = await fetchApi<any>(url, { season });
-    const driverInfo = json?.driver ?? json?.driver?.[0] ?? json?.drivers?.[0];
-    const racesRaw = json?.results ?? json?.races ?? json?.driverRaces ?? [];
-    const races = mapDriverRaceResults(racesRaw);
+    const json = await fetchApi<ApiDriverSeasonResponse>(url, { season });
+    // `json.driver?.[0]` et `json.driverRaces` étaient des replis morts :
+    // inatteignables dès lors que `json.driver` / `json.results` existent, et
+    // absents de la réponse quand ils n'existent pas.
+    const driverInfo = json?.driver;
+    const races = mapDriverRaceResults(json?.results ?? []);
 
     const wins = races.filter(
       (r) => r.position === 1 || r.position === "1",
