@@ -12,6 +12,11 @@ import { getConstructorColor } from "@/lib/utils/colors";
 import { countryToFlagEmoji } from "@/lib/utils/flags";
 import { isPastRace } from "@/lib/utils/date";
 import { GhostNumber } from "@/components/paddock/GhostNumber";
+import {
+  RowsSkeleton,
+  SkeletonScreen,
+  TilesSkeleton,
+} from "@/components/skeletons/PageSkeletons";
 
 type StandingsTabsProps = {
   season: string;
@@ -97,7 +102,15 @@ export function StandingsTabs({ season }: StandingsTabsProps) {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-foreground/50">Chargement…</p>
+        // Le squelette reprend la structure réelle (podium + liste) pour que
+        // l'arrivée des données ne décale pas la page.
+        <SkeletonScreen
+          label={`Chargement du classement ${season}`}
+          className="gap-6"
+        >
+          <TilesSkeleton tiles={3} columns="md:grid-cols-3" />
+          <RowsSkeleton rows={8} className="mt-6" />
+        </SkeletonScreen>
       ) : rows.length === 0 ? (
         <p className="text-sm text-foreground/50">
           Aucun classement disponible pour cette saison.

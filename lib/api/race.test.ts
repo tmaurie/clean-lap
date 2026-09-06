@@ -152,8 +152,10 @@ describe("fetchRaceResults", () => {
   it("classe premier le vrai meilleur tour", async () => {
     stubFetch({ "/race": { body: raceResultFixture } });
 
-    const { results } = await fetchRaceResults("2025", "21");
-    const ranked = results.filter((r) => r.fastestLap?.rank === "1");
+    const race = await fetchRaceResults("2025", "21");
+    const ranked = (race?.results ?? []).filter(
+      (r) => r.fastestLap?.rank === "1",
+    );
 
     // Albon signe 1:12.400, devant Verstappen (1:12.447).
     expect(ranked).toHaveLength(1);
@@ -164,8 +166,10 @@ describe("fetchRaceResults", () => {
   it("laisse fastestLap indéfini quand le pilote n'a pas de tour chronométré", async () => {
     stubFetch({ "/race": { body: raceResultFixture } });
 
-    const { results } = await fetchRaceResults("2025", "21");
-    const bortoleto = results.find((r) => r.driver === "Gabriel Bortoleto");
+    const race = await fetchRaceResults("2025", "21");
+    const bortoleto = race?.results.find(
+      (r) => r.driver === "Gabriel Bortoleto",
+    );
 
     expect(bortoleto?.fastestLap).toBeUndefined();
   });
@@ -193,8 +197,37 @@ describe("fetchRaceResults", () => {
     });
 
     const race = await fetchRaceResults("2025", "21");
-    expect(race.circuit.name).toBe("Interlagos");
-    expect(race.location).toBe("São Paulo, Brazil");
+    expect(race?.circuit.name).toBe("Interlagos");
+    expect(race?.location).toBe("São Paulo, Brazil");
+  });
+});
+
+describe("404 : inexistant plutôt qu'en panne", () => {
+  it("fetchRaceResults renvoie null sur une manche hors calendrier", async () => {
+    // C'est ce null qui permet à la page de rendre un 404 au lieu d'une 500.
+    stubFetch({ "/race": { status: 404 } });
+
+    await expect(fetchRaceResults("2024", "999")).resolves.toBeNull();
+  });
+
+  it("fetchRaceResults lève encore sur une vraie panne serveur", async () => {
+    stubFetch({ "/race": { status: 500 } });
+
+    await expect(fetchRaceResults("2024", "1")).rejects.toThrow();
+  });
+
+  it("fetchQualifyingResults renvoie une liste vide sur une qualif non publiée", async () => {
+    stubFetch({ "/qualy": { status: 404 } });
+
+    await expect(fetchQualifyingResults("2026", "13")).resolves.toEqual({
+      results: [],
+    });
+  });
+
+  it("fetchQualifyingResults lève encore sur une vraie panne serveur", async () => {
+    stubFetch({ "/qualy": { status: 503 } });
+
+    await expect(fetchQualifyingResults("2024", "1")).rejects.toThrow();
   });
 });
 

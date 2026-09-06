@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { clsx } from "clsx";
 
 import { PodiumBlock } from "@/app/results/PodiumBlock";
@@ -26,6 +28,29 @@ type ResultsPageProps = {
   params: Promise<{ season: string; round: string }>;
 };
 
+/**
+ * Le test d'existence vit ici, et pas seulement dans la page : avec un
+ * `loading.tsx`, la route streame, et le statut HTTP part avant que la page
+ * ait pu appeler `notFound()`. Résultat, une manche inexistante affichait
+ * l'écran 404 avec un statut 200 — invisible à l'œil, mais faux pour les
+ * crawlers. `generateMetadata` s'exécute avant le premier octet du corps,
+ * donc le 404 y est encore possible. L'appel est mutualisé avec celui de la
+ * page par le cache de fetch.
+ */
+export async function generateMetadata({
+  params,
+}: ResultsPageProps): Promise<Metadata> {
+  const { season, round } = await params;
+  const race = await getRaceResults(season, round);
+
+  if (!race) notFound();
+
+  return {
+    title: `${race.raceName} — Résultats | CleanLap`,
+    description: `Classement complet, qualifications et essais libres du ${race.raceName} (${race.location}).`,
+  };
+}
+
 export default async function ResultsPage({ params }: ResultsPageProps) {
   const { season, round } = await params;
 
@@ -48,6 +73,10 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
     fetchFreePracticeResults(season, round, "fp3"),
     round !== "last" ? getRacesWithWinner(season) : Promise.resolve([]),
   ]);
+
+  // La manche n'existe pas (hors calendrier, saison inconnue) : on rend un
+  // vrai 404 au lieu de laisser remonter l'exception, qui donnait une 500.
+  if (!raceResult) notFound();
 
   const { raceName, location, date, results, circuit } = raceResult;
   const circuitDetails = scheduleData?.circuitDetails;

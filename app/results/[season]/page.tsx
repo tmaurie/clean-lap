@@ -8,6 +8,7 @@ import { HatchOverlay } from "@/components/paddock/HatchOverlay";
 import { getRacesWithWinner } from "@/features/results/hooks";
 import { getConstructorColor } from "@/lib/utils/colors";
 import { countryToFlagEmoji } from "@/lib/utils/flags";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type RaceWithWinner = Awaited<ReturnType<typeof getRacesWithWinner>>[number];
 
@@ -17,22 +18,81 @@ export default function SeasonResultsPage({
   params: Promise<{ season: string }>;
 }) {
   const { season } = React.use(params);
-  const [races, setRaces] = useState<RaceWithWinner[] | null>(null);
+  const [races, setRaces] = useState<RaceWithWinner[]>([]);
+  const [status, setStatus] = useState<"loading" | "ready" | "error">(
+    "loading",
+  );
 
   useEffect(() => {
-    async function fetchRaces() {
-      const data = await getRacesWithWinner(season);
-      setRaces(data);
-    }
+    // `ignore` évite qu'une réponse lente d'une saison précédente vienne
+    // écraser celle de la saison affichée.
+    let ignore = false;
 
-    fetchRaces();
+    setStatus("loading");
+    getRacesWithWinner(season)
+      .then((data) => {
+        if (ignore) return;
+        setRaces(data);
+        setStatus("ready");
+      })
+      .catch((error) => {
+        if (ignore) return;
+        // Une saison hors calendrier renvoie 404 : la promesse rejetait sans
+        // que personne ne l'écoute, et la page restait sur « Chargement… ».
+        console.error(`[results] saison ${season} indisponible`, error);
+        setStatus("error");
+      });
+
+    return () => {
+      ignore = true;
+    };
   }, [season]);
 
-  if (!races) {
+  if (status === "loading") {
     return (
-      <div className="px-6 py-14 text-sm text-foreground/50 md:px-12">
-        Chargement des résultats...
+      <div className="flex flex-col gap-6 px-6 py-14 md:px-12">
+        <Skeleton className="h-4 w-40" />
+        <Skeleton className="h-14 w-72" />
+        <div className="flex flex-col gap-px border border-white/8 bg-white/8">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-5 bg-background p-5">
+              <Skeleton className="h-6 w-8" />
+              <Skeleton className="h-5 flex-1" />
+              <Skeleton className="hidden h-4 w-28 sm:block" />
+            </div>
+          ))}
+        </div>
+        <span className="sr-only" role="status">
+          Chargement des résultats de la saison {season}
+        </span>
       </div>
+    );
+  }
+
+  if (status === "error" || races.length === 0) {
+    return (
+      <section className="relative overflow-hidden px-6 py-14 md:px-12">
+        <HatchOverlay />
+        <div className="relative flex flex-col gap-6">
+          <SectionEyebrow>Saison {season}</SectionEyebrow>
+          <h1 className="text-4xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-5xl">
+            {status === "error"
+              ? "Saison indisponible"
+              : "Aucune course enregistrée"}
+          </h1>
+          <p className="max-w-xl text-sm leading-relaxed text-foreground/55">
+            {status === "error"
+              ? `Aucune donnée pour la saison ${season}. Elle n'est peut-être pas au calendrier, ou l'API est momentanément indisponible.`
+              : `La saison ${season} existe mais ne contient aucune manche.`}
+          </p>
+          <Link
+            href="/results"
+            className="inline-flex h-[52px] w-fit items-center bg-primary px-9 text-sm font-extrabold uppercase italic tracking-[0.08em] text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            Choisir une autre saison →
+          </Link>
+        </div>
+      </section>
     );
   }
 

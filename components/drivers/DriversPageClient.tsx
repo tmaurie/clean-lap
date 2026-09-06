@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Loader2 } from "lucide-react";
 
 import { DriverCard } from "@/components/drivers/DriverCard";
 import { DriverSearchBar } from "@/components/drivers/DriverSearchBar";
@@ -17,6 +16,8 @@ import { HatchOverlay } from "@/components/paddock/HatchOverlay";
 import { useDrivers } from "@/features/drivers/useDrivers";
 import { getConstructorLabel } from "@/lib/utils/colors";
 import type { Driver } from "@/entities/driver/model";
+import { SkeletonScreen } from "@/components/skeletons/PageSkeletons";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const seasons = ["current", "2025", "2024", "2023", "2022", "2021", "2020"];
 
@@ -84,29 +85,38 @@ export function DriversPageClient() {
       </section>
 
       <section className="px-6 py-10 md:px-12">
-        {isLoading && (
-          <div className="flex items-center gap-2 text-sm text-foreground/50">
-            <Loader2 className="h-4 w-4 animate-spin" /> Chargement des
-            pilotes...
-          </div>
-        )}
         {isError && (
           <p className="text-sm text-foreground/50">
             Impossible de charger les pilotes pour le moment.
           </p>
         )}
-        {!isLoading && filteredDrivers.length === 0 && (
+
+        {isLoading ? (
+          // Une grille de cartes fantômes au lieu d'un spinner + grille vide :
+          // même gabarit que le rendu final, donc pas de saut de mise en page.
+          <SkeletonScreen label="Chargement des pilotes">
+            <div className="grid grid-cols-1 gap-px border border-white/8 bg-white/8 sm:grid-cols-2 lg:grid-cols-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="flex flex-col gap-3 bg-background p-6">
+                  <Skeleton className="h-3 w-12" />
+                  <Skeleton className="h-7 w-40" />
+                  <Skeleton className="h-4 w-28" />
+                </div>
+              ))}
+            </div>
+          </SkeletonScreen>
+        ) : filteredDrivers.length === 0 ? (
           <div className="border border-dashed border-white/15 p-6 text-sm text-foreground/50">
             Aucun pilote trouvé. Essayez une autre recherche ou changez de
             saison.
           </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-px border border-white/8 bg-white/8 sm:grid-cols-2 lg:grid-cols-4">
+            {filteredDrivers.map((driver) => (
+              <DriverCard key={driver.id} driver={driver} />
+            ))}
+          </div>
         )}
-
-        <div className="grid grid-cols-1 gap-px border border-white/8 bg-white/8 sm:grid-cols-2 lg:grid-cols-4">
-          {filteredDrivers.map((driver) => (
-            <DriverCard key={driver.id} driver={driver} />
-          ))}
-        </div>
       </section>
     </div>
   );

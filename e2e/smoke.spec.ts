@@ -179,20 +179,117 @@ test("la navigation principale mène à chaque page", async ({ page }) => {
   }
 });
 
-// BUG CONNU — ce test échoue volontairement (`test.fail`).
-// `/results/2024/999` renvoie actuellement un HTTP 500 : f1api.dev répond 404
-// sur une manche inexistante, `fetchJSON` (lib/api/race.ts) lève, et aucun
-// `error.tsx` / `not-found.tsx` n'existe dans `app/` pour rattraper. Toute URL
-// mal saisie ou tout crawler tombe donc sur une 500.
-// Voir l'item « États d'erreur et vide soignés » dans docs/backlog.md.
-// Quand ce sera corrigé, Playwright signalera « expected to fail but passed » :
-// il suffira alors de retirer le `test.fail()`.
-test("une manche inexistante ne casse pas l'app", async ({ page }) => {
-  test.fail();
+test("une manche inexistante rend un 404, pas une 500", async ({ page }) => {
+  const errors = watchForErrors(page);
 
+  // f1api.dev répond 404 sur une manche hors calendrier. Avant, l'exception
+  // remontait jusqu'au serveur et toute URL mal saisie donnait une 500.
   const response = await page.goto("/results/2024/999");
 
-  // Peu importe la forme retenue (404 ou page vide) : ce qui compte est que
-  // le serveur ne renvoie pas une 500.
-  expect(response?.status(), "statut HTTP").toBeLessThan(500);
+  expect(response?.status(), "statut HTTP").toBe(404);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Page introuvable",
+  );
+
+  expect(errors, "erreurs console sur la page 404").toEqual([]);
+});
+
+test("un pilote inconnu rend un 404", async ({ page }) => {
+  // Verrouille la contrainte documentée dans components/skeletons/README.md :
+  // pas de `loading.tsx` sur une route qui appelle `notFound()`, sinon le
+  // streaming renvoie 200.
+  const response = await page.goto("/drivers/pilote-inexistant");
+
+  expect(response?.status(), "statut HTTP").toBe(404);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Page introuvable",
+  );
+});
+
+test("une URL inconnue rend la page 404 de l'app", async ({ page }) => {
+  const response = await page.goto("/cette-page-nexiste-pas");
+
+  expect(response?.status()).toBe(404);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Page introuvable",
+  );
+  // La page 404 doit ramener quelque part.
+  await expect(
+    page.getByRole("link", { name: /retour à l'accueil/i }),
+  ).toBeVisible();
+});
+
+test("une saison hors calendrier affiche un état vide, pas un chargement infini", async ({
+  page,
+}) => {
+  await page.goto("/results/1800");
+
+  // La promesse rejetée laissait la page bloquée sur « Chargement… ».
+  await expect(
+    page.getByRole("heading", { name: /saison indisponible/i }),
+  ).toBeVisible({ timeout: 30_000 });
+  await expect(
+    page.getByRole("link", { name: /choisir une autre saison/i }),
+  ).toBeVisible();
+});
+
+/**
+ * Les pages calendrier / classements / pilotes chargent leurs données depuis
+ * le navigateur : on peut donc retenir la réponse de f1api.dev et observer
+ * l'état de chargement de façon déterministe, au lieu de courir après une
+ * fenêtre de quelques millisecondes.
+ */
+async function slowDownApi(page: Page, delayMs = 4000) {
+  await page.route("**://f1api.dev/**", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+    await route.continue();
+  });
+}
+
+test.describe("états de chargement", () => {
+  test("le calendrier affiche un squelette annoncé, pas une page vide", async ({
+    page,
+  }) => {
+    await slowDownApi(page);
+    await page.goto("/calendar");
+
+    // Avant, la page s'affichait avec des compteurs à 0 et aucune indication.
+    await expect(
+      page.getByRole("status").filter({ hasText: /chargement du calendrier/i }),
+    ).toBeAttached();
+
+    // Et surtout : pas de "0 manches" trompeur pendant le chargement.
+    await expect(page.getByText("Manches").locator("..")).toContainText("—");
+  });
+
+  test("les classements affichent un squelette pendant le chargement", async ({
+    page,
+  }) => {
+    await slowDownApi(page);
+    await page.goto("/standings");
+
+    await expect(
+      page.getByRole("status").filter({ hasText: /chargement du classement/i }),
+    ).toBeAttached();
+  });
+
+  test("les pilotes affichent une grille fantôme", async ({ page }) => {
+    await slowDownApi(page);
+    await page.goto("/drivers");
+
+    await expect(
+      page.getByRole("status").filter({ hasText: /chargement des pilotes/i }),
+    ).toBeAttached();
+  });
+
+  test("le squelette disparaît une fois les données arrivées", async ({
+    page,
+  }) => {
+    await page.goto("/calendar");
+
+    await expect(page.getByRole("status")).toHaveCount(0, { timeout: 30_000 });
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "Calendrier",
+    );
+  });
 });

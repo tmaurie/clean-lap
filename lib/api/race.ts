@@ -84,7 +84,23 @@ function cacheOptions(season: string): {
 }
 
 async function fetchJSON(url: string, season: string): Promise<any> {
+  const json = await fetchJSONOrNull(url, season);
+  if (json === null) {
+    throw new Error(`Failed to fetch ${url}: 404 Not Found`);
+  }
+  return json;
+}
+
+/**
+ * Un 404 de f1api.dev veut dire « ça n'existe pas » — une manche hors
+ * calendrier, une séance jamais disputée. C'est une donnée, pas une panne :
+ * les appelants doivent pouvoir répondre 404 plutôt que de laisser remonter
+ * une exception, qui se traduisait par un HTTP 500. Les autres codes restent
+ * des erreurs.
+ */
+async function fetchJSONOrNull(url: string, season: string): Promise<any> {
   const res = await fetch(url, cacheOptions(season));
+  if (res.status === 404) return null;
   if (!res.ok) {
     throw new Error(`Failed to fetch ${url}: ${res.status} ${res.statusText}`);
   }
@@ -157,10 +173,14 @@ export async function fetchRaces(season: string): Promise<Race[]> {
   return rawRaces.map(mapRace);
 }
 
+/**
+ * `null` quand la manche n'existe pas : c'est le test d'existence utilisé par
+ * la page résultats pour rendre un vrai 404.
+ */
 export async function fetchRaceResults(
   season: string,
   round: string,
-): Promise<{
+): Promise<null | {
   raceName: string;
   location: string;
   date: string;
@@ -173,10 +193,12 @@ export async function fetchRaceResults(
   };
   results: RaceResult[];
 }> {
-  const json = await fetchJSON(
+  const json = await fetchJSONOrNull(
     `https://f1api.dev/api/${season}/${round}/race`,
     season,
   );
+  if (json === null) return null;
+
   const race = json?.races;
   // f1api.dev returns `circuit` as a single-element array when queried by an
   // explicit round number, but as a plain object for "last" or the season
@@ -306,7 +328,9 @@ export async function fetchQualifyingResults(
 ): Promise<{
   results: QualifyingResult[];
 }> {
-  const json = await fetchJSON(
+  // Comme pour le sprint et les essais : une qualif non publiée renvoie 404,
+  // ce qui n'est pas une raison de casser la page.
+  const json = await fetchJSONOrNull(
     `https://f1api.dev/api/${season}/${round}/qualy`,
     season,
   );

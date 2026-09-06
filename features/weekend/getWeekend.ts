@@ -105,8 +105,8 @@ async function loadPodium(
 
     case "race":
       return safePodium(async () => {
-        const { results } = await fetchRaceResults(season, round);
-        return results.slice(0, 3).map((r) => ({
+        const race = await fetchRaceResults(season, round);
+        return (race?.results ?? []).slice(0, 3).map((r) => ({
           position: r.position,
           driver: r.driver,
           constructor: r.constructor,
