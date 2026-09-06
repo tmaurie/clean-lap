@@ -87,3 +87,67 @@ export function getConstructorLabel(constructorOrId: string): string {
   if (TEAM_COLORS_BY_NAME[key]) return key;
   return humanizeId(key);
 }
+
+/* -------------------------------------------------------------------------
+   Lisibilité des couleurs d'écurie utilisées comme couleur de texte
+   ------------------------------------------------------------------------- */
+
+const DARK_BACKGROUND = [0x0b, 0x0d, 0x10] as const;
+
+function parseHex(color: string): [number, number, number] | null {
+  const match = /^#?([\da-f]{6})$/i.exec(color.trim());
+  if (!match) return null;
+  const value = match[1];
+  return [
+    parseInt(value.slice(0, 2), 16),
+    parseInt(value.slice(2, 4), 16),
+    parseInt(value.slice(4, 6), 16),
+  ];
+}
+
+function relativeLuminance([r, g, b]: readonly [number, number, number]) {
+  const channel = (v: number) => {
+    const c = v / 255;
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+}
+
+function contrastWithBackground(rgb: readonly [number, number, number]) {
+  const a = relativeLuminance(rgb);
+  const b = relativeLuminance(DARK_BACKGROUND);
+  const [hi, lo] = a > b ? [a, b] : [b, a];
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+/**
+ * Version lisible d'une couleur d'écurie, pour les cas où elle sert de
+ * **couleur de texte** sur le fond sombre de l'app.
+ *
+ * Certaines couleurs officielles sont trop sombres pour ça : RB (#3d3d3d)
+ * plafonnait à 1,3:1, très en dessous du minimum de 3:1. On éclaircit vers le
+ * blanc, par pas de 5 %, jusqu'à franchir le seuil — la teinte de marque est
+ * conservée, seule la luminosité bouge.
+ *
+ * À n'utiliser que pour du texte : en aplat ou en filet (`background`), la
+ * couleur officielle reste la bonne.
+ */
+export function getReadableConstructorColor(
+  constructorOrId: string,
+  minimumRatio = 3,
+): string {
+  const base = parseHex(getConstructorColor(constructorOrId));
+  if (!base) return "var(--foreground)";
+
+  let rgb: [number, number, number] = [...base];
+  for (let step = 0; step < 20; step++) {
+    if (contrastWithBackground(rgb) >= minimumRatio) break;
+    rgb = [
+      Math.round(rgb[0] + (255 - rgb[0]) * 0.05),
+      Math.round(rgb[1] + (255 - rgb[1]) * 0.05),
+      Math.round(rgb[2] + (255 - rgb[2]) * 0.05),
+    ];
+  }
+
+  return `#${rgb.map((c) => c.toString(16).padStart(2, "0")).join("")}`;
+}

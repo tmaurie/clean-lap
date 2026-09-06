@@ -81,7 +81,10 @@
   --popover: #12151a;
   --popover-foreground: #f4f4f2;
   --primary: #ff2c2c;
-  --primary-foreground: #ffffff;
+  /* Blanc sur le rouge de marque ne donnait que 3,72:1, sous le seuil AA de
+     4,5. Le fond de l'app remonte à 5,23:1 sans toucher au rouge lui-même,
+     qui reste à 5,23:1 sur fond sombre pour les accents. */
+  --primary-foreground: #0b0d10;
   --secondary: #16181d;
   --secondary-foreground: #f4f4f2;
   --muted: #16181d;
@@ -131,5 +134,26 @@
   }
   a {
     color: inherit;
+  }
+
+  /*
+   * Indicateur de focus global. Les composants de `components/ui` en avaient
+   * un, mais les onze CTA et les liens écrits à la main dans les pages n'en
+   * avaient aucun : la navigation au clavier était invisible.
+   *
+   * `:where()` maintient la spécificité à 0, donc un composant peut toujours
+   * définir le sien. Le rouge de marque donne 5,23:1 sur le fond sombre, au
+   * dessus des 3:1 exigés pour un élément non textuel.
+   */
+  :where(
+      a,
+      button,
+      [role="button"],
+      [role="tab"],
+      summary,
+      [tabindex]
+    ):focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
   }
 }

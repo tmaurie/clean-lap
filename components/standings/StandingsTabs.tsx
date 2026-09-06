@@ -166,7 +166,7 @@ export function StandingsTabs({
                   ? `Classement pilotes — ${rows.length} classés`
                   : `Classement constructeurs — ${rows.length} écuries`}
               </span>
-              <span className="font-mono text-xs text-foreground/45">
+              <span className="font-mono text-xs text-foreground/55">
                 Écart P1→P2 : {gap} pts
                 {races.length > 0 ? ` · ${remainingCount} GP restants` : ""}
               </span>
@@ -177,7 +177,7 @@ export function StandingsTabs({
                   key={row.position}
                   className="flex items-center gap-7 border-b border-border p-4 transition-colors hover:bg-[#12151a]"
                 >
-                  <span className="w-14 text-2xl font-black italic text-foreground/30">
+                  <span className="w-14 text-2xl font-black italic text-foreground/40">
                     {row.position}
                   </span>
                   <span

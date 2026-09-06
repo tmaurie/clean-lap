@@ -148,11 +148,11 @@ export default async function TeamPage({
                   className="flex h-full flex-col gap-3 bg-background p-6 transition-colors hover:bg-[#12151a]"
                 >
                   <div className="flex items-baseline justify-between gap-3">
-                    <span className="font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-foreground/45">
+                    <span className="font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-foreground/55">
                       {driver.shortName ?? driver.surname.slice(0, 3)}
                     </span>
                     {driver.number !== null && (
-                      <span className="font-mono text-2xl font-black italic text-foreground/20">
+                      <span className="font-mono text-2xl font-black italic text-foreground/40">
                         {driver.number}
                       </span>
                     )}
@@ -182,7 +182,7 @@ export default async function TeamPage({
               key={item.label}
               className="flex flex-col gap-1.5 bg-background p-6"
             >
-              <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-foreground/45">
+              <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-foreground/55">
                 {item.label}
               </span>
               <span className="font-mono text-2xl font-extrabold">

@@ -78,7 +78,7 @@ function SeasonCard({ season }: { season: Season }) {
 
         <div className="relative flex flex-col gap-3.5">
           <div className="flex flex-col gap-1">
-            <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-foreground/45">
+            <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-foreground/55">
               Champion pilote
             </span>
             <span
@@ -93,7 +93,7 @@ function SeasonCard({ season }: { season: Season }) {
             </span>
           </div>
           <div className="flex flex-col gap-1">
-            <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-foreground/45">
+            <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-foreground/55">
               Champion constructeur
             </span>
             <span

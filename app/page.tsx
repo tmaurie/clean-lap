@@ -177,7 +177,7 @@ export default async function HomePage() {
                             "text-[11px] font-bold uppercase tracking-[0.15em] " +
                             (item.key === "race"
                               ? "text-primary"
-                              : "text-foreground/45")
+                              : "text-foreground/55")
                           }
                         >
                           {item.label}
@@ -286,7 +286,7 @@ export default async function HomePage() {
                 className="relative flex flex-col gap-3.5 bg-background p-6 transition-colors hover:bg-[#12151a]"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xl font-black italic text-foreground/25">
+                  <span className="text-xl font-black italic text-foreground/40">
                     R{round}
                   </span>
                   <span className="text-xl">{raceFlag}</span>

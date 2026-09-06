@@ -88,13 +88,36 @@ export function HeroCountdown({ targetIso }: { targetIso: string }) {
     ? [remaining.days, remaining.hours, remaining.minutes, remaining.seconds]
     : null;
 
+  // Résumé lisible, sans `aria-live` : annoncer un compteur qui change chaque
+  // seconde rendrait la page inutilisable au lecteur d'écran. Le texte est là
+  // quand on navigue jusqu'à lui, les chiffres animés sont masqués.
+  const resume = remaining
+    ? [
+        remaining.days > 0
+          ? `${remaining.days} jour${remaining.days > 1 ? "s" : ""}`
+          : null,
+        remaining.hours > 0
+          ? `${remaining.hours} heure${remaining.hours > 1 ? "s" : ""}`
+          : null,
+        `${remaining.minutes} minute${remaining.minutes > 1 ? "s" : ""}`,
+      ]
+        .filter(Boolean)
+        .join(", ")
+    : null;
+
   return (
     <div
+      data-countdown
       className="flex w-fit border border-border bg-background/60"
-      aria-label="Temps restant avant le départ"
     >
+      <span className="sr-only">
+        {resume
+          ? `Départ dans ${resume}.`
+          : "Calcul du temps restant avant le départ."}
+      </span>
       {LABELS.map((label, index) => (
         <div
+          aria-hidden
           key={label.long}
           className={
             "flex flex-col gap-1 px-4 py-4 sm:px-10 sm:py-5" +

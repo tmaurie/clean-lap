@@ -141,7 +141,7 @@ export default async function WeekendPage() {
       <section className="flex flex-col gap-6 border-b border-border px-6 py-10 md:px-12">
         <div className="flex flex-wrap items-baseline justify-between gap-4">
           <SectionEyebrow>Déroulé du week-end</SectionEyebrow>
-          <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-foreground/45">
+          <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-foreground/55">
             Horaires en heure de Paris
           </span>
         </div>
@@ -158,7 +158,7 @@ export default async function WeekendPage() {
                 key={fact.label}
                 className="flex flex-col gap-1.5 bg-background p-6"
               >
-                <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-foreground/45">
+                <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-foreground/55">
                   {fact.label}
                 </span>
                 <span className="font-mono text-lg font-extrabold">

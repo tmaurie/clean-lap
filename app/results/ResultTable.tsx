@@ -16,24 +16,30 @@ export type ResultColumn<T> = {
 type ResultTableProps<T> = {
   data: T[];
   columns: readonly ResultColumn<T>[];
+  /** Décrit le tableau pour les lecteurs d'écran. */
+  caption: string;
 };
 
 export function ResultTable<T extends { position?: string }>({
   data,
   columns,
+  caption,
 }: ResultTableProps<T>) {
   const hasData = Array.isArray(data) && data.length > 0;
 
   return (
     <div className="overflow-x-auto border border-white/8">
       <table className="w-full min-w-[640px] border-collapse text-sm">
+        {/* Un tableau sans légende ne se distingue pas des autres pour un
+            lecteur d'écran, surtout avec six onglets sur la même page. */}
+        <caption className="sr-only">{caption}</caption>
         <thead>
           <tr className="border-b border-white/8">
             {columns.map((col) => (
               <th
                 key={col.key}
                 scope="col"
-                className="px-5 py-3.5 text-left text-[11px] font-bold uppercase tracking-[0.15em] text-foreground/45"
+                className="px-5 py-3.5 text-left text-[11px] font-bold uppercase tracking-[0.15em] text-foreground/55"
               >
                 {col.label}
               </th>

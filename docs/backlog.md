@@ -46,7 +46,21 @@ Légende effort : **S** ≈ ½ journée · **M** ≈ 1-2 jours · **L** ≈ 3 jo
       À noter : la fonction n'a **aucun appelant** aujourd'hui. Soit on la branche sur le calendrier en la passant sur les tokens du design system, soit on la supprime. **S**
 - [x] **Navigation mobile refondue** — la barre du bas affiche désormais le libellé du seul onglet actif, façon Material 3 : **sept** entrées tiennent en 222 px à 320 px de large, là où cinq en prenaient 324. `/weekend` et `/teams` y sont donc entrés.
       Corrigé au passage : l'en-tête basculait sur sa navigation dès `md` (768 px) alors qu'elle n'y tenait pas — 783 px de contenu **déjà avec cinq entrées**, ce qui faisait scroller toute la page horizontalement. La bascule est passée à `lg`, et la barre du bas couvre l'intervalle. Cinq tests e2e vérifient qu'il n'y a aucun débordement et exactement une navigation visible à 320, 768, 1023, 1024 et 1440 px.
-- [ ] **Accessibilité** — 1 seul `aria-label` dans tout le projet. À traiter : `<caption>`/`scope` sur les tableaux de résultats, focus visible, contraste des `text-foreground/45`, `aria-live` sur le compte à rebours, info d'écurie pas véhiculée uniquement par la couleur. **M**
+- [x] **Accessibilité** — audit axe-core sur 9 routes : **65 nœuds en violation → 0** (WCAG 2.1 AA).
+
+      Ce qu'axe relevait :
+      - **contraste** (53 nœuds) : `--primary-foreground` était blanc sur le rouge de marque, soit 3,72:1 pour un seuil de 4,5. Passé au fond de l'app → **5,23:1**, sans toucher au rouge. `text-foreground/45` (4,21) → `/55` (5,77) sur 8 fichiers. Les grands numéros de position en `/20`–`/30` (2,08 à 2,49) → `/40` (3,54, seuil grand texte).
+      - **`button-name`** (critique) : les sélecteurs Radix n'avaient pas de nom accessible — « 2024 » ne dit pas à quoi sert le contrôle.
+      - **`link-in-text-block`** : le lien du pied de page ne se distinguait que par la couleur, désormais souligné.
+
+      Ce qu'axe ne voit pas, traité aussi :
+      - **focus clavier** : les composants `ui/` en avaient un, les **onze CTA écrits à la main n'en avaient aucun**. Style global dans `globals.css`, en `:where()` pour rester surchargeable.
+      - **légendes de tableau** : six onglets de résultats sur une même page, indiscernables au lecteur d'écran. `<caption class="sr-only">` par tableau, en plus des `scope="col"`.
+      - **couleurs d'écurie en texte** : `getReadableConstructorColor()` éclaircit vers le blanc jusqu'à 3:1 en conservant la teinte. RB plafonnait à 1,3:1. Un test vérifie le seuil pour les onze écuries connues.
+      - **compte à rebours** : ⚠️ j'ai fait l'inverse de ce que disait cet item. Un `aria-live` sur un compteur à la seconde annoncerait sans arrêt et rendrait la page inutilisable. Les chiffres sont `aria-hidden`, remplacés par un résumé `sr-only` (« Départ dans 6 jours, 16 heures, 53 minutes ») lu à la demande.
+
+      12 tests e2e verrouillent l'ensemble, dont l'audit axe sur les 9 routes.
+
 - [ ] **Saison dans l'URL — reste `/calendar`** — `/standings` et `/drivers` sont passés par `?season=` avec la conversion en Server Components. `/calendar` garde un `useState`, donc pas de lien partageable ni de retour arrière. **S**
 - [ ] **Animations d'entrée** — `motion` est installé mais jamais importé. Transitions de page + apparition des lignes de classement, avec respect de `prefers-reduced-motion`. **S**
 - [ ] **Podium visuel du dernier GP** — la home liste le top 6 à plat (`lastRacePodium`, app/page.tsx:70) ; un vrai bloc podium ferait le job. **S**

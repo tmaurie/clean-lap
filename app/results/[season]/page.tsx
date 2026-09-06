@@ -116,7 +116,7 @@ export default async function SeasonResultsPage({ params }: SeasonPageProps) {
                     key={race.round}
                     className="flex items-center gap-8 border-b border-border py-5 transition-colors hover:bg-[#12151a]"
                   >
-                    <span className="w-[70px] text-3xl font-black italic text-foreground/20">
+                    <span className="w-[70px] text-3xl font-black italic text-foreground/40">
                       R{race.round}
                     </span>
                     <span className="w-8 text-2xl">{flag}</span>
@@ -161,7 +161,7 @@ export default async function SeasonResultsPage({ params }: SeasonPageProps) {
                     key={race.round}
                     className="flex items-center gap-8 border-b border-border py-5 opacity-60"
                   >
-                    <span className="w-[70px] text-3xl font-black italic text-foreground/20">
+                    <span className="w-[70px] text-3xl font-black italic text-foreground/40">
                       R{race.round}
                     </span>
                     <span className="w-8 text-2xl">{flag}</span>

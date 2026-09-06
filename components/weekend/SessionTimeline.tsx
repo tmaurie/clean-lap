@@ -17,7 +17,7 @@ function StatusBadge({ status }: { status: SessionStatus }) {
       className={clsx(
         "inline-flex items-center gap-2 border px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.14em]",
         status === "live" && "border-primary/50 bg-primary/10 text-primary",
-        status === "done" && "border-white/10 text-foreground/45",
+        status === "done" && "border-white/10 text-foreground/55",
         status === "upcoming" && "border-white/15 text-foreground/70",
       )}
     >
@@ -53,7 +53,7 @@ function SessionPodium({ session }: { session: WeekendSessionView }) {
           <span className="flex-1 truncate text-[13px] font-bold uppercase tracking-wide">
             {entry.driver}
           </span>
-          <span className="hidden truncate text-xs text-foreground/45 sm:block">
+          <span className="hidden truncate text-xs text-foreground/55 sm:block">
             {entry.constructor}
           </span>
           <span className="w-20 shrink-0 text-right font-mono text-xs text-foreground/70">

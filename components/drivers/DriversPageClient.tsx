@@ -70,7 +70,10 @@ export function DriversPageClient({ season, drivers }: DriversPageClientProps) {
           <div className="flex flex-wrap items-center gap-3">
             <DriverSearchBar value={search} onChange={setSearch} />
             <Select value={team} onValueChange={setTeam}>
-              <SelectTrigger className="h-11 w-[190px] border-white/15 font-mono text-xs font-bold uppercase tracking-[0.08em]">
+              <SelectTrigger
+                aria-label="Filtrer par écurie"
+                className="h-11 w-[190px] border-white/15 font-mono text-xs font-bold uppercase tracking-[0.08em]"
+              >
                 <SelectValue placeholder="Écurie" />
               </SelectTrigger>
               <SelectContent>
@@ -83,7 +86,10 @@ export function DriversPageClient({ season, drivers }: DriversPageClientProps) {
               </SelectContent>
             </Select>
             <Select value={season} onValueChange={handleSeasonChange}>
-              <SelectTrigger className="h-11 w-[150px] border-white/15 font-mono text-xs font-bold uppercase tracking-[0.08em]">
+              <SelectTrigger
+                aria-label="Choisir la saison"
+                className="h-11 w-[150px] border-white/15 font-mono text-xs font-bold uppercase tracking-[0.08em]"
+              >
                 <SelectValue placeholder="Saison" />
               </SelectTrigger>
               <SelectContent>

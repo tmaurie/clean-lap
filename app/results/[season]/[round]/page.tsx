@@ -256,7 +256,11 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
           </TabsList>
 
           <TabsContent value="results" className="mt-6">
-            <ResultTable data={results} columns={columnsRace} />
+            <ResultTable
+              data={results}
+              columns={columnsRace}
+              caption={`Classement de la course — ${raceName}`}
+            />
           </TabsContent>
           <TabsContent value="sprint" className="mt-6">
             {!hasSprint ? (
@@ -267,6 +271,7 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
               <ResultTable
                 data={sprintResults.results}
                 columns={columnsSprint}
+                caption={`Classement de la course sprint — ${raceName}`}
               />
             )}
           </TabsContent>
@@ -279,6 +284,7 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
               <ResultTable
                 data={qualifyingResults.results}
                 columns={columnsQualif}
+                caption={`Résultats des qualifications — ${raceName}`}
               />
             )}
           </TabsContent>
@@ -291,6 +297,7 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
               <ResultTable
                 data={fp1Results.results}
                 columns={columnsFreePractice}
+                caption={`Résultats des essais libres 1 — ${raceName}`}
               />
             )}
           </TabsContent>
@@ -303,6 +310,7 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
               <ResultTable
                 data={fp2Results.results}
                 columns={columnsFreePractice}
+                caption={`Résultats des essais libres 2 — ${raceName}`}
               />
             )}
           </TabsContent>
@@ -315,6 +323,7 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
               <ResultTable
                 data={fp3Results.results}
                 columns={columnsFreePractice}
+                caption={`Résultats des essais libres 3 — ${raceName}`}
               />
             )}
           </TabsContent>

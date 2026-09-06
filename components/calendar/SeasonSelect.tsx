@@ -26,6 +26,9 @@ export function SeasonSelect({
   return (
     <Select value={value} onValueChange={action}>
       <SelectTrigger
+        // « 2024 » seul ne dit pas de quoi il s'agit : le contrôle a besoin
+        // d'un nom, pas seulement d'une valeur.
+        aria-label="Choisir la saison"
         className={cn(
           "h-11 w-[160px] border border-white/15 bg-transparent font-mono text-xs font-bold uppercase tracking-[0.1em] transition-colors hover:border-white/40 hover:text-foreground",
           triggerClassName,

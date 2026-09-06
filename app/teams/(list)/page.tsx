@@ -76,7 +76,7 @@ export default async function TeamsPage({ searchParams }: TeamsPageProps) {
                         color:
                           team.position === "1"
                             ? color
-                            : "rgba(244,244,242,0.25)",
+                            : "rgba(244,244,242,0.4)",
                       }}
                     >
                       {team.position}

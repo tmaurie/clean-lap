@@ -82,7 +82,7 @@ test("la home affiche le compte à rebours sans erreur d'hydratation", async ({
 
   // Le compte à rebours est le composant qui provoquait le mismatch
   // d'hydratation : on vérifie qu'il finit par afficher de vrais chiffres.
-  const countdown = page.getByLabel("Temps restant avant le départ");
+  const countdown = page.locator("[data-countdown]");
   const raceOver = page.getByText("C'est l'heure de la course");
 
   await expect(countdown.or(raceOver).first()).toBeVisible();
@@ -291,7 +291,7 @@ test.describe("optimisations", () => {
   }) => {
     await page.goto("/");
 
-    const countdown = page.getByLabel("Temps restant avant le départ");
+    const countdown = page.locator("[data-countdown]");
     test.skip(
       !(await countdown.isVisible()),
       "pas de course à venir : pas de compte à rebours",

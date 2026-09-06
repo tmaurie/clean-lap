@@ -4,7 +4,10 @@ import Link from "next/link";
 
 import { Driver } from "@/entities/driver/model";
 import { countryToFlagEmoji } from "@/lib/utils/flags";
-import { getConstructorColor } from "@/lib/utils/colors";
+import {
+  getConstructorColor,
+  getReadableConstructorColor,
+} from "@/lib/utils/colors";
 import { GhostNumber } from "@/components/paddock/GhostNumber";
 
 type DriverCardProps = {
@@ -14,6 +17,9 @@ type DriverCardProps = {
 export function DriverCard({ driver }: DriverCardProps) {
   const flag = driver.nationality ? countryToFlagEmoji(driver.nationality) : "";
   const teamColor = getConstructorColor(driver.teamId || "");
+  // Le numéro est affiché en couleur d'écurie : certaines sont trop sombres
+  // pour du texte sur fond noir (RB plafonne à 1,3:1).
+  const readableTeamColor = getReadableConstructorColor(driver.teamId || "");
   const number = driver.number ?? "–";
   const parts = `${driver.name} ${driver.surname}`.trim().split(" ");
   const lastName = parts.at(-1) ?? driver.surname;
@@ -32,7 +38,7 @@ export function DriverCard({ driver }: DriverCardProps) {
         <div className="relative flex items-center justify-between">
           <span
             className="text-2xl font-black italic"
-            style={{ color: teamColor }}
+            style={{ color: readableTeamColor }}
           >
             {number}
           </span>
