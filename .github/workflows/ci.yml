@@ -6,25 +6,40 @@ on:
   pull_request:
     branches: [master, main]
 
+# Une nouvelle poussée annule la précédente sur la même branche : inutile de
+# payer deux fois un job qui traverse une API externe.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Next 16 exige >= 20.9 ; 22 est la LTS courante.
+  NODE_VERSION: "22"
+
 jobs:
   check:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
 
+      # `npm ci` échoue si le lockfile a divergé de package.json, là où
+      # `npm install` le réécrivait silencieusement.
       - name: Install deps
-        run: npm install
+        run: npm ci
 
       - name: Prettier check
         run: npx prettier . --check
+
+      - name: Lint
+        run: npm run lint
 
       - name: Type check
         run: npx tsc --noEmit
@@ -41,16 +56,16 @@ jobs:
     # Un hoquet de leur côté ne doit pas masquer le signal lint/types/build.
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
 
       - name: Install deps
-        run: npm install
+        run: npm ci
 
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium

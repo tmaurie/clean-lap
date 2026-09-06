@@ -219,17 +219,27 @@ test("une URL inconnue rend la page 404 de l'app", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("une saison hors calendrier affiche un état vide, pas un chargement infini", async ({
-  page,
-}) => {
-  await page.goto("/results/1800");
+test("une saison hors calendrier rend un 404", async ({ page }) => {
+  // La page était un composant client bloqué sur « Chargement… » ; elle est
+  // désormais rendue côté serveur et une année hors du calendrier F1
+  // (1950 → saison en cours) n'existe pas, donc 404.
+  const response = await page.goto("/results/1800");
 
-  // La promesse rejetée laissait la page bloquée sur « Chargement… ».
+  expect(response?.status(), "statut HTTP").toBe(404);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Page introuvable",
+  );
+});
+
+test("une saison du calendrier liste ses manches", async ({ page }) => {
+  const response = await page.goto("/results/2021");
+  expect(response?.status()).toBe(200);
+
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Saison 2021",
+  );
   await expect(
-    page.getByRole("heading", { name: /saison indisponible/i }),
-  ).toBeVisible({ timeout: 30_000 });
-  await expect(
-    page.getByRole("link", { name: /choisir une autre saison/i }),
+    page.getByRole("link", { name: /résultats/i }).first(),
   ).toBeVisible();
 });
 
@@ -371,5 +381,52 @@ test.describe("rendu serveur", () => {
     const html = await (await request.get("/drivers?season=2020")).text();
 
     expect(html).toMatch(/Verstappen|Hamilton|Bottas|Vettel/);
+  });
+});
+
+test.describe("SEO", () => {
+  test("chaque page porte un titre distinct", async ({ page }) => {
+    const titres = new Map<string, string>();
+
+    for (const route of [
+      "/",
+      "/calendar",
+      "/standings",
+      "/drivers",
+      "/results",
+    ]) {
+      await page.goto(route);
+      titres.set(route, await page.title());
+    }
+
+    for (const [route, titre] of titres) {
+      expect(titre, `titre de ${route}`).toContain("CleanLap");
+    }
+    // Toutes les pages s'appelaient "CleanLap" auparavant.
+    expect(new Set(titres.values()).size, "titres tous distincts").toBe(
+      titres.size,
+    );
+  });
+
+  test("robots.txt renvoie vers le sitemap", async ({ request }) => {
+    const response = await request.get("/robots.txt");
+    expect(response.status()).toBe(200);
+
+    const body = await response.text();
+    expect(body).toContain("User-Agent: *");
+    expect(body).toContain("/sitemap.xml");
+  });
+
+  test("le sitemap liste les pages et les saisons récentes", async ({
+    request,
+  }) => {
+    const response = await request.get("/sitemap.xml");
+    expect(response.status()).toBe(200);
+
+    const xml = await response.text();
+    for (const route of ["/weekend", "/calendar", "/standings", "/drivers"]) {
+      expect(xml, `sitemap contient ${route}`).toContain(route);
+    }
+    expect(xml).toContain(`/results/${new Date().getFullYear()}`);
   });
 });

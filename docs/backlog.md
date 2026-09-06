@@ -52,7 +52,7 @@ Légende effort : **S** ≈ ½ journée · **M** ≈ 1-2 jours · **L** ≈ 3 jo
 
 - [ ] **Validation runtime des réponses API (zod)** — 20 `: any` restants, tous dans `lib/api/`. Un changement de shape côté f1api.dev passe inaperçu et se transforme en `"N/A"` silencieux.
       ⚠️ Devenu plus urgent : le PR #40 a désactivé `@typescript-eslint/no-explicit-any` dans `eslint.config.mjs`, donc plus rien ne signale ces `any`. Les tests des mappers couvrent maintenant les formes connues de l'API, mais pas les dérives futures. **M**
-- [ ] **Route handlers proxy `/api/*`** — les hooks React Query (`useDrivers`, `useDriverSeason`, `useSeasonProgress`) tapent f1api.dev **depuis le navigateur** : pas de cache serveur, pas de contrôle du quota, latence complète visible par l'utilisateur. **M**
+- [ ] **Route handlers proxy `/api/*`** — périmètre nettement réduit depuis le passage en Server Components : `/standings`, `/drivers` et `/results/[season]` ne tapent plus l'API depuis le navigateur. Il ne reste que `/calendar` et la liste `/results` (défilement infini). **S**
 - [x] **Tests unitaires (Vitest)** — 65 tests, 7 fichiers, ~250 ms : `lib/utils/time`, `lib/utils/date`, `lib/utils/colors`, `lib/utils/flags`, et les mappers `lib/api/race`, `lib/api/drivers`, `lib/api/standings` (fetch bouchonné sur les fixtures de `docs/api/`).
       Validés par mutation : en réintroduisant les anciennes implémentations de `isPastRace` et `parseLapTimeMs`, 13 tests tombent — ils gardent bien les bugs corrigés, ils ne décrivent pas seulement le code actuel.
       `npm test` / `npm run test:watch`, branché dans la CI.
@@ -61,10 +61,15 @@ Légende effort : **S** ≈ ½ journée · **M** ≈ 1-2 jours · **L** ≈ 3 jo
       Ce dernier point est vérifié par mutation : en réintroduisant l'ancien `HeroCountdown`, le test tombe sur `Minified React error #418` (mismatch d'hydratation). Les tests unitaires ne peuvent pas attraper ça.
       Job CI séparé, pour qu'un hoquet de f1api.dev ne masque pas le signal lint/types/build.
       ⚠️ Limite assumée : les pages qui chargent leurs données côté client (`/results`, `/calendar`, `/drivers`) ne sont vérifiées que sur leur coquille rendue, pas sur le contenu asynchrone.
-- [ ] **Durcir la CI** — étape `npm test` ajoutée. Restent : la CI ne lance toujours pas `eslint`, utilise `npm install` (pas `npm ci`), `actions/checkout@v3` et Node 20. Ajouter le lint, épingler Node 22, passer en `npm ci`. **S**
+- [x] **CI durcie** — `npm ci` au lieu de `npm install` (échoue si le lockfile a divergé, là où `npm install` le réécrivait), étape `npm run lint` ajoutée, Node épinglé à 22 via une variable de workflow, `actions/checkout` et `setup-node` en v4, et annulation des runs concurrents sur une même branche.
 - [ ] **Un seul lockfile** — `package-lock.json` versionné + `yarn.lock` non versionné à la racine : à trancher avant que les deux divergent. **S**
-- [ ] **SEO / OpenGraph par page** — aucun `generateMetadata`, pas de `sitemap.ts`, pas de `robots.ts`, pas d'image OG dynamique. Toutes les pages s'appellent "CleanLap". **M**
-- [ ] **`generateStaticParams` sur les saisons passées** — les saisons closes sont immuables : elles peuvent être pré-rendues au build au lieu d'être calculées à la demande. **S**
+- [x] **SEO — titres, sitemap, robots** — `app/sitemap.ts` (16 URL : pages fixes + 10 dernières saisons) et `app/robots.ts`, `metadataBase` sur le layout racine (sans elle Next avertit au build et émet des URL OpenGraph cassées), et un titre propre par page : toutes s'appelaient « CleanLap ».
+      Un test e2e vérifie que les cinq pages principales ont des titres **tous distincts**.
+      ⚠️ Reste à faire : l'image OpenGraph dynamique (`opengraph-image.tsx` via `next/og`). **S**
+- [x] **`generateStaticParams` sur `/results/[season]`** — la page était un composant client (fetch dans un `useEffect`) : le pré-rendu n'aurait rien apporté, elle est donc d'abord passée en Server Component.
+      Les cinq dernières saisons sont pré-rendues au build ; les autres restent générées à la demande, pour ne pas payer au build les ~4-5 s de f1api.dev × 77 saisons. Mesuré : **1,8 ms** pour une saison pré-rendue contre ~12 ms en dynamique.
+      Une année hors du calendrier F1 rend désormais un vrai **404** au lieu d'un état vide.
+      ⚠️ Pas de `generateStaticParams` sur `/results/[season]/[round]` : chaque page coûte 8 appels API, pré-rendre ne serait-ce que 10 manches ajouterait ~2 min au build pour un gain nul une fois le cache chaud.
 
 ---
 

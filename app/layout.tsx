@@ -2,6 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Archivo, IBM_Plex_Mono } from "next/font/google";
 import { Shell } from "@/components/layout/Shell";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 import NextTopLoader from "nextjs-toploader";
 import React from "react";
 
@@ -25,16 +26,27 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CleanLap",
-  description: "Résultats et statistiques F1.",
+  // `metadataBase` permet à Next de résoudre les URL relatives (OpenGraph,
+  // canoniques) ; sans elle, il avertit au build et émet des URL cassées.
+  metadataBase: new URL(SITE_URL),
+  title: "CleanLap — Tableau de bord Formule 1",
+  description:
+    "Prochaine course, résultats, classements et calendrier de Formule 1, en un coup d'œil.",
+  applicationName: SITE_NAME,
   openGraph: {
-    title: "CleanLap",
+    title: "CleanLap — Tableau de bord Formule 1",
     description:
       "Une application pour les fans de Formule 1. Votre tableau de bord F1 clair, rapide et accessible.",
-    url: "https://cleanlap.vercel.app",
-    siteName: "CleanLap",
+    url: SITE_URL,
+    siteName: SITE_NAME,
     locale: "fr_FR",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CleanLap — Tableau de bord Formule 1",
+    description:
+      "Prochaine course, résultats, classements et calendrier de Formule 1.",
   },
 };
 
