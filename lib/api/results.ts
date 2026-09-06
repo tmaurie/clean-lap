@@ -1,28 +1,24 @@
 import { Season } from "@/entities/season/model";
+import { API_BASE_URL, fetchApi } from "@/lib/api/client";
 
-const NEW_API_BASE_URL = "https://f1api.dev/api";
+const NEW_API_BASE_URL = API_BASE_URL;
 const EARLIEST_SEASON = 1950;
 
-async function fetchJson<T>(url: string, signal?: AbortSignal): Promise<T> {
-  const response = await fetch(url, {
-    cache: "force-cache",
-    signal,
-    headers: { Accept: "application/json" },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${url}`);
-  }
-
-  return (await response.json()) as T;
-}
+/**
+ * La liste des saisons n'affiche que le champion : demander le classement
+ * complet ramenait ~12 Ko par saison et par championnat pour n'en lire que la
+ * première ligne. `?limit=1` renvoie exactement l'entrée en position 1
+ * (vérifié de 1998 à 2024) et ramène la réponse à ~0,7 Ko.
+ */
+const CHAMPION_ONLY = "?limit=1";
 
 async function fetchJsonSafe<T>(
   url: string,
+  season: string,
   signal?: AbortSignal,
 ): Promise<T | null> {
   try {
-    return await fetchJson<T>(url, signal);
+    return await fetchApi<T>(url, { season, signal });
   } catch (error) {
     if ((error as Error).name === "AbortError") {
       throw error;
@@ -83,13 +79,19 @@ async function fetchSeasonSnapshot(
 ): Promise<Season> {
   const [seasonJson, driverChampionshipJson, constructorChampionshipJson] =
     await Promise.all([
-      fetchJsonSafe<SeasonApiResponse>(`${NEW_API_BASE_URL}/${season}`, signal),
+      fetchJsonSafe<SeasonApiResponse>(
+        `${NEW_API_BASE_URL}/${season}`,
+        season,
+        signal,
+      ),
       fetchJsonSafe<DriverChampionshipResponse>(
-        `${NEW_API_BASE_URL}/${season}/drivers-championship`,
+        `${NEW_API_BASE_URL}/${season}/drivers-championship${CHAMPION_ONLY}`,
+        season,
         signal,
       ),
       fetchJsonSafe<ConstructorChampionshipResponse>(
-        `${NEW_API_BASE_URL}/${season}/constructors-championship`,
+        `${NEW_API_BASE_URL}/${season}/constructors-championship${CHAMPION_ONLY}`,
+        season,
         signal,
       ),
     ]);
@@ -165,8 +167,9 @@ export async function fetchRacesWithWinner(season: string): Promise<
     winnerTeam?: string;
   }[]
 > {
-  const json = await fetchJson<{ races?: any[] }>(
+  const json = await fetchApi<{ races?: any[] }>(
     `${NEW_API_BASE_URL}/${season}`,
+    { season },
   );
   const races = json?.races ?? [];
   return races.map((race) => {

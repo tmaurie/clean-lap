@@ -62,8 +62,9 @@ describe("fetchDriverStandings", () => {
 
   it("lève quand la requête échoue", async () => {
     stubFetch(null, 500);
+    // Le message vient désormais du client partagé et porte l'URL fautive.
     await expect(fetchDriverStandings("2024")).rejects.toThrow(
-      /driver standings/,
+      /drivers-championship/,
     );
   });
 });
@@ -87,7 +88,7 @@ describe("fetchConstructorStandings", () => {
   it("lève quand la requête échoue", async () => {
     stubFetch(null, 404);
     await expect(fetchConstructorStandings("2024")).rejects.toThrow(
-      /constructor standings/,
+      /constructors-championship/,
     );
   });
 });

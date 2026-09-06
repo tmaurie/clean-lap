@@ -2,18 +2,17 @@ import {
   DriverStanding,
   ConstructorStanding,
 } from "@/entities/standings/model";
+import { API_BASE_URL, fetchApi } from "@/lib/api/client";
 
 export async function fetchDriverStandings(
   season: string,
 ): Promise<DriverStanding[]> {
-  const res = await fetch(
-    `https://f1api.dev/api/${season}/drivers-championship`,
+  // Ces appels n'avaient aucune option de cache : chaque rendu repayait les
+  // ~4-5 s de f1api.dev, y compris pour des saisons closes et immuables.
+  const json = await fetchApi<any>(
+    `${API_BASE_URL}/${season}/drivers-championship`,
+    { season },
   );
-  if (!res.ok) {
-    throw new Error(`Failed to fetch driver standings for ${season}`);
-  }
-
-  const json = await res.json();
   const standings = json?.drivers_championship ?? [];
 
   return standings.map(
@@ -32,14 +31,10 @@ export async function fetchDriverStandings(
 export async function fetchConstructorStandings(
   season: string,
 ): Promise<ConstructorStanding[]> {
-  const res = await fetch(
-    `https://f1api.dev/api/${season}/constructors-championship`,
+  const json = await fetchApi<any>(
+    `${API_BASE_URL}/${season}/constructors-championship`,
+    { season },
   );
-  if (!res.ok) {
-    throw new Error(`Failed to fetch constructor standings for ${season}`);
-  }
-
-  const json = await res.json();
   const standings = json?.constructors_championship ?? [];
 
   return standings.map(

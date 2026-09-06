@@ -42,7 +42,7 @@ Légende effort : **S** ≈ ½ journée · **M** ≈ 1-2 jours · **L** ≈ 3 jo
       À noter : la fonction n'a **aucun appelant** aujourd'hui. Soit on la branche sur le calendrier en la passant sur les tokens du design system, soit on la supprime. **S**
 - [ ] **Faire de la place au week-end dans la nav mobile** — `/weekend` est dans la nav d'en-tête et sur le CTA de la home, mais pas dans la `BottomNav` : à 320 px, six libellés ne tiennent qu'en descendant la typo à 9 px (mesuré : 361 px de contenu pour 320 px de large). Piste : n'afficher le libellé que sur l'onglet actif, façon Material 3. **S**
 - [ ] **Accessibilité** — 1 seul `aria-label` dans tout le projet. À traiter : `<caption>`/`scope` sur les tableaux de résultats, focus visible, contraste des `text-foreground/45`, `aria-live` sur le compte à rebours, info d'écurie pas véhiculée uniquement par la couleur. **M**
-- [ ] **Saison dans l'URL** — `/standings`, `/results`, `/calendar` gardent la saison dans un `useState` (app/standings/page.tsx:12) : impossible de partager un lien vers 2021, et pas de retour arrière navigateur. Passer en `searchParams`. **S**
+- [ ] **Saison dans l'URL — reste `/calendar`** — `/standings` et `/drivers` sont passés par `?season=` avec la conversion en Server Components. `/calendar` garde un `useState`, donc pas de lien partageable ni de retour arrière. **S**
 - [ ] **Animations d'entrée** — `motion` est installé mais jamais importé. Transitions de page + apparition des lignes de classement, avec respect de `prefers-reduced-motion`. **S**
 - [ ] **Podium visuel du dernier GP** — la home liste le top 6 à plat (`lastRacePodium`, app/page.tsx:70) ; un vrai bloc podium ferait le job. **S**
 
@@ -81,18 +81,19 @@ Légende effort : **S** ≈ ½ journée · **M** ≈ 1-2 jours · **L** ≈ 3 jo
 - [x] **Typage de `ResultTable`** — `data: any[]` remplacé par un type mappé `ResultColumn<T>` qui lie `key` au type de `value`. Les quatre configs de colonnes sont annotées (`RaceResult`, `QualifyingResult`, `FreePracticeResult`, `SprintResult`, ce dernier extrait de `fetchSprintResults`).
 - [x] **`@f1api/sdk` retiré** — dépendance jamais importée, supprimée de `package.json` et du lockfile.
 - [x] **`any` restants hors couche API** — props `params`/`searchParams` des pages dynamiques typées, `driver: any` supprimé dans `DriversPageClient`.
-- [ ] **Factoriser les 4 `fetchJSON`** — non fait : quatre implémentations quasi identiques (race.ts, results.ts, drivers.ts, standings.ts) avec des politiques de cache incohérentes. À traiter avec l'item « étendre la stratégie de cache », sinon on refactorise deux fois. **M**
-
-> ~~Position de qualif = `gridPosition`~~ — **point erroné de la première liste.** Vérification faite sur `docs/api/qualy_results.json` : sur l'endpoint qualif, `gridPosition` est bien le classement de la séance (ordonné par Q3 puis Q2 puis Q1), et `classificationId` n'est qu'un identifiant d'enregistrement. Il n'y a pas de meilleur champ à utiliser. Un commentaire a été ajouté dans le code pour éviter qu'on repose la question.
-
-## ⚡ Optimisation
-
-- [ ] **36 appels API pour une page de la liste des saisons** — `fetchSeasonDetailsPage` (lib/api/results.ts:151) fait 3 requêtes × 12 saisons en parallèle sur une API à ~4-5 s. Récupérer le champion depuis la réponse saison quand il est présent, et ne retomber sur les endpoints championnat qu'en dernier recours. **M**
-- [ ] **Étendre la stratégie de cache aux appels non cachés** — `fetchDriverStandings`, `fetchConstructorStandings` et `fetchDrivers` appellent `fetch()` sans aucune option, donc sans mise en cache. La logique `isLiveSeason` / `cacheOptions` de race.ts:60 devrait s'appliquer partout. **S**
-- [ ] **`useSeasonProgress` dans le header** — le `SiteHeader` (components/layout/SiteHeader.tsx:19) déclenche un fetch client du calendrier complet **sur chaque page**, juste pour afficher `R5/24`. À remonter côté serveur dans le layout. **S**
-- [ ] **Pause du countdown hors écran** — l'interval 1 s de `HeroCountdown` tourne même onglet en arrière-plan. Couper sur `visibilitychange`. **S**
-- [ ] **Réduire le JS client** — `app/standings/page.tsx`, `app/results/page.tsx` et `app/results/[season]/page.tsx` sont entièrement `"use client"` pour un simple sélecteur de saison. Isoler le composant interactif et laisser le reste en Server Component. **M**
-- [ ] **Poids des polices** — `Archivo` est chargé avec 6 graisses × normal + italic = 12 fichiers (app/layout.tsx:9). Vérifier lesquelles servent réellement. **S**
+- [x] **Factoriser les 4 `fetchJSON`** — fait avec le lot optimisations : `lib/api/client.ts` remplace les quatre implémentations et porte les politiques de cache.
+- [x] **Cache étendu à toute la couche API** — les quatre implémentations de `fetchJSON` sont remplacées par `lib/api/client.ts`, avec trois politiques selon la volatilité : saison en cours 60 s, saison passée jamais revalidée, donnée de référence 1 h.
+      `fetchDriverStandings`, `fetchConstructorStandings` et `fetchDrivers` n'avaient **aucune** option de cache. Mesuré sur `/standings?season=2019` en production : **4,9 s au premier appel, 0,014 s ensuite**.
+- [x] **Payload de la liste des saisons** — `?limit=1` sur les deux endpoints championnat : la page n'affiche que le champion, elle recevait le classement complet. **11,8 Ko → 0,7 Ko** par saison et par championnat (~283 Ko → ~17 Ko pour une page de 12).
+      ⚠️ Deux hypothèses de la version initiale de cet item étaient fausses, vérifiées à la mesure : le champion n'est **pas** dans la réponse `/api/{season}` (seulement `championshipId`, `championshipName`, `url`, `year`), et limiter la concurrence dégrade tout — 36 requêtes simultanées prennent **6,0 s**, par lots de 6 elles prennent **26,6 s**. La parallélisation actuelle est la bonne.
+- [x] **`useSeasonProgress` retiré de l'en-tête** — c'était un fetch navigateur du calendrier complet sur _chaque_ page, pour afficher « R13/23 ». Résolu côté serveur dans le `Shell` (`features/season/getSeasonProgress.ts`), mutualisé avec les pages et mis en cache. Le hook est supprimé.
+- [x] **Compte à rebours suspendu hors écran** — l'intervalle d'une seconde s'arrête sur `visibilitychange` et se resynchronise au retour. Couvert par un test e2e qui pilote `document.hidden` (Chromium headless ne le bascule pas tout seul, vérifié).
+- [x] **JS client réduit — React Query entièrement retiré** — `/standings` et `/drivers` sont passés en Server Components, données en props ; il ne restait plus aucun consommateur, donc le `QueryProvider` du layout racine et la dépendance ont disparu.
+      JS servi par route, mesuré en production : `/` 647 → **623 Ko**, `/standings` 739 → **699 Ko**, `/calendar` 730 → **704 Ko**, `/weekend` 643 → **619 Ko**. (Somme de tous les `.js` référencés par la page, préchargements de routes compris.)
+      Effet de bord bienvenu : la saison de `/standings` et `/drivers` est désormais dans l'URL — l'item UX « saison dans l'URL » est réglé pour ces deux pages.
+      ⚠️ `app/drivers/(list)/` est un groupe de routes, pas un dossier décoratif : il empêche le `loading.tsx` de couvrir `/drivers/[driverId]`, qui appelle `notFound()`. Sans lui, cette route repassait à 200 — attrapé par le smoke e2e.
+- [x] **Polices — faux problème** — mesuré avant/après : **5 fichiers préchargés, 101 Ko, identique**. next/font ne préchargeait déjà que le nécessaire, les 12 instances statiques n'étaient pas toutes servies. Archivo passe quand même en police variable (config plus simple) et IBM Plex Mono gagne la graisse 700, utilisée 13 fois sans être chargée — le navigateur synthétisait un faux gras.
+- [ ] **`/results` toujours entièrement client** — la pagination à défilement infini (IntersectionObserver, état de page) est une vraie interaction ; la convertir serait une réécriture pour un gain limité. Laissé tel quel volontairement. **M**
 
 ---
 

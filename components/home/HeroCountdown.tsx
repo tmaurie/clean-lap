@@ -44,13 +44,36 @@ export function HeroCountdown({ targetIso }: { targetIso: string }) {
 
   useEffect(() => {
     setStarted(true);
-    setRemaining(getRemaining(targetIso));
 
-    const interval = setInterval(() => {
-      setRemaining(getRemaining(targetIso));
-    }, 1000);
+    // Un onglet en arrière-plan n'a aucune raison de recalculer un décompte
+    // chaque seconde : on suspend l'intervalle quand la page est masquée et on
+    // remet la valeur à jour dès qu'elle redevient visible.
+    let interval: ReturnType<typeof setInterval> | undefined;
 
-    return () => clearInterval(interval);
+    const tick = () => setRemaining(getRemaining(targetIso));
+
+    const resume = () => {
+      tick();
+      interval ??= setInterval(tick, 1000);
+    };
+
+    const suspend = () => {
+      if (interval === undefined) return;
+      clearInterval(interval);
+      interval = undefined;
+    };
+
+    const handleVisibility = () => (document.hidden ? suspend() : resume());
+
+    // Premier affichage même si l'onglet démarre masqué.
+    tick();
+    if (!document.hidden) resume();
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      suspend();
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
   }, [targetIso]);
 
   if (started && !remaining) {

@@ -3,14 +3,7 @@ import {
   DriverRaceResult,
   DriverSeason,
 } from "@/entities/driver/model";
-
-async function fetchJSON(url: string) {
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch ${url}: ${res.status} ${res.statusText}`);
-  }
-  return res.json();
-}
+import { API_BASE_URL, fetchApi } from "@/lib/api/client";
 
 function mapDriver(d: any): Driver {
   return {
@@ -109,13 +102,13 @@ export async function fetchDrivers(options?: {
   const { season, search } = options || {};
   const base =
     season === "current"
-      ? "https://f1api.dev/api/current/drivers"
+      ? `${API_BASE_URL}/current/drivers`
       : season
-        ? `https://f1api.dev/api/${season}/drivers`
-        : "https://f1api.dev/api/drivers";
+        ? `${API_BASE_URL}/${season}/drivers`
+        : `${API_BASE_URL}/drivers`;
 
   try {
-    const json = await fetchJSON(base);
+    const json = await fetchApi<any>(base, { season });
     const list = json?.drivers ?? json?.driver ?? [];
     const drivers: Driver[] = list.map(mapDriver);
 
@@ -138,8 +131,8 @@ export async function fetchDriverSeason(
   season: string,
 ): Promise<DriverSeason | null> {
   try {
-    const url = `https://f1api.dev/api/${season}/${driverId.includes("/") ? driverId : `drivers/${driverId}`}`;
-    const json = await fetchJSON(url);
+    const url = `${API_BASE_URL}/${season}/${driverId.includes("/") ? driverId : `drivers/${driverId}`}`;
+    const json = await fetchApi<any>(url, { season });
     const driverInfo = json?.driver ?? json?.driver?.[0] ?? json?.drivers?.[0];
     const racesRaw = json?.results ?? json?.races ?? json?.driverRaces ?? [];
     const races = mapDriverRaceResults(racesRaw);

@@ -262,26 +262,6 @@ test.describe("états de chargement", () => {
     await expect(page.getByText("Manches").locator("..")).toContainText("—");
   });
 
-  test("les classements affichent un squelette pendant le chargement", async ({
-    page,
-  }) => {
-    await slowDownApi(page);
-    await page.goto("/standings");
-
-    await expect(
-      page.getByRole("status").filter({ hasText: /chargement du classement/i }),
-    ).toBeAttached();
-  });
-
-  test("les pilotes affichent une grille fantôme", async ({ page }) => {
-    await slowDownApi(page);
-    await page.goto("/drivers");
-
-    await expect(
-      page.getByRole("status").filter({ hasText: /chargement des pilotes/i }),
-    ).toBeAttached();
-  });
-
   test("le squelette disparaît une fois les données arrivées", async ({
     page,
   }) => {
@@ -291,5 +271,105 @@ test.describe("états de chargement", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
       "Calendrier",
     );
+  });
+});
+
+test.describe("optimisations", () => {
+  test("le compte à rebours se suspend quand la page est masquée", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    const countdown = page.getByLabel("Temps restant avant le départ");
+    test.skip(
+      !(await countdown.isVisible()),
+      "pas de course à venir : pas de compte à rebours",
+    );
+
+    const seconds = () =>
+      countdown.locator("span.font-mono").last().innerText();
+    await expect.poll(seconds).not.toBe("--");
+
+    // Chromium headless garde `document.hidden` à false même en ouvrant un
+    // autre onglet (vérifié) : on pilote donc directement la propriété que le
+    // composant observe, ce qui teste bien notre gestionnaire et non le
+    // comportement du navigateur.
+    const setHidden = (hidden: boolean) =>
+      page.evaluate((value) => {
+        Object.defineProperty(document, "hidden", {
+          configurable: true,
+          get: () => value,
+        });
+        document.dispatchEvent(new Event("visibilitychange"));
+      }, hidden);
+
+    await setHidden(true);
+    const avant = await seconds();
+    await page.waitForTimeout(3000);
+
+    expect(await seconds(), "valeur figée tant que la page est masquée").toBe(
+      avant,
+    );
+
+    // De retour au premier plan, le décompte se resynchronise immédiatement.
+    await setHidden(false);
+    await expect.poll(seconds, { timeout: 5000 }).not.toBe(avant);
+  });
+});
+
+/**
+ * Classements et pilotes chargeaient leurs données via React Query, depuis le
+ * navigateur. Ils sont désormais rendus côté serveur — et la librairie a
+ * disparu de l'application. On le vérifie sur la réponse HTTP elle-même :
+ * si la donnée est dans le HTML servi, elle ne vient pas d'un fetch client.
+ *
+ * (On ne peut pas simplement couper JavaScript : ces routes ont un
+ * `loading.tsx`, et l'injection du contenu streamé passe par des scripts
+ * inline.)
+ */
+test.describe("rendu serveur", () => {
+  test("le classement pilotes est dans le HTML servi", async ({ request }) => {
+    const response = await request.get("/standings");
+    expect(response.status()).toBe(200);
+
+    const html = await response.text();
+    expect(html).toContain("Classements");
+    // Une écurie réelle : la donnée vient bien du serveur.
+    expect(html).toMatch(/Red Bull|Ferrari|Mercedes|McLaren/);
+  });
+
+  // Ces deux-là passent par la page rendue : la saison est un nœud texte
+  // distinct, donc absente telle quelle du HTML brut. On cible `main` pour
+  // éviter le badge de saison de l'en-tête.
+  test("la saison des classements vient de l'URL", async ({ page }) => {
+    await page.goto("/standings?season=2021");
+
+    await expect(
+      page.locator("main").getByText("Championnat du monde — Saison 2021"),
+    ).toBeVisible();
+  });
+
+  test("une saison invalide retombe sur la saison en cours", async ({
+    page,
+  }) => {
+    await page.goto("/standings?season=1066");
+
+    const annee = new Date().getFullYear();
+    await expect(
+      page.locator("main").getByText(`Championnat du monde — Saison ${annee}`),
+    ).toBeVisible();
+  });
+
+  test("la liste des pilotes est dans le HTML servi", async ({ request }) => {
+    const html = await (await request.get("/drivers")).text();
+
+    expect(html).toContain("Pilotes");
+    expect(html).toMatch(/Verstappen|Hamilton|Leclerc|Norris|Russell/);
+  });
+
+  test("la saison des pilotes vient de l'URL", async ({ request }) => {
+    const html = await (await request.get("/drivers?season=2020")).text();
+
+    expect(html).toMatch(/Verstappen|Hamilton|Bottas|Vettel/);
   });
 });

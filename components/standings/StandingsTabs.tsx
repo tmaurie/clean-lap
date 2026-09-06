@@ -1,44 +1,39 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
-import {
-  useConstructorStandings,
-  useDriverStandings,
-} from "@/features/standings/hooks";
-import { fetchRaces } from "@/lib/api/race";
+import type { Race } from "@/entities/race/model";
+import type {
+  ConstructorStanding,
+  DriverStanding,
+} from "@/entities/standings/model";
 import { getConstructorColor } from "@/lib/utils/colors";
 import { countryToFlagEmoji } from "@/lib/utils/flags";
 import { isPastRace } from "@/lib/utils/date";
 import { GhostNumber } from "@/components/paddock/GhostNumber";
-import {
-  RowsSkeleton,
-  SkeletonScreen,
-  TilesSkeleton,
-} from "@/components/skeletons/PageSkeletons";
 
+/**
+ * Les données arrivent désormais en props, résolues côté serveur : ce
+ * composant ne garde de client que le basculement pilotes / écuries.
+ */
 type StandingsTabsProps = {
   season: string;
+  drivers: DriverStanding[];
+  constructors: ConstructorStanding[];
+  races: Race[];
 };
 
-export function StandingsTabs({ season }: StandingsTabsProps) {
+export function StandingsTabs({
+  drivers,
+  constructors,
+  races,
+}: StandingsTabsProps) {
   const [tab, setTab] = useState<"drivers" | "constructors">("drivers");
 
-  const { data: drivers = [], isLoading: loadingDrivers } =
-    useDriverStandings(season);
-  const { data: constructors = [], isLoading: loadingConstructors } =
-    useConstructorStandings(season);
-  const { data: races = [] } = useQuery({
-    queryKey: ["seasonRaces", season],
-    queryFn: () => fetchRaces(season),
-    enabled: !!season,
-    staleTime: 1000 * 60 * 30,
-  });
-
   const isDrivers = tab === "drivers";
-  const isLoading = isDrivers ? loadingDrivers : loadingConstructors;
-  const completedCount = races.filter((race) => isPastRace(race.date)).length;
+  const completedCount = races.filter((race) =>
+    isPastRace(race.date, race.time),
+  ).length;
   const remainingCount = Math.max(races.length - completedCount, 0);
 
   const rows = isDrivers
@@ -101,17 +96,7 @@ export function StandingsTabs({ season }: StandingsTabsProps) {
         </button>
       </div>
 
-      {isLoading ? (
-        // Le squelette reprend la structure réelle (podium + liste) pour que
-        // l'arrivée des données ne décale pas la page.
-        <SkeletonScreen
-          label={`Chargement du classement ${season}`}
-          className="gap-6"
-        >
-          <TilesSkeleton tiles={3} columns="md:grid-cols-3" />
-          <RowsSkeleton rows={8} className="mt-6" />
-        </SkeletonScreen>
-      ) : rows.length === 0 ? (
+      {rows.length === 0 ? (
         <p className="text-sm text-foreground/50">
           Aucun classement disponible pour cette saison.
         </p>

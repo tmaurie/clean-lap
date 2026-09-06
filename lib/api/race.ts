@@ -2,6 +2,12 @@ import { unstable_cache } from "next/cache";
 
 import { Race, RaceResult } from "@/entities/race/model";
 import { fastestLapTimeMs, isFastestTime } from "@/lib/utils/time";
+import {
+  API_BASE_URL,
+  fetchApi,
+  fetchApiOrNull,
+  isLiveSeason,
+} from "@/lib/api/client";
 
 export type QualifyingResult = {
   position: string;
@@ -69,44 +75,6 @@ export type RaceCircuitDetails = {
   url?: string | null;
 };
 
-// f1api.dev is slow (~4-5s per call). Past seasons are immutable, so we can
-// cache them indefinitely; only the live season needs to stay fresh.
-function isLiveSeason(season: string): boolean {
-  return season === "current" || season === new Date().getFullYear().toString();
-}
-
-function cacheOptions(season: string): {
-  next: { revalidate: number | false };
-} {
-  return isLiveSeason(season)
-    ? { next: { revalidate: 60 } }
-    : { next: { revalidate: false } };
-}
-
-async function fetchJSON(url: string, season: string): Promise<any> {
-  const json = await fetchJSONOrNull(url, season);
-  if (json === null) {
-    throw new Error(`Failed to fetch ${url}: 404 Not Found`);
-  }
-  return json;
-}
-
-/**
- * Un 404 de f1api.dev veut dire « ça n'existe pas » — une manche hors
- * calendrier, une séance jamais disputée. C'est une donnée, pas une panne :
- * les appelants doivent pouvoir répondre 404 plutôt que de laisser remonter
- * une exception, qui se traduisait par un HTTP 500. Les autres codes restent
- * des erreurs.
- */
-async function fetchJSONOrNull(url: string, season: string): Promise<any> {
-  const res = await fetch(url, cacheOptions(season));
-  if (res.status === 404) return null;
-  if (!res.ok) {
-    throw new Error(`Failed to fetch ${url}: ${res.status} ${res.statusText}`);
-  }
-  return await res.json();
-}
-
 function mapRace(race: any): Race {
   const location = [race.circuit?.city, race.circuit?.country]
     .filter(Boolean)
@@ -168,7 +136,9 @@ function normalizeScheduleEntry(session: any | undefined): {
 }
 
 export async function fetchRaces(season: string): Promise<Race[]> {
-  const json = await fetchJSON(`https://f1api.dev/api/${season}`, season);
+  const json = await fetchApi<any>(`${API_BASE_URL}/${season}`, {
+    season,
+  });
   const rawRaces = json.races ?? [];
   return rawRaces.map(mapRace);
 }
@@ -193,9 +163,9 @@ export async function fetchRaceResults(
   };
   results: RaceResult[];
 }> {
-  const json = await fetchJSONOrNull(
-    `https://f1api.dev/api/${season}/${round}/race`,
-    season,
+  const json = await fetchApiOrNull<any>(
+    `${API_BASE_URL}/${season}/${round}/race`,
+    { season },
   );
   if (json === null) return null;
 
@@ -254,18 +224,12 @@ export async function fetchSprintResults(
   // resolved value ourselves instead, regardless of the underlying status.
   return unstable_cache(
     async () => {
-      const url = `https://f1api.dev/api/${season}/${round}/sprint/race`;
-      const res = await fetch(url);
-      if (res.status === 404) {
-        return { results: [] };
-      }
-      if (!res.ok) {
-        throw new Error(
-          `Failed to fetch ${url}: ${res.status} ${res.statusText}`,
-        );
-      }
+      const json = await fetchApiOrNull<any>(
+        `${API_BASE_URL}/${season}/${round}/sprint/race`,
+        { season },
+      );
+      if (json === null) return { results: [] };
 
-      const json = await res.json();
       const results = json?.races?.sprintRaceResults ?? [];
 
       return {
@@ -296,19 +260,12 @@ export async function fetchFreePracticeResults(
   // and 404s never hit the fetch Data Cache, so cache the value ourselves.
   return unstable_cache(
     async () => {
-      const url = `https://f1api.dev/api/${season}/${round}/${session}`;
-      const res = await fetch(url);
+      const json = await fetchApiOrNull<any>(
+        `${API_BASE_URL}/${season}/${round}/${session}`,
+        { season },
+      );
+      if (json === null) return { results: [] };
 
-      if (res.status === 404) {
-        return { results: [] };
-      }
-      if (!res.ok) {
-        throw new Error(
-          `Failed to fetch ${url}: ${res.status} ${res.statusText}`,
-        );
-      }
-
-      const json = await res.json();
       const results =
         json?.races?.[`${session}Results`] ??
         json?.races?.results ??
@@ -330,9 +287,9 @@ export async function fetchQualifyingResults(
 }> {
   // Comme pour le sprint et les essais : une qualif non publiée renvoie 404,
   // ce qui n'est pas une raison de casser la page.
-  const json = await fetchJSONOrNull(
-    `https://f1api.dev/api/${season}/${round}/qualy`,
-    season,
+  const json = await fetchApiOrNull<any>(
+    `${API_BASE_URL}/${season}/${round}/qualy`,
+    { season },
   );
   const results = json?.races?.qualyResults ?? [];
 
@@ -357,9 +314,9 @@ export async function fetchRaceSchedule(
   try {
     const baseUrl =
       season === "current"
-        ? "https://f1api.dev/api/current"
-        : `https://f1api.dev/api/${season}`;
-    const json = await fetchJSON(baseUrl, season);
+        ? `${API_BASE_URL}/current`
+        : `${API_BASE_URL}/${season}`;
+    const json = await fetchApi<any>(baseUrl, { season });
     const races = json?.races ?? [];
 
     const byRound =

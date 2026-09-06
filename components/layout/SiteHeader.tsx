@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { useSeasonProgress } from "@/features/season/useSeasonProgress";
+import type { SeasonProgress } from "@/features/season/getSeasonProgress";
 
 const navItems = [
   { name: "Accueil", href: "/" },
@@ -15,9 +15,8 @@ const navItems = [
   { name: "Résultats", href: "/results" },
 ];
 
-export function SiteHeader() {
+export function SiteHeader({ progress }: { progress: SeasonProgress | null }) {
   const pathname = usePathname();
-  const { data: progress } = useSeasonProgress();
 
   return (
     <header className="sticky top-0 z-50 flex h-[72px] items-center justify-between border-b border-border bg-background/92 px-6 backdrop-blur-md md:px-12">
