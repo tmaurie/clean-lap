@@ -27,6 +27,8 @@ export async function fetchDriverStandings(
       driver:
         `${entry.driver?.name ?? ""} ${entry.driver?.surname ?? ""}`.trim(),
       constructor: entry.team?.teamName ?? "N/A",
+      // `teamId` est tantôt dans `team`, tantôt au niveau de l'entrée.
+      constructorId: entry.team?.teamId ?? entry.teamId ?? null,
       nationality: entry.driver?.nationality ?? entry.driver?.country ?? "N/A",
     }),
   );
@@ -47,6 +49,8 @@ export async function fetchConstructorStandings(
       points: entry.points?.toString() ?? "0",
       wins: entry.wins ?? 0,
       constructor: entry.team?.teamName ?? "N/A",
+      // `teamId` est tantôt dans `team`, tantôt au niveau de l'entrée.
+      constructorId: entry.team?.teamId ?? entry.teamId ?? null,
       nationality: entry.team?.country ?? "N/A",
     }),
   );

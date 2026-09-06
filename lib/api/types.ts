@@ -39,8 +39,17 @@ export type ApiTeam = {
   nationality?: string;
   country?: string;
   teamNationality?: string;
-  /** Faute de frappe présente dans l'API. */
+  /**
+   * Première saison de l'écurie. f1api.dev l'écrit de **trois** façons selon
+   * l'endpoint — les deux fautes de frappe sont les leurs, pas les nôtres :
+   * `firstAppareance` sur les classements et résultats de course,
+   * `firstAppeareance` sur les endpoints écurie,
+   * `firstAppearance` (correct) sur l'endpoint pilote-saison.
+   * Révélé par le typage en écrivant la fiche écurie.
+   */
   firstAppareance?: number;
+  firstAppeareance?: number;
+  firstAppearance?: number;
   constructorsChampionships?: number;
   driversChampionships?: number;
   url?: string | null;
@@ -204,6 +213,7 @@ export type ApiDriverSeasonResponse = {
 export type ApiDriverChampionshipResponse = {
   drivers_championship?: Array<{
     classificationId?: number;
+    teamId?: string;
     position?: ApiNumeric;
     points?: ApiNumeric;
     wins?: number;
@@ -215,6 +225,8 @@ export type ApiDriverChampionshipResponse = {
 export type ApiConstructorChampionshipResponse = {
   constructors_championship?: Array<{
     classificationId?: number;
+    /** Présent au niveau de l'entrée ici, dans `team` sur le classement pilotes. */
+    teamId?: string;
     position?: ApiNumeric;
     points?: ApiNumeric;
     wins?: number;
@@ -231,4 +243,36 @@ export function normalizeCircuit(
   circuit: ApiCircuit | ApiCircuit[] | undefined,
 ): ApiCircuit | undefined {
   return Array.isArray(circuit) ? circuit[0] : circuit;
+}
+
+/** `/api/teams/{id}` renvoie `team` en tableau d'un élément. */
+export type ApiTeamResponse = { team?: ApiTeam | ApiTeam[] };
+
+export type ApiTeamsResponse = { teams?: ApiTeam[] };
+
+/** Le classement de la saison est fusionné dans l'objet équipe. */
+export type ApiTeamWithStanding = ApiTeam & {
+  points?: ApiNumeric;
+  position?: ApiNumeric;
+  wins?: ApiNumeric;
+};
+
+/** Chaque pilote est imbriqué sous une clé `driver`. */
+export type ApiTeamDriversResponse = {
+  season?: ApiNumeric;
+  teamId?: string;
+  team?: ApiTeamWithStanding;
+  drivers?: Array<{
+    driver?: ApiDriver & {
+      points?: ApiNumeric;
+      position?: ApiNumeric;
+      wins?: ApiNumeric;
+    };
+  }>;
+};
+
+/** L'API renvoie tantôt un objet seul, tantôt un tableau. */
+export function toArray<T>(value: T | T[] | undefined | null): T[] {
+  if (!value) return [];
+  return Array.isArray(value) ? value : [value];
 }

@@ -34,6 +34,7 @@ describe("fetchDriverStandings", () => {
       points: "395.5",
       driver: "Max Verstappen",
       constructor: "Red Bull Racing",
+      constructorId: "red_bull",
       nationality: "Netherlands",
     });
   });
@@ -51,6 +52,7 @@ describe("fetchDriverStandings", () => {
       points: "0",
       driver: "Sans",
       constructor: "N/A",
+      constructorId: null,
       nationality: "N/A",
     });
   });
@@ -81,6 +83,7 @@ describe("fetchConstructorStandings", () => {
       points: "613.5",
       wins: 9,
       constructor: "Mercedes Formula 1 Team",
+      constructorId: "mercedes",
       nationality: "Germany",
     });
   });

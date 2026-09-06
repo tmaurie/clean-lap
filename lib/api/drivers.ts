@@ -10,12 +10,7 @@ import type {
   ApiDriverSeasonResponse,
   ApiDriversResponse,
 } from "@/lib/api/types";
-
-/** L'API renvoie tantôt un objet seul, tantôt un tableau. */
-function toArray<T>(value: T | T[] | undefined): T[] {
-  if (!value) return [];
-  return Array.isArray(value) ? value : [value];
-}
+import { toArray } from "@/lib/api/types";
 
 function mapDriver(d: ApiDriver): Driver {
   return {

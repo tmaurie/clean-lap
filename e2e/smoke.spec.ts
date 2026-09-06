@@ -430,3 +430,71 @@ test.describe("SEO", () => {
     expect(xml).toContain(`/results/${new Date().getFullYear()}`);
   });
 });
+
+test.describe("fiches écuries", () => {
+  test("une écurie affiche palmarès, classement et effectif", async ({
+    page,
+  }) => {
+    const errors = watchForErrors(page);
+
+    const response = await page.goto("/teams/ferrari?season=2024");
+    expect(response?.status()).toBe(200);
+
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "Scuderia Ferrari",
+    );
+    await expect(page.getByText("Titres constructeurs")).toBeVisible();
+    await expect(
+      page.getByText("Effectif 2024", { exact: false }),
+    ).toBeVisible();
+
+    // L'effectif renvoie vers les fiches pilotes.
+    await expect(
+      page.getByRole("link", { name: /leclerc/i }).first(),
+    ).toBeVisible();
+
+    expect(errors, "erreurs console sur /teams/ferrari").toEqual([]);
+  });
+
+  test("l'effectif est trié par classement", async ({ request }) => {
+    const html = await (await request.get("/teams/ferrari?season=2024")).text();
+
+    // Leclerc (P3) doit apparaître avant Bearman (P18), alors que l'API
+    // renvoie le remplaçant en premier.
+    expect(html.indexOf("Leclerc")).toBeLessThan(html.indexOf("Bearman"));
+  });
+
+  test("une écurie inconnue rend un 404", async ({ page }) => {
+    const response = await page.goto("/teams/ecurie-inexistante");
+
+    expect(response?.status()).toBe(404);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "Page introuvable",
+    );
+  });
+
+  test("la saison de l'écurie vient de l'URL", async ({ page }) => {
+    await page.goto("/teams/ferrari?season=2021");
+
+    await expect(
+      page.locator("main").getByText("Écurie — Saison 2021"),
+    ).toBeVisible();
+  });
+
+  test("le classement constructeurs mène aux fiches écuries", async ({
+    page,
+  }) => {
+    await page.goto("/standings?season=2024");
+    await page.getByRole("button", { name: "Écuries" }).click();
+
+    const lien = page
+      .locator("main")
+      .getByRole("link", { name: /ferrari|mclaren|red bull|mercedes/i })
+      .first();
+    await expect(lien).toBeVisible();
+
+    await lien.click();
+    await expect(page).toHaveURL(/\/teams\//);
+    await expect(page.getByText("Titres constructeurs")).toBeVisible();
+  });
+});

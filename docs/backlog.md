@@ -20,8 +20,11 @@ Légende effort : **S** ≈ ½ journée · **M** ≈ 1-2 jours · **L** ≈ 3 jo
       ⚠️ Les qualifs sprint sont affichées sans classement : pas d'endpoint dédié dans la couche API.
       ⚠️ `fetchRaceSchedule` expose désormais l'année de la saison — l'alias `current` marche sur `/api/current` mais renvoie 404 sur `/api/current/13/qualy`.
 - [ ] **Favoris pilote / écurie** — persistance `localStorage`, épinglage en haut des classements et badge sur la home. **S**
-- [ ] **Fiches écuries** — `/teams/[teamId]` : line-up par saison, palmarès, couleur de marque.
-      Le mapping couleurs/noms existe déjà dans lib/utils/colors.ts. **M**
+- [x] **Fiches écuries** — `/teams/[teamId]` : palmarès (titres constructeurs et pilotes, première saison), classement de la saison et effectif complet, remplaçants compris. Saison dans l'URL (`?season=`), couleur de l'écurie comme accent, 404 sur une écurie inconnue.
+      Les noms d'écurie étaient partout dans l'app sans être cliquables : ils mènent désormais à leur fiche depuis les deux onglets de classement et depuis les fiches pilotes, et l'effectif renvoie vers les pilotes.
+      L'effectif est trié par classement au championnat — l'API le renvoie dans un ordre arbitraire (chez Ferrari 2024, le remplaçant en premier).
+      ⚠️ Trouvaille au passage : `firstAppearance` s'écrit de **trois** façons différentes selon l'endpoint (`firstAppareance`, `firstAppeareance`, `firstAppearance`). Les trois sont gérées et testées.
+      ⚠️ Pas d'index `/teams` : la découverte passe par les liens. À ajouter si le besoin se fait sentir.
 - [ ] **Notifications "course imminente"** — Web Notifications API + rappel 1h avant le départ (opt-in explicite). **M**
 
 ---

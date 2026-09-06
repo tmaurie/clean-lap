@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import type { Race } from "@/entities/race/model";
 import type {
@@ -24,6 +25,7 @@ type StandingsTabsProps = {
 };
 
 export function StandingsTabs({
+  season,
   drivers,
   constructors,
   races,
@@ -49,6 +51,7 @@ export function StandingsTabs({
           points: Number(d.points) || 0,
           wins: d.wins,
           teamColor: getConstructorColor(d.constructor),
+          teamId: d.constructorId,
         };
       })
     : constructors.map((c) => ({
@@ -61,6 +64,7 @@ export function StandingsTabs({
         points: Number(c.points) || 0,
         wins: c.wins,
         teamColor: getConstructorColor(c.constructor),
+        teamId: c.constructorId,
       }));
 
   const maxPoints = Math.max(...rows.map((r) => r.points), 1);
@@ -180,16 +184,36 @@ export function StandingsTabs({
                     className="h-9 w-1"
                     style={{ background: row.teamColor }}
                   />
+                  {/* Onglet écuries : c'est le nom qui mène à la fiche.
+                      Onglet pilotes : c'est la ligne d'écurie en dessous. */}
                   <div className="flex w-[280px] flex-col gap-0.5">
                     <span className="text-[17px] font-extrabold uppercase tracking-wide">
-                      {row.name}{" "}
+                      {!isDrivers && row.teamId ? (
+                        <Link
+                          href={`/teams/${row.teamId}?season=${season}`}
+                          className="transition-colors hover:text-primary"
+                        >
+                          {row.name}
+                        </Link>
+                      ) : (
+                        row.name
+                      )}{" "}
                       <span className="text-[15px] font-normal">
                         {row.flag}
                       </span>
                     </span>
-                    <span className="text-xs text-foreground/50">
-                      {row.secondary}
-                    </span>
+                    {isDrivers && row.teamId ? (
+                      <Link
+                        href={`/teams/${row.teamId}?season=${season}`}
+                        className="w-fit text-xs text-foreground/50 transition-colors hover:text-foreground"
+                      >
+                        {row.secondary} →
+                      </Link>
+                    ) : (
+                      <span className="text-xs text-foreground/50">
+                        {row.secondary}
+                      </span>
+                    )}
                   </div>
                   <div className="h-1 flex-1 bg-white/7">
                     <div

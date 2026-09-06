@@ -6,6 +6,7 @@ Tableau de bord F1 construit avec Next.js, TypeScript et Shadcn/UI. L'app affich
 
 ## ✨ Fonctionnalités actuelles
 
+- 🏗️ **Fiches écuries** : palmarès, classement constructeurs et effectif d'une saison (remplaçants compris), accessibles depuis les classements et les fiches pilotes
 - 🏟️ **Page Week-end** : les sessions du week-end en cours (essais, sprint, qualifs, course) ordonnées chronologiquement, avec leur état — terminé / en direct / à venir — et le podium de celles déjà courues
 - ⏱️ Compte à rebours de la prochaine course avec infos circuit
 - 🏁 Résultat de la dernière course (aperçu + page détaillée)

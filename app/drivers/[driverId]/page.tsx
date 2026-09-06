@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 
 import { fetchDriverSeason } from "@/lib/api/drivers";
-import { getConstructorColor } from "@/lib/utils/colors";
+import { getConstructorColor, getConstructorLabel } from "@/lib/utils/colors";
 import { countryToFlagEmoji } from "@/lib/utils/flags";
 import { SectionEyebrow } from "@/components/paddock/SectionEyebrow";
 import { HatchOverlay } from "@/components/paddock/HatchOverlay";
@@ -84,7 +84,21 @@ export default async function DriverPage({
         <div className="relative flex flex-wrap items-end justify-between gap-10">
           <div className="flex flex-col gap-5">
             <SectionEyebrow color={teamColor}>
-              {driver.teamId || "Équipe inconnue"} — nº {driver.number ?? "?"}
+              {driver.teamId ? (
+                <Link
+                  href={
+                    currentSeason === "current"
+                      ? `/teams/${driver.teamId}`
+                      : `/teams/${driver.teamId}?season=${currentSeason}`
+                  }
+                  className="transition-opacity hover:opacity-70"
+                >
+                  {getConstructorLabel(driver.teamId)} →
+                </Link>
+              ) : (
+                "Équipe inconnue"
+              )}{" "}
+              — nº {driver.number ?? "?"}
               {flag ? ` · ${flag} ${driver.nationality}` : ""}
             </SectionEyebrow>
             <div className="flex flex-col gap-0">
