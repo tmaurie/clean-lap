@@ -53,3 +53,7 @@ next-env.d.ts
 yarn.lock
 pnpm-lock.yaml
 bun.lockb
+
+# outillage local et notes de travail, hors versionning
+.claude/
+docs/backlog.md
