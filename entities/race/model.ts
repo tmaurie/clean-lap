@@ -3,6 +3,8 @@ export type Race = {
   round: number | null;
   name: string;
   circuit: string;
+  /** Identifiant du circuit, pour lier vers sa fiche. `null` si absent. */
+  circuitId: string | null;
   date: string; // ISO (YYYY-MM-DD)
   time: string | null; // heure UTC ("14:00:00Z"), absente sur certaines saisons
   location: string;

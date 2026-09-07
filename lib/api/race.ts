@@ -16,7 +16,7 @@ import type {
   ApiScheduleEntry,
   ApiSeasonResponse,
 } from "@/lib/api/types";
-import { normalizeCircuit } from "@/lib/api/types";
+import { circuitLengthMeters, normalizeCircuit } from "@/lib/api/types";
 
 export type QualifyingResult = {
   position: string;
@@ -84,6 +84,14 @@ export type RaceCircuitDetails = {
   url?: string | null;
 };
 
+/** Affichage homogène, quelle que soit la forme reçue. */
+function formatCircuitLength(
+  value: string | number | null | undefined,
+): string | null {
+  const meters = circuitLengthMeters(value);
+  return meters === null ? null : `${(meters / 1000).toFixed(3)} km`;
+}
+
 function mapRace(race: ApiRace): Race {
   const circuit = normalizeCircuit(race.circuit);
   const location = [circuit?.city, circuit?.country].filter(Boolean).join(", ");
@@ -98,6 +106,7 @@ function mapRace(race: ApiRace): Race {
     date: race.schedule?.race?.date ?? race.date ?? "",
     time: race.schedule?.race?.time ?? race.time ?? null,
     circuit: circuit?.circuitName ?? "Circuit inconnu",
+    circuitId: circuit?.circuitId ?? null,
     location,
   };
 }
@@ -168,6 +177,7 @@ export async function fetchRaceResults(
   date: string;
   time: string;
   circuit: {
+    id: string | null;
     name: string;
     locality: string;
     country: string;
@@ -200,6 +210,7 @@ export async function fetchRaceResults(
       // Le typage a montré que ces quatre champs pouvaient être `undefined`
       // alors que le modèle les annonce en `string` : on les comble ici
       // plutôt que d'afficher « undefined ».
+      id: circuit?.circuitId ?? null,
       name: circuit?.circuitName ?? "Circuit inconnu",
       locality: circuit?.city ?? "",
       country: circuit?.country ?? "",
@@ -372,7 +383,8 @@ export async function fetchRaceSchedule(
             name: circuitDetails.circuitName,
             country: circuitDetails.country,
             city: circuitDetails.city,
-            circuitLength: circuitDetails.circuitLength,
+            // Normalisé : l'API mélange `5793` et `"5793km"`.
+            circuitLength: formatCircuitLength(circuitDetails.circuitLength),
             lapRecord: circuitDetails.lapRecord,
             firstParticipationYear: circuitDetails.firstParticipationYear,
             corners: circuitDetails.corners,

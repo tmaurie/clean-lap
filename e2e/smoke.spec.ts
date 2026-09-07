@@ -612,3 +612,71 @@ test.describe("comparateur de pilotes", () => {
     await expect(page).toHaveURL(/\/compare\?.*d1=leclerc/);
   });
 });
+
+test.describe("circuits", () => {
+  test("la fiche circuit affiche ses caractéristiques et sa manche", async ({
+    page,
+  }) => {
+    const errors = watchForErrors(page);
+
+    const response = await page.goto("/circuits/monza?season=2024");
+    expect(response?.status()).toBe(200);
+
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "Autodromo Nazionale Monza",
+    );
+    await expect(page.getByText("Record du tour")).toBeVisible();
+    await expect(page.getByText("Grand Prix 2024")).toBeVisible();
+
+    expect(errors, "erreurs console sur /circuits/monza").toEqual([]);
+  });
+
+  test("la date de la manche n'est pas décalée d'un jour", async ({
+    request,
+  }) => {
+    // Sans heure, `toRaceDate` vise 23:59:59 UTC : formaté à Paris, ça
+    // basculait au lendemain. Le GP d'Italie 2024 s'affichait « 2 septembre ».
+    const html = await (
+      await request.get("/circuits/monza?season=2024")
+    ).text();
+
+    expect(html).toContain("1 septembre 2024");
+    expect(html).not.toContain("2 septembre 2024");
+  });
+
+  test("un circuit hors calendrier le dit sans se tromper", async ({
+    page,
+  }) => {
+    await page.goto("/circuits/monza?season=2021");
+
+    // Monza était au calendrier 2021 : le message d'absence ne doit pas
+    // s'afficher.
+    await expect(page.getByText(/n'est pas au calendrier/i)).toHaveCount(0);
+  });
+
+  test("un circuit inconnu rend un 404", async ({ page }) => {
+    const response = await page.goto("/circuits/circuit-inexistant");
+
+    expect(response?.status()).toBe(404);
+  });
+
+  test("l'index liste les circuits et mène aux fiches", async ({ page }) => {
+    await page.goto("/circuits?season=2024");
+
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "Circuits",
+    );
+    const cartes = page.locator("main").getByRole("listitem");
+    expect(await cartes.count()).toBeGreaterThanOrEqual(20);
+
+    await cartes.first().getByRole("link").click();
+    await expect(page).toHaveURL(/\/circuits\/[a-z_]+/);
+  });
+
+  test("le calendrier mène à l'index des circuits", async ({ page }) => {
+    await page.goto("/calendar");
+
+    await page.getByRole("link", { name: /voir tous les circuits/i }).click();
+    await expect(page).toHaveURL(/\/circuits/);
+  });
+});

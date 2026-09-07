@@ -7,7 +7,7 @@ import { HatchOverlay } from "@/components/paddock/HatchOverlay";
 import { getRacesWithWinner } from "@/features/results/hooks";
 import { getConstructorColor } from "@/lib/utils/colors";
 import { countryToFlagEmoji } from "@/lib/utils/flags";
-import { toRaceDate } from "@/lib/utils/date";
+import { formatRaceDay } from "@/lib/utils/date";
 import { EARLIEST_SEASON, currentSeason } from "@/lib/utils/season";
 
 export const revalidate = 60;
@@ -49,10 +49,7 @@ export async function generateMetadata({
 }
 
 const formatDate = (date: string) =>
-  toRaceDate(date)?.toLocaleDateString("fr-FR", {
-    day: "2-digit",
-    month: "short",
-  }) ?? date;
+  formatRaceDay(date, null, { day: "2-digit", month: "short" }) ?? date;
 
 export default async function SeasonResultsPage({ params }: SeasonPageProps) {
   const { season } = await params;

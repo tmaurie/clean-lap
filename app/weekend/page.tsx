@@ -95,7 +95,17 @@ export default async function WeekendPage() {
 
           <div className="flex flex-wrap items-center gap-4 text-sm text-foreground/70 sm:gap-6">
             <span className="font-semibold">
-              {flag} {race.circuit}
+              {flag}{" "}
+              {race.circuitId ? (
+                <Link
+                  href={`/circuits/${race.circuitId}?season=${season}`}
+                  className="underline underline-offset-4 transition-colors hover:text-primary"
+                >
+                  {race.circuit}
+                </Link>
+              ) : (
+                race.circuit
+              )}
             </span>
             <span className="hidden h-4 w-px bg-white/20 sm:block" />
             <span>{race.location}</span>

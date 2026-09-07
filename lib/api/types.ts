@@ -60,10 +60,16 @@ export type ApiCircuit = {
   circuitName?: string;
   country?: string | null;
   city?: string | null;
-  circuitLength?: string | null;
+  /**
+   * `"5793km"` sur les endpoints saison et course, `5793` (mètres) sur les
+   * endpoints circuit. Les deux formes existent bel et bien.
+   */
+  circuitLength?: string | number | null;
   lapRecord?: string | null;
   firstParticipationYear?: number | null;
+  /** `corners` sur les endpoints saison, `numberOfCorners` sur /api/circuits. */
   corners?: number | null;
+  numberOfCorners?: number | null;
   fastestLapDriverId?: string | null;
   fastestLapTeamId?: string | null;
   fastestLapYear?: number | null;
@@ -275,4 +281,30 @@ export type ApiTeamDriversResponse = {
 export function toArray<T>(value: T | T[] | undefined | null): T[] {
   if (!value) return [];
   return Array.isArray(value) ? value : [value];
+}
+
+/** `/api/circuits/{id}` renvoie `circuit` en tableau, comme les écuries. */
+export type ApiCircuitResponse = { circuit?: ApiCircuit | ApiCircuit[] };
+
+export type ApiCircuitsResponse = {
+  season?: ApiNumeric;
+  circuits?: ApiCircuit[];
+};
+
+/**
+ * Longueur du circuit en mètres.
+ *
+ * L'API la donne en nombre (`5793`) sur les endpoints circuit et en chaîne
+ * suffixée (`"5793km"`, alors que la valeur est en mètres) ailleurs. On ne
+ * garde qu'une seule unité en interne.
+ */
+export function circuitLengthMeters(
+  value: string | number | null | undefined,
+): number | null {
+  if (value === null || value === undefined) return null;
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+
+  const digits = value.replace(/[^\d.]/g, "");
+  const parsed = Number(digits);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }

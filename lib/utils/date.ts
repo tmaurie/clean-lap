@@ -98,3 +98,29 @@ export function formatSessionTime(date: Date): string {
     timeZone: DISPLAY_TIME_ZONE,
   });
 }
+
+/**
+ * Jour d'une course, pour affichage.
+ *
+ * Piège : sans heure, `toRaceDate` vise 23:59:59 UTC — formaté dans un fuseau
+ * en avance sur UTC, ça bascule au lendemain. Le GP d'Italie 2024, couru le
+ * 1er septembre, s'affichait « 2 septembre ». On formate donc en UTC quand
+ * l'heure est inconnue, et en heure de Paris quand elle est connue.
+ */
+export function formatRaceDay(
+  date?: string | null,
+  time?: string | null,
+  options: Intl.DateTimeFormatOptions = {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  },
+): string | null {
+  const parsed = toRaceDate(date, time);
+  if (!parsed) return null;
+
+  return parsed.toLocaleDateString("fr-FR", {
+    ...options,
+    timeZone: time ? DISPLAY_TIME_ZONE : "UTC",
+  });
+}

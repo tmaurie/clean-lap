@@ -164,6 +164,7 @@ export async function fetchRacesWithWinner(season: string): Promise<
     date: string;
     time?: string;
     circuit?: string;
+    circuitId?: string;
     location: string;
     winner?: string;
     winnerTeam?: string;
@@ -186,6 +187,7 @@ export async function fetchRacesWithWinner(season: string): Promise<
       date: race.schedule?.race?.date ?? race.date ?? "",
       time: race.schedule?.race?.time ?? undefined,
       circuit: circuit?.circuitName ?? undefined,
+      circuitId: circuit?.circuitId ?? undefined,
       location: circuit
         ? [circuit.city, circuit.country].filter(Boolean).join(", ")
         : "Lieu inconnu",

@@ -12,6 +12,7 @@ const race = (
   round,
   name: `GP ${round}`,
   circuit: "Circuit",
+  circuitId: "circuit",
   date,
   time,
   location: "Ville, Pays",

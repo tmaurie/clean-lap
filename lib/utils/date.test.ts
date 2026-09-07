@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+  formatRaceDay,
   formatSessionDay,
   formatSessionTime,
   isPastRace,
@@ -107,5 +108,35 @@ describe("formatage des horaires de session", () => {
   it("gère le passage à l'heure d'hiver", () => {
     // Abou Dabi en décembre : 13 h UTC = 14 h à Paris.
     expect(formatSessionTime(new Date("2026-12-06T13:00:00Z"))).toBe("14:00");
+  });
+});
+
+describe("formatRaceDay", () => {
+  it("ne décale pas une date sans heure", () => {
+    // `toRaceDate` vise 23:59:59 UTC quand l'heure est inconnue : formaté à
+    // Paris, ça basculait au lendemain. Le GP d'Italie 2024, couru le 1er
+    // septembre, s'affichait « 2 septembre ».
+    expect(formatRaceDay("2024-09-01")).toBe("1 septembre 2024");
+  });
+
+  it("utilise l'heure de Paris quand l'heure est connue", () => {
+    // 22:30 UTC le 31 décembre = 23:30 à Paris, toujours le 31.
+    expect(formatRaceDay("2024-12-31", "22:30:00Z")).toBe("31 décembre 2024");
+  });
+
+  it("bascule bien de jour quand l'heure le justifie", () => {
+    // 23:30 UTC = 00:30 à Paris, donc le lendemain.
+    expect(formatRaceDay("2024-12-31", "23:30:00Z")).toBe("1 janvier 2025");
+  });
+
+  it("accepte un format personnalisé", () => {
+    expect(
+      formatRaceDay("2024-09-01", null, { day: "2-digit", month: "short" }),
+    ).toBe("01 sept.");
+  });
+
+  it("renvoie null sur une date inexploitable", () => {
+    expect(formatRaceDay(null)).toBeNull();
+    expect(formatRaceDay("pas-une-date")).toBeNull();
   });
 });

@@ -86,6 +86,15 @@ export function CalendarPageClient() {
             <h1 className="text-5xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl">
               Calendrier
             </h1>
+            {/* Les circuits n'ont pas d'entrée de navigation propre : la barre
+                est pleine à huit entrées. On y accède depuis le calendrier,
+                leur contexte naturel. */}
+            <Link
+              href={`/circuits?season=${season}`}
+              className="w-fit text-xs font-bold uppercase tracking-[0.1em] text-primary hover:text-primary/80"
+            >
+              Voir tous les circuits →
+            </Link>
           </div>
           <div className="flex gap-px border border-white/8 bg-white/8">
             {[

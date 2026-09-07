@@ -9,7 +9,7 @@ import {
   fetchConstructorStandings,
   fetchDriverStandings,
 } from "@/lib/api/standings";
-import { toRaceDate } from "@/lib/utils/date";
+import { formatRaceDay, toRaceDate } from "@/lib/utils/date";
 import { resolveCurrentRace } from "@/features/season/currentRace";
 import { countryToFlagEmoji } from "@/lib/utils/flags";
 import { getConstructorColor } from "@/lib/utils/colors";
@@ -300,10 +300,10 @@ export default async function HomePage() {
                   </span>
                 </div>
                 <span className="font-mono text-xs text-foreground/70">
-                  {toRaceDate(race.date, race.time)?.toLocaleDateString(
-                    "fr-FR",
-                    { day: "2-digit", month: "short" },
-                  ) ?? race.date}
+                  {formatRaceDay(race.date, race.time, {
+                    day: "2-digit",
+                    month: "short",
+                  }) ?? race.date}
                 </span>
               </div>
             );

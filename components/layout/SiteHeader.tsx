@@ -10,6 +10,9 @@ const navItems = [
   { name: "Accueil", href: "/" },
   { name: "Week-end", href: "/weekend" },
   { name: "Calendrier", href: "/calendar" },
+  // Pas de « Circuits » ici : à neuf entrées l'en-tête déborde à 1024 px
+  // (mesuré). Les circuits relèvent du calendrier, on y accède depuis lui et
+  // depuis chaque nom de circuit dans l'app.
   { name: "Pilotes", href: "/drivers" },
   { name: "Écuries", href: "/teams" },
   // « Duels » plutôt que « Comparateur » : le libellé long portait
