@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  GitCompareArrows,
   Home,
   CalendarDays,
   BarChart2,
@@ -20,6 +21,7 @@ const navItems = [
   { name: "Calendrier", href: "/calendar", icon: CalendarDays },
   { name: "Pilotes", href: "/drivers", icon: User },
   { name: "Écuries", href: "/teams", icon: Factory },
+  { name: "Duels", href: "/compare", icon: GitCompareArrows },
   { name: "Classements", href: "/standings", icon: BarChart2 },
   { name: "Résultats", href: "/results", icon: Flag },
 ];

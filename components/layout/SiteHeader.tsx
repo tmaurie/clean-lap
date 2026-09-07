@@ -12,6 +12,9 @@ const navItems = [
   { name: "Calendrier", href: "/calendar" },
   { name: "Pilotes", href: "/drivers" },
   { name: "Écuries", href: "/teams" },
+  // « Duels » plutôt que « Comparateur » : le libellé long portait
+  // l'en-tête à 1056 px pour 1024 disponibles (mesuré).
+  { name: "Duels", href: "/compare" },
   { name: "Classements", href: "/standings" },
   { name: "Résultats", href: "/results" },
 ];
@@ -37,7 +40,7 @@ export function SiteHeader({ progress }: { progress: SeasonProgress | null }) {
       {/* `lg` et non `md` : à 768 px la barre débordait déjà avec cinq entrées
           (783 px de contenu mesurés), et la page scrollait horizontalement.
           En dessous de 1024 px, c'est la barre du bas qui prend le relais. */}
-      <nav className="hidden items-center gap-8 text-[13px] font-semibold uppercase tracking-[0.1em] text-foreground/55 lg:flex">
+      <nav className="hidden items-center gap-6 text-[13px] font-semibold uppercase tracking-[0.1em] text-foreground/55 lg:flex">
         {navItems.map((item) => {
           const isActive =
             item.href === "/"
@@ -58,7 +61,9 @@ export function SiteHeader({ progress }: { progress: SeasonProgress | null }) {
         })}
       </nav>
 
-      <div className="hidden items-center gap-2 font-mono text-[11px] text-foreground/55 lg:flex">
+      {/* Badge de saison décoratif : il cède la place à la navigation
+          en dessous de `xl`. */}
+      <div className="hidden items-center gap-2 font-mono text-[11px] text-foreground/55 xl:flex">
         <span className="h-[7px] w-[7px] animate-blink rounded-full bg-[#2fbf5f]" />
         {progress
           ? `SAISON ${progress.year} · R${progress.round}/${progress.total}`

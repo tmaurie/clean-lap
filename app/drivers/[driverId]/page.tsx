@@ -45,6 +45,11 @@ export default async function DriverPage({
   const teamColor = getConstructorColor(driver.teamId || "");
   const birthdayLabel = formatBirthday(driver.birthday);
 
+  const compareHref =
+    currentSeason === "current"
+      ? `/compare?d1=${driverId}`
+      : `/compare?season=${currentSeason}&d1=${driverId}`;
+
   const statTiles = [
     { label: "Points", value: stats.points },
     { label: "Victoires", value: stats.wins },
@@ -112,6 +117,12 @@ export default async function DriverPage({
             {birthdayLabel && (
               <p className="text-sm text-foreground/70">{birthdayLabel}</p>
             )}
+            <Link
+              href={compareHref}
+              className="inline-flex h-11 w-fit items-center border border-white/20 px-6 text-xs font-bold uppercase tracking-[0.1em] transition-colors hover:border-white/50"
+            >
+              Comparer à un autre pilote →
+            </Link>
           </div>
 
           <div className="flex flex-wrap gap-px border border-white/8 bg-white/8">

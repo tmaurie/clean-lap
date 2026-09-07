@@ -38,6 +38,8 @@ const ROUTES = [
   { path: "/calendar", label: "Calendrier", heading: "Calendrier" },
   { path: "/drivers", label: "Pilotes", heading: "Pilotes" },
   { path: "/teams", label: "Écuries", heading: "Écuries" },
+  // Le libellé de navigation est court, le titre de page reste explicite.
+  { path: "/compare", label: "Duels", heading: "Comparateur" },
   { path: "/standings", label: "Classements", heading: "Classements" },
   { path: "/results", label: "Résultats", heading: "Résultats" },
 ] as const;
@@ -561,4 +563,52 @@ test.describe("navigation responsive", () => {
       expect(visibles, `navigations visibles à ${width} px`).toBe(1);
     });
   }
+});
+
+test.describe("comparateur de pilotes", () => {
+  test("compare deux pilotes sur une saison", async ({ page }) => {
+    const errors = watchForErrors(page);
+
+    const response = await page.goto(
+      "/compare?season=2024&d1=max_verstappen&d2=leclerc",
+    );
+    expect(response?.status()).toBe(200);
+
+    await expect(page.getByText("Duels directs")).toBeVisible();
+    await expect(page.getByText("En qualification")).toBeVisible();
+
+    expect(errors, "erreurs console sur /compare").toEqual([]);
+  });
+
+  test("les chiffres concordent avec le classement officiel", async ({
+    request,
+  }) => {
+    // L'endpoint /compare de f1api.dev intervertit les deux pilotes : il
+    // attribuait à Leclerc les 9 victoires et les 437 points de Verstappen.
+    // Tout est donc recalculé depuis /api/{saison}/drivers/{id}.
+    const html = await (
+      await request.get("/compare?season=2024&d1=max_verstappen&d2=leclerc")
+    ).text();
+
+    const texte = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+    expect(texte).toMatch(/437[\s\S]{0,40}Points[\s\S]{0,40}356/);
+    expect(texte).toMatch(/9[\s\S]{0,40}Victoires[\s\S]{0,40}3/);
+  });
+
+  test("refuse de comparer un pilote à lui-même", async ({ page }) => {
+    await page.goto("/compare?season=2024&d1=leclerc&d2=leclerc");
+
+    await expect(
+      page.getByText(/choisissez deux pilotes différents/i),
+    ).toBeVisible();
+  });
+
+  test("la fiche pilote mène au comparateur pré-rempli", async ({ page }) => {
+    await page.goto("/drivers/leclerc?season=2024");
+
+    await page
+      .getByRole("link", { name: /comparer à un autre pilote/i })
+      .click();
+    await expect(page).toHaveURL(/\/compare\?.*d1=leclerc/);
+  });
 });

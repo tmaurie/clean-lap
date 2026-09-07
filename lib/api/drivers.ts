@@ -109,7 +109,13 @@ export async function fetchDriverSeason(
     // `json.driver?.[0]` et `json.driverRaces` étaient des replis morts :
     // inatteignables dès lors que `json.driver` / `json.results` existent, et
     // absents de la réponse quand ils n'existent pas.
-    const driverInfo = json?.driver;
+    // L'endpoint pilote-saison renvoie l'écurie dans un champ **frère** de
+    // `driver`, pas à l'intérieur : sans ce rattachement, `teamId` restait
+    // vide et la fiche pilote affichait « Équipe inconnue » pour tout le
+    // monde, couleur d'écurie comprise.
+    const driverInfo = json?.driver
+      ? { ...json.driver, teamId: json.driver.teamId ?? json.team?.teamId }
+      : undefined;
     const races = mapDriverRaceResults(json?.results ?? []);
 
     const wins = races.filter(

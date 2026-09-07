@@ -16,6 +16,7 @@ const ROUTES = [
   "/drivers",
   "/teams",
   "/teams/ferrari?season=2024",
+  "/compare?season=2024&d1=max_verstappen&d2=leclerc",
   "/standings",
   "/results",
   "/results/2024/1",

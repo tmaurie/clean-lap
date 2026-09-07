@@ -156,6 +156,16 @@ describe("fetchDriverSeason", () => {
     });
   });
 
+  it("rattache l'écurie, renvoyée dans un champ frère de `driver`", async () => {
+    stubFetch(driverSeasonFixture);
+
+    const season = await fetchDriverSeason("max_verstappen", "2025");
+
+    // Sans ce rattachement, la fiche pilote affichait « Équipe inconnue »
+    // et perdait la couleur d'écurie.
+    expect(season?.driver.teamId).toBe("red_bull");
+  });
+
   it("renvoie null quand l'API échoue", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     stubFetch(null, 500);
