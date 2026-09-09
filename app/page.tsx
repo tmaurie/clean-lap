@@ -11,8 +11,10 @@ import {
 } from "@/lib/api/standings";
 import { formatRaceDay, toRaceDate } from "@/lib/utils/date";
 import { resolveCurrentRace } from "@/features/season/currentRace";
+import { currentSeason } from "@/lib/utils/season";
 import { countryToFlagEmoji } from "@/lib/utils/flags";
 import { getConstructorColor } from "@/lib/utils/colors";
+import { FavoritesBoard } from "@/components/favorites/FavoritesBoard";
 import { SectionEyebrow } from "@/components/paddock/SectionEyebrow";
 import { HatchOverlay } from "@/components/paddock/HatchOverlay";
 import { GhostNumber } from "@/components/paddock/GhostNumber";
@@ -265,6 +267,15 @@ export default async function HomePage() {
           />
         </div>
       </section>
+
+      {/* MES FAVORIS — n'apparaît qu'après hydratation, les favoris vivant
+          dans le navigateur. Placé sous le pli pour que cette apparition ne
+          déplace pas le contenu qu'on est en train de lire. */}
+      <FavoritesBoard
+        season={currentSeason()}
+        drivers={driverStandings}
+        constructors={constructorStandings}
+      />
 
       {/* PROCHAINES MANCHES */}
       <section className="flex flex-col gap-6 px-6 py-10 md:px-12">

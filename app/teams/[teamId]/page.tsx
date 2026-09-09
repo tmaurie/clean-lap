@@ -4,10 +4,14 @@ import { notFound } from "next/navigation";
 
 import { GhostNumber } from "@/components/paddock/GhostNumber";
 import { HatchOverlay } from "@/components/paddock/HatchOverlay";
+import { FavoriteButton } from "@/components/favorites/FavoriteButton";
 import { SectionEyebrow } from "@/components/paddock/SectionEyebrow";
 import { SeasonUrlSelect } from "@/components/calendar/SeasonUrlSelect";
 import { fetchTeamSeason } from "@/lib/api/teams";
-import { getConstructorColor } from "@/lib/utils/colors";
+import {
+  getConstructorColor,
+  getReadableConstructorColor,
+} from "@/lib/utils/colors";
 import { countryToFlagEmoji } from "@/lib/utils/flags";
 import { normalizeSeason } from "@/lib/utils/season";
 
@@ -45,6 +49,10 @@ export default async function TeamPage({
 
   const { team, standing, lineup } = data;
   const color = getConstructorColor(team.id);
+  // Les intitulés de section sont du texte de 12 px : 4,5:1 exigés, là où le
+  // défaut de `getReadableConstructorColor` vise les 3:1 des grands
+  // caractères. Le bleu Red Bull brut plafonne à 3,01:1.
+  const readableColor = getReadableConstructorColor(team.id, 4.5);
   const flag = team.nationality ? countryToFlagEmoji(team.nationality) : "";
 
   const palmares = [
@@ -64,12 +72,21 @@ export default async function TeamPage({
         <div className="relative flex flex-col gap-8">
           <div className="flex flex-wrap items-end justify-between gap-6">
             <div className="flex flex-col gap-5">
-              <SectionEyebrow color={color}>
+              <SectionEyebrow color={readableColor}>
                 Écurie — Saison {season}
               </SectionEyebrow>
-              <h1 className="max-w-3xl text-4xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl">
-                {team.name}
-              </h1>
+              <div className="flex items-center gap-3">
+                <h1 className="max-w-3xl text-4xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl">
+                  {team.name}
+                </h1>
+                <FavoriteButton
+                  kind="team"
+                  id={team.id}
+                  name={team.name}
+                  size="lg"
+                  className="self-end"
+                />
+              </div>
               <div className="flex flex-wrap items-center gap-4 text-sm text-foreground/70">
                 <span
                   className="h-5 w-1.5 shrink-0"
@@ -129,7 +146,7 @@ export default async function TeamPage({
       </section>
 
       <section className="flex flex-col gap-6 border-b border-border px-6 py-10 md:px-12">
-        <SectionEyebrow color={color}>
+        <SectionEyebrow color={readableColor}>
           Effectif {season}
           {lineup.length > 2 ? " — remplaçants compris" : ""}
         </SectionEyebrow>
@@ -175,7 +192,7 @@ export default async function TeamPage({
       </section>
 
       <section className="flex flex-col gap-6 px-6 py-10 md:px-12">
-        <SectionEyebrow color={color}>Palmarès</SectionEyebrow>
+        <SectionEyebrow color={readableColor}>Palmarès</SectionEyebrow>
         <div className="grid grid-cols-3 gap-px border border-white/8 bg-white/8">
           {palmares.map((item) => (
             <div

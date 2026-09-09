@@ -292,6 +292,115 @@ test.describe("états de chargement", () => {
   });
 });
 
+test.describe("favoris", () => {
+  const CLE = "cleanlap.favorites.v1";
+
+  test("marquer un pilote depuis le classement le fait apparaître sur la home", async ({
+    page,
+  }) => {
+    const errors = watchForErrors(page);
+
+    await page.goto("/standings");
+    const etoiles = page.getByRole("button", { name: /en favori$/ });
+    await expect(etoiles.first()).toBeVisible();
+
+    // Le libellé accessible nomme le pilote ; c'est `aria-pressed` qui porte
+    // l'état, pas le libellé.
+    const premiere = etoiles.first();
+    await expect(premiere).toHaveAttribute("aria-pressed", "false");
+    const libelle = (await premiere.getAttribute("aria-label")) ?? "";
+    const nom = libelle.replace(/ en favori$/, "");
+
+    await premiere.click();
+    await expect(premiere).toHaveAttribute("aria-pressed", "true");
+
+    await page.goto("/");
+    const bloc = page.locator("section", {
+      has: page.getByText("Mes favoris"),
+    });
+    await expect(bloc.getByRole("listitem")).toHaveCount(1);
+    await expect(bloc).toContainText(new RegExp(nom, "i"));
+    await expect(bloc).toContainText("Pilote");
+
+    expect(errors, "erreurs console avec favoris").toEqual([]);
+  });
+
+  test("la sélection survit à un rechargement et se retire", async ({
+    page,
+  }) => {
+    await page.goto("/standings");
+    const etoiles = page.getByRole("button", { name: /en favori$/ });
+    await expect(etoiles.first()).toBeVisible();
+    await etoiles.first().click();
+
+    await page.reload();
+    const apres = page.getByRole("button", { name: /en favori$/ }).first();
+    await expect(apres).toHaveAttribute("aria-pressed", "true");
+
+    await apres.click();
+    await expect(apres).toHaveAttribute("aria-pressed", "false");
+
+    await page.goto("/");
+    // Plus aucun favori : le bloc disparaît au lieu d'afficher une liste vide.
+    await expect(page.getByText("Mes favoris")).toHaveCount(0);
+  });
+
+  test("une écurie se marque aussi, depuis sa fiche", async ({ page }) => {
+    await page.goto("/teams/ferrari?season=2024");
+
+    const etoile = page.getByRole("button", { name: /en favori$/ }).first();
+    await expect(etoile).toHaveAttribute("aria-pressed", "false");
+    await etoile.click();
+
+    expect(
+      await page.evaluate((cle) => localStorage.getItem(cle), CLE),
+    ).toContain("team:ferrari");
+
+    await page.goto("/");
+    const bloc = page.locator("section", {
+      has: page.getByText("Mes favoris"),
+    });
+    await expect(bloc).toContainText("Écurie");
+  });
+
+  test("un favori hors du classement de la saison le dit", async ({ page }) => {
+    // Un pilote retiré ne doit pas disparaître en silence du bloc.
+    await page.addInitScript(
+      ([cle]) =>
+        localStorage.setItem(
+          cle,
+          JSON.stringify(["driver:michael_schumacher"]),
+        ),
+      [CLE],
+    );
+
+    await page.goto("/");
+    const bloc = page.locator("section", {
+      has: page.getByText("Mes favoris"),
+    });
+    await expect(bloc).toContainText(/Hors classement \d{4}/);
+  });
+
+  test("une sélection corrompue ne casse pas la page", async ({ page }) => {
+    const errors = watchForErrors(page);
+
+    await page.addInitScript(
+      ([cle]) => localStorage.setItem(cle, "{ pas du json"),
+      [CLE],
+    );
+
+    await page.goto("/standings");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      "Classements",
+    );
+    await expect(
+      page.getByRole("button", { name: /en favori$/ }).first(),
+    ).toHaveAttribute("aria-pressed", "false");
+
+    expect(errors, "erreurs console avec un stockage corrompu").toEqual([]);
+  });
+});
+
 test.describe("saison dans l'URL", () => {
   test("le calendrier lit sa saison dans l'URL", async ({ page }) => {
     const response = await page.goto("/calendar?season=2021");

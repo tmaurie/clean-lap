@@ -30,6 +30,11 @@ const ROUTES = [
   // le contraste de chaque enfant (numéro de manche à 2,48 au lieu de 3,54).
   "/calendar?season=2024",
   `/results/${new Date().getFullYear()}`,
+  // Les fiches de détail n'étaient pas auditées. Et `ferrari` seule ne
+  // suffisait pas : son rouge est assez clair pour passer, là où le bleu
+  // Red Bull des intitulés tombait à 3,01:1 pour du texte de 12 px.
+  "/drivers/max_verstappen",
+  "/teams/red_bull?season=2024",
 ];
 
 test.describe("accessibilité", () => {
@@ -52,6 +57,36 @@ test.describe("accessibilité", () => {
       ).toEqual([]);
     });
   }
+
+  test("aucune violation avec des favoris marqués", async ({ page }) => {
+    // Sans favoris, axe ne voit ni l'étoile pleine, ni la ligne teintée, ni le
+    // bloc « Mes favoris » de la home — exactement le piège du calendrier,
+    // audité vide pendant des mois.
+    await page.addInitScript(() =>
+      localStorage.setItem(
+        "cleanlap.favorites.v1",
+        JSON.stringify(["driver:antonelli", "team:mercedes"]),
+      ),
+    );
+
+    for (const route of ["/standings", "/"]) {
+      await page.goto(route);
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+
+      const { violations } = await new AxeBuilder({ page })
+        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+        .analyze();
+
+      expect(
+        violations.map((v) => ({
+          regle: v.id,
+          noeuds: v.nodes.length,
+          exemple: v.nodes[0]?.html?.slice(0, 120),
+        })),
+        `violations sur ${route} avec favoris`,
+      ).toEqual([]);
+    }
+  });
 
   test("les tableaux de résultats ont une légende", async ({ page }) => {
     await page.goto("/results/2024/1");

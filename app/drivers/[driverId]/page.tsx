@@ -2,8 +2,13 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 
 import { fetchDriverSeason } from "@/lib/api/drivers";
-import { getConstructorColor, getConstructorLabel } from "@/lib/utils/colors";
+import {
+  getConstructorColor,
+  getConstructorLabel,
+  getReadableConstructorColor,
+} from "@/lib/utils/colors";
 import { countryToFlagEmoji } from "@/lib/utils/flags";
+import { FavoriteButton } from "@/components/favorites/FavoriteButton";
 import { SectionEyebrow } from "@/components/paddock/SectionEyebrow";
 import { HatchOverlay } from "@/components/paddock/HatchOverlay";
 import { GhostNumber } from "@/components/paddock/GhostNumber";
@@ -43,6 +48,13 @@ export default async function DriverPage({
   const { driver, stats, races } = data;
   const flag = driver.nationality ? countryToFlagEmoji(driver.nationality) : "";
   const teamColor = getConstructorColor(driver.teamId || "");
+  // L'intitulé est du texte de 12 px : il lui faut 4,5:1, pas les 3:1 par
+  // défaut réservés aux grands caractères. Le bleu Red Bull brut plafonne à
+  // 3,01:1 sur le fond de l'app.
+  const readableTeamColor = getReadableConstructorColor(
+    driver.teamId || "",
+    4.5,
+  );
   const birthdayLabel = formatBirthday(driver.birthday);
 
   const compareHref =
@@ -88,7 +100,7 @@ export default async function DriverPage({
         </GhostNumber>
         <div className="relative flex flex-wrap items-end justify-between gap-10">
           <div className="flex flex-col gap-5">
-            <SectionEyebrow color={teamColor}>
+            <SectionEyebrow color={readableTeamColor}>
               {driver.teamId ? (
                 <Link
                   href={
@@ -106,13 +118,22 @@ export default async function DriverPage({
               — nº {driver.number ?? "?"}
               {flag ? ` · ${flag} ${driver.nationality}` : ""}
             </SectionEyebrow>
-            <div className="flex flex-col gap-0">
-              <span className="text-2xl font-medium text-foreground/60">
-                {driver.name}
-              </span>
-              <h1 className="text-4xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl md:text-7xl">
-                {driver.surname}
-              </h1>
+            <div className="flex items-center gap-3">
+              <div className="flex min-w-0 flex-col gap-0">
+                <span className="text-2xl font-medium text-foreground/60">
+                  {driver.name}
+                </span>
+                <h1 className="text-4xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl md:text-7xl">
+                  {driver.surname}
+                </h1>
+              </div>
+              <FavoriteButton
+                kind="driver"
+                id={driver.id}
+                name={`${driver.name} ${driver.surname}`.trim()}
+                size="lg"
+                className="self-end"
+              />
             </div>
             {birthdayLabel && (
               <p className="text-sm text-foreground/70">{birthdayLabel}</p>
@@ -193,7 +214,7 @@ export default async function DriverPage({
                 key={`${race.round}-${race.raceName}`}
                 className="grid grid-cols-[auto_auto_1fr] items-center gap-x-3 gap-y-1.5 border-b border-border py-3.5 sm:flex sm:gap-5"
               >
-                <span className="w-9 shrink-0 font-mono text-xs text-foreground/40">
+                <span className="w-9 shrink-0 font-mono text-xs text-foreground/55">
                   R{race.round ?? "-"}
                 </span>
                 <span className="w-6 shrink-0 text-lg">{raceFlag}</span>

@@ -12,6 +12,8 @@ import { getConstructorColor } from "@/lib/utils/colors";
 import { countryToFlagEmoji } from "@/lib/utils/flags";
 import { isPastRace } from "@/lib/utils/date";
 import { GhostNumber } from "@/components/paddock/GhostNumber";
+import { FavoriteButton } from "@/components/favorites/FavoriteButton";
+import { useFavorites } from "@/features/favorites/useFavorites";
 
 /**
  * Les données arrivent désormais en props, résolues côté serveur : ce
@@ -31,6 +33,7 @@ export function StandingsTabs({
   races,
 }: StandingsTabsProps) {
   const [tab, setTab] = useState<"drivers" | "constructors">("drivers");
+  const { isFavorite } = useFavorites();
 
   const isDrivers = tab === "drivers";
   const completedCount = races.filter((race) =>
@@ -52,6 +55,7 @@ export function StandingsTabs({
           wins: d.wins,
           teamColor: getConstructorColor(d.constructor),
           teamId: d.constructorId,
+          favoriteId: d.driverId,
         };
       })
     : constructors.map((c) => ({
@@ -65,6 +69,7 @@ export function StandingsTabs({
         wins: c.wins,
         teamColor: getConstructorColor(c.constructor),
         teamId: c.constructorId,
+        favoriteId: c.constructorId,
       }));
 
   const maxPoints = Math.max(...rows.map((r) => r.points), 1);
@@ -172,76 +177,93 @@ export function StandingsTabs({
               </span>
             </div>
             <div className="flex flex-col border-t border-border">
-              {rows.map((row) => (
-                <div
-                  key={row.position}
-                  // Sous `sm`, la ligne se replie : position + nom d'abord,
-                  // puis barre / victoires / points sur une seconde ligne.
-                  // `sm:contents` restitue ensuite la ligne unique d'origine.
-                  className="grid grid-cols-[auto_auto_1fr] items-center gap-x-3 gap-y-2 border-b border-border p-3 transition-colors hover:bg-[#12151a] sm:flex sm:gap-7 sm:p-4"
-                >
-                  <span className="w-8 shrink-0 text-xl font-black italic text-foreground/40 sm:w-14 sm:text-2xl">
-                    {row.position}
-                  </span>
-                  <span
-                    className="h-9 w-1 shrink-0"
-                    style={{ background: row.teamColor }}
-                  />
-                  {/* Onglet écuries : c'est le nom qui mène à la fiche.
+              {rows.map((row) => {
+                const favori =
+                  row.favoriteId !== null &&
+                  isFavorite(isDrivers ? "driver" : "team", row.favoriteId);
+
+                return (
+                  <div
+                    key={row.position}
+                    // Sous `sm`, la ligne se replie : position + nom d'abord,
+                    // puis barre / victoires / points sur une seconde ligne.
+                    // `sm:contents` restitue ensuite la ligne unique d'origine.
+                    className={cn(
+                      "grid grid-cols-[auto_auto_1fr] items-center gap-x-3 gap-y-2 border-b border-border p-3 transition-colors hover:bg-[#12151a] sm:flex sm:gap-7 sm:p-4",
+                      favori && "bg-primary/6",
+                    )}
+                  >
+                    <span className="w-8 shrink-0 text-xl font-black italic text-foreground/40 sm:w-14 sm:text-2xl">
+                      {row.position}
+                    </span>
+                    <span
+                      className="h-9 w-1 shrink-0"
+                      style={{ background: row.teamColor }}
+                    />
+                    {/* Onglet écuries : c'est le nom qui mène à la fiche.
                       Onglet pilotes : c'est la ligne d'écurie en dessous. */}
-                  <div className="flex min-w-0 flex-col gap-0.5 sm:w-[280px]">
-                    <span className="text-[17px] font-extrabold uppercase tracking-wide">
-                      {!isDrivers && row.teamId ? (
+                    <div className="flex min-w-0 flex-col gap-0.5 sm:w-[280px]">
+                      <span className="text-[17px] font-extrabold uppercase tracking-wide">
+                        {!isDrivers && row.teamId ? (
+                          <Link
+                            href={`/teams/${row.teamId}?season=${season}`}
+                            className="transition-colors hover:text-primary"
+                          >
+                            {row.name}
+                          </Link>
+                        ) : (
+                          row.name
+                        )}{" "}
+                        <span className="text-[15px] font-normal">
+                          {row.flag}
+                        </span>
+                      </span>
+                      {isDrivers && row.teamId ? (
                         <Link
                           href={`/teams/${row.teamId}?season=${season}`}
-                          className="transition-colors hover:text-primary"
+                          className="w-fit text-xs text-foreground/50 transition-colors hover:text-foreground"
                         >
-                          {row.name}
+                          {row.secondary} →
                         </Link>
                       ) : (
-                        row.name
-                      )}{" "}
-                      <span className="text-[15px] font-normal">
-                        {row.flag}
-                      </span>
-                    </span>
-                    {isDrivers && row.teamId ? (
-                      <Link
-                        href={`/teams/${row.teamId}?season=${season}`}
-                        className="w-fit text-xs text-foreground/50 transition-colors hover:text-foreground"
-                      >
-                        {row.secondary} →
-                      </Link>
-                    ) : (
-                      <span className="text-xs text-foreground/50">
-                        {row.secondary}
-                      </span>
-                    )}
-                  </div>
-                  <div className="col-span-3 flex items-center gap-4 sm:contents">
-                    <div className="h-1 flex-1 bg-white/7">
-                      <div
-                        className="h-1"
-                        style={{
-                          width: `${Math.round((row.points / maxPoints) * 100)}%`,
-                          background: row.teamColor,
-                        }}
-                      />
+                        <span className="text-xs text-foreground/50">
+                          {row.secondary}
+                        </span>
+                      )}
                     </div>
-                    <span className="shrink-0 whitespace-nowrap text-right font-mono text-[13px] text-foreground/50 sm:w-[90px]">
-                      {row.wins > 0
-                        ? `${row.wins} victoire${row.wins > 1 ? "s" : ""}`
-                        : "—"}
-                    </span>
-                    <span className="shrink-0 whitespace-nowrap text-right text-xl font-extrabold sm:w-[90px]">
-                      {row.points}{" "}
-                      <span className="text-[11px] font-semibold text-foreground/50">
-                        PTS
+                    <div className="col-span-3 flex items-center gap-4 sm:contents">
+                      <div className="h-1 flex-1 bg-white/7">
+                        <div
+                          className="h-1"
+                          style={{
+                            width: `${Math.round((row.points / maxPoints) * 100)}%`,
+                            background: row.teamColor,
+                          }}
+                        />
+                      </div>
+                      <span className="shrink-0 whitespace-nowrap text-right font-mono text-[13px] text-foreground/50 sm:w-[90px]">
+                        {row.wins > 0
+                          ? `${row.wins} victoire${row.wins > 1 ? "s" : ""}`
+                          : "—"}
                       </span>
-                    </span>
+                      <span className="shrink-0 whitespace-nowrap text-right text-xl font-extrabold sm:w-[90px]">
+                        {row.points}{" "}
+                        <span className="text-[11px] font-semibold text-foreground/50">
+                          PTS
+                        </span>
+                      </span>
+                      {row.favoriteId && (
+                        <FavoriteButton
+                          kind={isDrivers ? "driver" : "team"}
+                          id={row.favoriteId}
+                          name={row.name}
+                          className="-mr-1"
+                        />
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </>

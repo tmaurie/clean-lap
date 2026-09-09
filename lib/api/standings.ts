@@ -26,6 +26,8 @@ export async function fetchDriverStandings(
       points: entry.points?.toString() ?? "0",
       driver:
         `${entry.driver?.name ?? ""} ${entry.driver?.surname ?? ""}`.trim(),
+      // Comme `teamId`, tantôt sur l'entrée, tantôt dans l'objet imbriqué.
+      driverId: entry.driverId ?? entry.driver?.driverId ?? null,
       constructor: entry.team?.teamName ?? "N/A",
       // `teamId` est tantôt dans `team`, tantôt au niveau de l'entrée.
       constructorId: entry.team?.teamId ?? entry.teamId ?? null,

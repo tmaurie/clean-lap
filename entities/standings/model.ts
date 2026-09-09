@@ -2,6 +2,8 @@ export type DriverStanding = {
   position: string;
   wins: number;
   driver: string;
+  /** Identifiant du pilote, pour lier vers sa fiche et le mettre en favori. */
+  driverId: string | null;
   constructor: string;
   /** Identifiant de l'écurie, pour lier vers sa fiche. `null` si absent. */
   constructorId: string | null;

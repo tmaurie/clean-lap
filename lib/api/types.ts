@@ -219,6 +219,7 @@ export type ApiDriverSeasonResponse = {
 export type ApiDriverChampionshipResponse = {
   drivers_championship?: Array<{
     classificationId?: number;
+    driverId?: string;
     teamId?: string;
     position?: ApiNumeric;
     points?: ApiNumeric;
