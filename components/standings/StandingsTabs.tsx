@@ -160,7 +160,7 @@ export function StandingsTabs({
           </div>
 
           <div className="flex flex-col gap-6">
-            <div className="flex items-baseline justify-between">
+            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
               <span className="text-xs font-bold uppercase tracking-[0.2em] text-foreground/50">
                 {isDrivers
                   ? `Classement pilotes — ${rows.length} classés`
@@ -175,18 +175,21 @@ export function StandingsTabs({
               {rows.map((row) => (
                 <div
                   key={row.position}
-                  className="flex items-center gap-7 border-b border-border p-4 transition-colors hover:bg-[#12151a]"
+                  // Sous `sm`, la ligne se replie : position + nom d'abord,
+                  // puis barre / victoires / points sur une seconde ligne.
+                  // `sm:contents` restitue ensuite la ligne unique d'origine.
+                  className="grid grid-cols-[auto_auto_1fr] items-center gap-x-3 gap-y-2 border-b border-border p-3 transition-colors hover:bg-[#12151a] sm:flex sm:gap-7 sm:p-4"
                 >
-                  <span className="w-14 text-2xl font-black italic text-foreground/40">
+                  <span className="w-8 shrink-0 text-xl font-black italic text-foreground/40 sm:w-14 sm:text-2xl">
                     {row.position}
                   </span>
                   <span
-                    className="h-9 w-1"
+                    className="h-9 w-1 shrink-0"
                     style={{ background: row.teamColor }}
                   />
                   {/* Onglet écuries : c'est le nom qui mène à la fiche.
                       Onglet pilotes : c'est la ligne d'écurie en dessous. */}
-                  <div className="flex w-[280px] flex-col gap-0.5">
+                  <div className="flex min-w-0 flex-col gap-0.5 sm:w-[280px]">
                     <span className="text-[17px] font-extrabold uppercase tracking-wide">
                       {!isDrivers && row.teamId ? (
                         <Link
@@ -215,26 +218,28 @@ export function StandingsTabs({
                       </span>
                     )}
                   </div>
-                  <div className="h-1 flex-1 bg-white/7">
-                    <div
-                      className="h-1"
-                      style={{
-                        width: `${Math.round((row.points / maxPoints) * 100)}%`,
-                        background: row.teamColor,
-                      }}
-                    />
-                  </div>
-                  <span className="w-[90px] text-right font-mono text-[13px] text-foreground/50">
-                    {row.wins > 0
-                      ? `${row.wins} victoire${row.wins > 1 ? "s" : ""}`
-                      : "—"}
-                  </span>
-                  <span className="w-[90px] text-right text-xl font-extrabold">
-                    {row.points}{" "}
-                    <span className="text-[11px] font-semibold text-foreground/50">
-                      PTS
+                  <div className="col-span-3 flex items-center gap-4 sm:contents">
+                    <div className="h-1 flex-1 bg-white/7">
+                      <div
+                        className="h-1"
+                        style={{
+                          width: `${Math.round((row.points / maxPoints) * 100)}%`,
+                          background: row.teamColor,
+                        }}
+                      />
+                    </div>
+                    <span className="shrink-0 whitespace-nowrap text-right font-mono text-[13px] text-foreground/50 sm:w-[90px]">
+                      {row.wins > 0
+                        ? `${row.wins} victoire${row.wins > 1 ? "s" : ""}`
+                        : "—"}
                     </span>
-                  </span>
+                    <span className="shrink-0 whitespace-nowrap text-right text-xl font-extrabold sm:w-[90px]">
+                      {row.points}{" "}
+                      <span className="text-[11px] font-semibold text-foreground/50">
+                        PTS
+                      </span>
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>

@@ -38,7 +38,7 @@ export function StandingsToggleList({ drivers, constructors }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-baseline justify-between">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-3">
         <div className="flex gap-2">
           <button
             type="button"
@@ -77,21 +77,24 @@ export function StandingsToggleList({ drivers, constructors }: Props) {
         {rows.map((row) => (
           <div
             key={`${tab}-${row.position}`}
-            className="flex items-center gap-5 border-b border-border py-[13px]"
+            className="flex items-center gap-3 border-b border-border py-[13px] sm:gap-5"
           >
-            <span className="w-9 font-black italic text-2xl text-foreground/35">
+            <span className="w-9 shrink-0 font-black italic text-2xl text-foreground/35">
               {row.position}
             </span>
-            <span className="h-8 w-1" style={{ background: row.teamColor }} />
-            <div className="flex flex-1 flex-col">
+            <span
+              className="h-8 w-1 shrink-0"
+              style={{ background: row.teamColor }}
+            />
+            <div className="flex w-0 min-w-0 flex-1 flex-col">
               <span className="text-[15px] font-bold uppercase tracking-wide">
                 {row.name}
               </span>
-              <span className="text-xs text-foreground/50">
+              <span className="truncate text-xs text-foreground/50">
                 {row.secondary}
               </span>
             </div>
-            <div className="flex w-[150px] flex-col items-end gap-1.5">
+            <div className="flex w-[92px] shrink-0 flex-col items-end gap-1.5 sm:w-[150px]">
               <span className="text-[15px] font-extrabold">
                 {row.points}{" "}
                 <span className="text-[11px] font-semibold text-foreground/50">

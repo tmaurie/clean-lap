@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { RaceRow } from "@/components/calendar/RaceRow";
 import { SeasonSelect } from "@/components/calendar/SeasonSelect";
 import { SectionEyebrow } from "@/components/paddock/SectionEyebrow";
 import { HatchOverlay } from "@/components/paddock/HatchOverlay";
 import { getRacesWithWinner } from "@/features/results/hooks";
 import { getConstructorColor } from "@/lib/utils/colors";
 import { countryToFlagEmoji } from "@/lib/utils/flags";
+import { formatRaceDay, formatSessionTime, toRaceDate } from "@/lib/utils/date";
 import {
   RowsSkeleton,
   SkeletonScreen,
@@ -54,17 +56,22 @@ export function CalendarPageClient() {
   const remainingRaces = races.filter((race) => !race.winner);
   const nextRound = remainingRaces[0]?.round;
 
+  /**
+   * Ex. « 05 sept. · 15:00 ». Passe par les helpers partagés : la construction
+   * manuelle d'un `Date` retombait sur minuit UTC quand l'API ne donne pas
+   * d'heure, ce qui affichait la veille dans tout fuseau en retard sur UTC. Et
+   * l'heure est rendue en heure de Paris, comme partout ailleurs dans l'app,
+   * au lieu du fuseau du navigateur.
+   */
   const formatDateLabel = (race: RaceWithWinner) => {
-    const d = new Date(`${race.date}T${race.time ?? "00:00:00Z"}`);
-    if (Number.isNaN(d.getTime())) return race.date;
-    const day = d.toLocaleDateString("fr-FR", {
+    const day = formatRaceDay(race.date, race.time, {
       day: "2-digit",
       month: "short",
     });
-    const time = race.time
-      ? d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
-      : null;
-    return time ? `${day} · ${time}` : day;
+    if (!day) return race.date;
+
+    const parsed = race.time ? toRaceDate(race.date, race.time) : null;
+    return parsed ? `${day} · ${formatSessionTime(parsed)}` : day;
   };
 
   return (
@@ -72,8 +79,8 @@ export function CalendarPageClient() {
       <section className="relative overflow-hidden border-b border-border px-6 py-14 md:px-12">
         <HatchOverlay />
         <div className="relative flex flex-wrap items-end justify-between gap-8">
-          <div className="flex flex-col gap-5">
-            <div className="flex items-center gap-4">
+          <div className="flex min-w-0 flex-col gap-5">
+            <div className="flex flex-wrap items-center gap-4">
               <SectionEyebrow>
                 Saison {season} — {ready ? races.length : "—"} Grands Prix
               </SectionEyebrow>
@@ -83,7 +90,7 @@ export function CalendarPageClient() {
                 triggerClassName="w-[120px]"
               />
             </div>
-            <h1 className="text-5xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl">
+            <h1 className="text-4xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl">
               Calendrier
             </h1>
             {/* Les circuits n'ont pas d'entrée de navigation propre : la barre
@@ -96,7 +103,9 @@ export function CalendarPageClient() {
               Voir tous les circuits →
             </Link>
           </div>
-          <div className="flex gap-px border border-white/8 bg-white/8">
+          {/* En grille pleine largeur sur mobile : les trois tuiles côte à côte
+              en `px-7` réclamaient 398 px, soit plus que l'écran. */}
+          <div className="grid w-full grid-cols-3 gap-px border border-white/8 bg-white/8 sm:flex sm:w-auto">
             {[
               // Pas de "0" trompeur tant que la saison n'est pas chargée.
               { value: ready ? races.length : "—", label: "Manches" },
@@ -112,17 +121,17 @@ export function CalendarPageClient() {
             ].map((stat) => (
               <div
                 key={stat.label}
-                className="flex flex-col gap-0.5 bg-background px-7 py-4"
+                className="flex min-w-0 flex-col gap-0.5 bg-background px-3 py-3 sm:px-7 sm:py-4"
               >
                 <span
                   className={
-                    "text-3xl font-extrabold leading-none " +
+                    "text-2xl font-extrabold leading-none sm:text-3xl " +
                     (stat.accent ? "text-primary" : "")
                   }
                 >
                   {stat.value}
                 </span>
-                <span className="text-[11px] font-semibold uppercase tracking-[0.15em] text-foreground/50">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-foreground/50 sm:text-[11px] sm:tracking-[0.15em]">
                   {stat.label}
                 </span>
               </div>
@@ -164,43 +173,30 @@ export function CalendarPageClient() {
                   race.location.split(", ").at(-1) || "",
                 );
                 return (
-                  <div
+                  <RaceRow
                     key={race.round}
-                    className="flex items-center gap-8 border-b border-border py-5 pl-4 transition-colors hover:bg-[#12151a]"
+                    round={race.round}
+                    flag={flag}
+                    name={race.name}
+                    subtitle={`${race.circuit ? `${race.circuit} — ` : ""}${race.location}`}
+                    accentColor={
+                      isNext ? "var(--primary)" : "rgba(244,244,242,0.35)"
+                    }
+                    className="pl-3 transition-colors hover:bg-[#12151a] sm:pl-4"
                     style={{
                       borderLeft: `3px solid ${isNext ? "var(--primary)" : "transparent"}`,
                       background: isNext ? "#12151a" : "transparent",
                     }}
                   >
-                    <span
-                      className="w-[70px] text-3xl font-black italic"
-                      style={{
-                        color: isNext
-                          ? "var(--primary)"
-                          : "rgba(244,244,242,0.35)",
-                      }}
-                    >
-                      R{race.round}
-                    </span>
-                    <span className="w-8 text-2xl">{flag}</span>
-                    <div className="flex flex-1 flex-col gap-0.5">
-                      <span className="text-[17px] font-extrabold uppercase tracking-wide">
-                        {race.name}
-                      </span>
-                      <span className="text-xs text-foreground/50">
-                        {race.circuit ? `${race.circuit} — ` : ""}
-                        {race.location}
-                      </span>
-                    </div>
                     {isNext && (
                       <span className="bg-primary px-3 py-[5px] text-[11px] font-extrabold italic uppercase tracking-[0.1em] text-primary-foreground">
                         Ce week-end
                       </span>
                     )}
-                    <span className="w-[130px] text-right font-mono text-[13px] text-foreground/70">
+                    <span className="ml-auto whitespace-nowrap font-mono text-[13px] text-foreground/70 sm:ml-0 sm:w-[130px] sm:text-right">
                       {formatDateLabel(race)}
                     </span>
-                  </div>
+                  </RaceRow>
                 );
               })}
             </div>
@@ -220,44 +216,35 @@ export function CalendarPageClient() {
                 );
                 const winnerColor = getConstructorColor(race.winnerTeam || "");
                 return (
-                  <div
+                  <RaceRow
                     key={race.round}
-                    className="flex items-center gap-8 border-b border-border py-5 opacity-75 transition-opacity hover:bg-[#12151a] hover:opacity-100"
+                    round={race.round}
+                    flag={flag}
+                    name={race.name}
+                    subtitle={`${race.circuit ? `${race.circuit} — ` : ""}${race.location}`}
+                    className="opacity-75 transition-opacity hover:bg-[#12151a] hover:opacity-100"
                   >
-                    <span className="w-[70px] text-3xl font-black italic text-foreground/40">
-                      R{race.round}
-                    </span>
-                    <span className="w-8 text-2xl">{flag}</span>
-                    <div className="flex flex-1 flex-col gap-0.5">
-                      <span className="text-[17px] font-extrabold uppercase tracking-wide">
-                        {race.name}
-                      </span>
-                      <span className="text-xs text-foreground/50">
-                        {race.circuit ? `${race.circuit} — ` : ""}
-                        {race.location}
-                      </span>
-                    </div>
                     {race.winner && (
-                      <div className="flex items-center gap-2.5">
+                      <div className="flex min-w-0 items-center gap-2.5">
                         <span
-                          className="h-5 w-1"
+                          className="h-5 w-1 shrink-0"
                           style={{ background: winnerColor }}
                         />
-                        <span className="text-[13px] font-semibold uppercase">
+                        <span className="truncate text-[13px] font-semibold uppercase">
                           {race.winner}
                         </span>
                       </div>
                     )}
-                    <span className="w-[100px] text-right font-mono text-[13px] text-foreground/50">
+                    <span className="whitespace-nowrap font-mono text-[13px] text-foreground/50 sm:w-[100px] sm:text-right">
                       {formatDateLabel(race)}
                     </span>
                     <Link
                       href={`/results/${season}/${race.round}`}
-                      className="whitespace-nowrap text-xs font-bold uppercase tracking-[0.1em] text-primary hover:text-primary/80"
+                      className="ml-auto whitespace-nowrap text-xs font-bold uppercase tracking-[0.1em] text-primary hover:text-primary/80 sm:ml-0"
                     >
                       Résultats →
                     </Link>
-                  </div>
+                  </RaceRow>
                 );
               })}
             </div>

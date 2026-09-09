@@ -42,7 +42,7 @@ export default async function TeamsPage({ searchParams }: TeamsPageProps) {
             <SectionEyebrow>
               Saison {season} — {teams.length || "—"} écuries
             </SectionEyebrow>
-            <h1 className="text-5xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl">
+            <h1 className="text-4xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl">
               Écuries
             </h1>
           </div>

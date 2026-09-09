@@ -63,7 +63,7 @@ export function DriversPageClient({ season, drivers }: DriversPageClientProps) {
               Saison {season === "current" ? "en cours" : season} —{" "}
               {drivers?.length ?? 0} titulaires
             </SectionEyebrow>
-            <h1 className="text-5xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl">
+            <h1 className="text-4xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl">
               Pilotes
             </h1>
           </div>

@@ -36,7 +36,7 @@ export default async function CircuitsPage({
             <SectionEyebrow>
               Saison {season} — {circuits.length || "—"} circuits
             </SectionEyebrow>
-            <h1 className="text-5xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl">
+            <h1 className="text-4xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl">
               Circuits
             </h1>
           </div>

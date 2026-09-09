@@ -33,7 +33,7 @@ export default async function WeekendPage() {
           <HatchOverlay />
           <div className="relative flex flex-col gap-5">
             <SectionEyebrow>Week-end</SectionEyebrow>
-            <h1 className="text-5xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl">
+            <h1 className="text-4xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl">
               Aucun week-end en cours
             </h1>
             <p className="max-w-xl text-sm leading-relaxed text-foreground/55">

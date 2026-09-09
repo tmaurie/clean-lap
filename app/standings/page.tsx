@@ -47,7 +47,7 @@ export default async function StandingsPage({
             <SectionEyebrow>
               Championnat du monde — Saison {season}
             </SectionEyebrow>
-            <h1 className="text-5xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl">
+            <h1 className="text-4xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl">
               Classements
             </h1>
           </div>

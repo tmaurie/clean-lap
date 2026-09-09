@@ -89,7 +89,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
           <div className="flex flex-wrap items-end justify-between gap-6">
             <div className="flex flex-col gap-5">
               <SectionEyebrow>Tête-à-tête — Saison {season}</SectionEyebrow>
-              <h1 className="text-5xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl">
+              <h1 className="text-4xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl">
                 Comparateur
               </h1>
             </div>

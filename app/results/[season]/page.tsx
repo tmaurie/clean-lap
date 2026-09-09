@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { RaceRow } from "@/components/calendar/RaceRow";
 import { SectionEyebrow } from "@/components/paddock/SectionEyebrow";
 import { HatchOverlay } from "@/components/paddock/HatchOverlay";
 import { getRacesWithWinner } from "@/features/results/hooks";
@@ -77,7 +78,7 @@ export default async function SeasonResultsPage({ params }: SeasonPageProps) {
             <SectionEyebrow>
               Saison {season} — {completedRaces.length}/{races.length} disputées
             </SectionEyebrow>
-            <h1 className="text-5xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl">
+            <h1 className="text-4xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl">
               Saison {season}
             </h1>
           </div>
@@ -109,44 +110,35 @@ export default async function SeasonResultsPage({ params }: SeasonPageProps) {
                 );
                 const winnerColor = getConstructorColor(race.winnerTeam || "");
                 return (
-                  <div
+                  <RaceRow
                     key={race.round}
-                    className="flex items-center gap-8 border-b border-border py-5 transition-colors hover:bg-[#12151a]"
+                    round={race.round}
+                    flag={flag}
+                    name={race.name}
+                    subtitle={`${race.circuit ? `${race.circuit} — ` : ""}${race.location}`}
+                    className="transition-colors hover:bg-[#12151a]"
                   >
-                    <span className="w-[70px] text-3xl font-black italic text-foreground/40">
-                      R{race.round}
-                    </span>
-                    <span className="w-8 text-2xl">{flag}</span>
-                    <div className="flex flex-1 flex-col gap-0.5">
-                      <span className="text-[17px] font-extrabold uppercase tracking-wide">
-                        {race.name}
-                      </span>
-                      <span className="text-xs text-foreground/50">
-                        {race.circuit ? `${race.circuit} — ` : ""}
-                        {race.location}
-                      </span>
-                    </div>
                     {race.winner && (
-                      <div className="flex items-center gap-2.5">
+                      <div className="flex min-w-0 items-center gap-2.5">
                         <span
-                          className="h-5 w-1"
+                          className="h-5 w-1 shrink-0"
                           style={{ background: winnerColor }}
                         />
-                        <span className="text-[13px] font-semibold uppercase">
+                        <span className="truncate text-[13px] font-semibold uppercase">
                           {race.winner}
                         </span>
                       </div>
                     )}
-                    <span className="w-[100px] text-right font-mono text-[13px] text-foreground/50">
+                    <span className="whitespace-nowrap font-mono text-[13px] text-foreground/50 sm:w-[100px] sm:text-right">
                       {formatDate(race.date)}
                     </span>
                     <Link
                       href={`/results/${season}/${race.round}`}
-                      className="whitespace-nowrap text-xs font-bold uppercase tracking-[0.1em] text-primary hover:text-primary/80"
+                      className="ml-auto whitespace-nowrap text-xs font-bold uppercase tracking-[0.1em] text-primary hover:text-primary/80 sm:ml-0"
                     >
                       Résultats →
                     </Link>
-                  </div>
+                  </RaceRow>
                 );
               })}
               {remainingRaces.map((race) => {
@@ -154,30 +146,21 @@ export default async function SeasonResultsPage({ params }: SeasonPageProps) {
                   race.location.split(", ").at(-1) || "",
                 );
                 return (
-                  <div
+                  <RaceRow
                     key={race.round}
-                    className="flex items-center gap-8 border-b border-border py-5 opacity-60"
+                    round={race.round}
+                    flag={flag}
+                    name={race.name}
+                    subtitle={`${race.circuit ? `${race.circuit} — ` : ""}${race.location}`}
+                    className="opacity-60"
                   >
-                    <span className="w-[70px] text-3xl font-black italic text-foreground/40">
-                      R{race.round}
-                    </span>
-                    <span className="w-8 text-2xl">{flag}</span>
-                    <div className="flex flex-1 flex-col gap-0.5">
-                      <span className="text-[17px] font-extrabold uppercase tracking-wide">
-                        {race.name}
-                      </span>
-                      <span className="text-xs text-foreground/50">
-                        {race.circuit ? `${race.circuit} — ` : ""}
-                        {race.location}
-                      </span>
-                    </div>
                     <span className="text-xs font-semibold uppercase tracking-wide text-foreground/40">
                       En attente de départ
                     </span>
-                    <span className="w-[100px] text-right font-mono text-[13px] text-foreground/50">
+                    <span className="ml-auto whitespace-nowrap font-mono text-[13px] text-foreground/50 sm:ml-0 sm:w-[100px] sm:text-right">
                       {formatDate(race.date)}
                     </span>
-                  </div>
+                  </RaceRow>
                 );
               })}
             </div>

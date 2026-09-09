@@ -535,6 +535,65 @@ test.describe("index des écuries", () => {
   });
 });
 
+test.describe("mise en page mobile", () => {
+  // Le garde-fou précédent ne visitait que `/teams`, une grille : il ne
+  // pouvait rien attraper. Les pages en lignes denses, elles, débordaient —
+  // `/calendar` réclamait 601 px sur un écran de 320, soit près du double.
+  const PAGES = [
+    "/",
+    "/weekend",
+    "/calendar",
+    "/standings",
+    "/drivers",
+    "/teams",
+    "/circuits",
+    "/results",
+    "/results/2024",
+    "/results/2024/1",
+    "/drivers/max_verstappen",
+    "/teams/ferrari?season=2024",
+    "/circuits/monza?season=2024",
+    "/compare?season=2024&d1=max_verstappen&d2=leclerc",
+  ];
+
+  for (const width of [320, 375, 414]) {
+    test(`aucun débordement horizontal à ${width} px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 });
+      const debordements: string[] = [];
+
+      for (const route of PAGES) {
+        await page.goto(route);
+        // Une page blanche ne déborde jamais : on refuse de conclure sur une
+        // page qui n'a pas rendu.
+        await expect(page.locator("h1").first()).toBeVisible();
+
+        const { scrollWidth, innerWidth, coupable } = await page.evaluate(
+          () => {
+            const iw = window.innerWidth;
+            const trop = [...document.querySelectorAll("body *")]
+              .map((el) => ({ el, r: el.getBoundingClientRect() }))
+              .filter((o) => o.r.right > iw + 1 && o.r.width > 0)
+              .sort((a, b) => b.r.right - a.r.right)[0];
+            return {
+              scrollWidth: document.documentElement.scrollWidth,
+              innerWidth: iw,
+              coupable: trop
+                ? `${trop.el.tagName.toLowerCase()}.${String(trop.el.className).slice(0, 60)}`
+                : "",
+            };
+          },
+        );
+
+        if (scrollWidth > innerWidth) {
+          debordements.push(`${route} : ${scrollWidth} px — ${coupable}`);
+        }
+      }
+
+      expect(debordements, `débordements à ${width} px`).toEqual([]);
+    });
+  }
+});
+
 test.describe("navigation responsive", () => {
   // L'en-tête débordait dès 768 px, même avec cinq entrées : la page
   // scrollait alors horizontalement. La bascule est passée à `lg`.

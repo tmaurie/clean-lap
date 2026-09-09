@@ -110,7 +110,7 @@ export default async function DriverPage({
               <span className="text-2xl font-medium text-foreground/60">
                 {driver.name}
               </span>
-              <h1 className="text-6xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-7xl">
+              <h1 className="text-4xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl md:text-7xl">
                 {driver.surname}
               </h1>
             </div>
@@ -186,31 +186,38 @@ export default async function DriverPage({
             const isWin = Number.isFinite(posNum) && posNum === 1;
             const points = Number(race.points) || 0;
             return (
+              // Six colonnes fixes réclamaient 320 px de contenu : sous `sm`
+              // la ligne se replie, grille / position / points passant sur une
+              // seconde ligne.
               <div
                 key={`${race.round}-${race.raceName}`}
-                className="flex items-center gap-5 border-b border-border py-3.5"
+                className="grid grid-cols-[auto_auto_1fr] items-center gap-x-3 gap-y-1.5 border-b border-border py-3.5 sm:flex sm:gap-5"
               >
-                <span className="w-9 font-mono text-xs text-foreground/40">
+                <span className="w-9 shrink-0 font-mono text-xs text-foreground/40">
                   R{race.round ?? "-"}
                 </span>
-                <span className="w-6 text-lg">{raceFlag}</span>
-                <span className="flex-1 text-sm font-bold uppercase tracking-wide">
+                <span className="w-6 shrink-0 text-lg">{raceFlag}</span>
+                <span className="min-w-0 text-sm font-bold uppercase tracking-wide sm:w-0 sm:flex-1">
                   {race.raceName}
                 </span>
-                <span className="w-14 text-right font-mono text-xs text-foreground/50">
-                  grille {race.grid ?? "–"}
-                </span>
-                <span
-                  className="w-14 text-right text-xl font-black italic"
-                  style={{
-                    color: isWin ? "var(--primary)" : "rgba(244,244,242,0.55)",
-                  }}
-                >
-                  {pos ? `P${pos}` : "–"}
-                </span>
-                <span className="w-12 text-right text-sm font-extrabold">
-                  {points > 0 ? `+${points}` : "–"}
-                </span>
+                <div className="col-span-3 flex items-center gap-4 sm:contents">
+                  <span className="whitespace-nowrap text-right font-mono text-xs text-foreground/50 sm:w-14">
+                    grille {race.grid ?? "–"}
+                  </span>
+                  <span
+                    className="ml-auto w-14 text-right text-xl font-black italic sm:ml-0"
+                    style={{
+                      color: isWin
+                        ? "var(--primary)"
+                        : "rgba(244,244,242,0.55)",
+                    }}
+                  >
+                    {pos ? `P${pos}` : "–"}
+                  </span>
+                  <span className="w-12 text-right text-sm font-extrabold">
+                    {points > 0 ? `+${points}` : "–"}
+                  </span>
+                </div>
               </div>
             );
           })}

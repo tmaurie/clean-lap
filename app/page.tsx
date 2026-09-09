@@ -143,16 +143,16 @@ export default async function HomePage() {
                 {nextRaceDate && (
                   <HeroCountdown targetIso={nextRaceDate.toISOString()} />
                 )}
-                <div className="flex gap-4">
+                <div className="flex flex-wrap gap-3 sm:gap-4">
                   <Link
                     href="/weekend"
-                    className="inline-flex h-[52px] items-center bg-primary px-9 text-sm font-extrabold uppercase italic tracking-[0.08em] text-primary-foreground transition-colors hover:bg-primary/90"
+                    className="inline-flex h-[52px] items-center bg-primary px-6 text-sm font-extrabold uppercase italic tracking-[0.08em] text-primary-foreground transition-colors hover:bg-primary/90 sm:px-9"
                   >
                     Voir le week-end →
                   </Link>
                   <Link
                     href="/calendar"
-                    className="inline-flex h-[52px] items-center border border-white/20 px-9 text-sm font-bold uppercase tracking-[0.08em] transition-colors hover:border-white/50"
+                    className="inline-flex h-[52px] items-center border border-white/20 px-6 text-sm font-bold uppercase tracking-[0.08em] transition-colors hover:border-white/50 sm:px-9"
                   >
                     Calendrier complet
                   </Link>
@@ -204,7 +204,7 @@ export default async function HomePage() {
       {/* DERNIER GP + CHAMPIONNAT */}
       <section className="grid border-b border-border md:grid-cols-2">
         <div className="flex flex-col gap-6 border-b border-border px-6 py-10 md:border-b-0 md:border-r md:px-12">
-          <div className="flex items-baseline justify-between">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
             <SectionEyebrow>
               Dernier GP {lastRace ? `— ${lastRace.raceName}` : ""}
             </SectionEyebrow>
@@ -224,27 +224,30 @@ export default async function HomePage() {
             {lastRacePodium.map((r) => (
               <div
                 key={r.position}
-                className="flex items-center gap-5 border-b border-border py-[13px]"
+                className="flex items-center gap-3 border-b border-border py-[13px] sm:gap-5"
               >
                 <span
-                  className="w-9 text-2xl font-black italic"
+                  className="w-9 shrink-0 text-2xl font-black italic"
                   style={{ color: r.numColor }}
                 >
                   {r.position}
                 </span>
-                <span className="h-8 w-1" style={{ background: r.teamColor }} />
-                <div className="flex flex-1 flex-col">
+                <span
+                  className="h-8 w-1 shrink-0"
+                  style={{ background: r.teamColor }}
+                />
+                <div className="flex w-0 min-w-0 flex-1 flex-col">
                   <span className="text-[15px] font-bold uppercase tracking-wide">
                     {r.driver}
                   </span>
-                  <span className="text-xs text-foreground/50">
+                  <span className="truncate text-xs text-foreground/50">
                     {r.constructor}
                   </span>
                 </div>
-                <span className="font-mono text-[13px] text-foreground/70">
+                <span className="hidden font-mono text-[13px] text-foreground/70 sm:inline">
                   {r.time}
                 </span>
-                <span className="w-16 text-right text-[15px] font-extrabold">
+                <span className="w-16 shrink-0 text-right text-[15px] font-extrabold">
                   {r.points}{" "}
                   <span className="text-[11px] font-semibold text-foreground/50">
                     PTS

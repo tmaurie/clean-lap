@@ -160,7 +160,7 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
               {round === "last" ? "Manche précédente" : `Manche ${round}`} —{" "}
               {formattedDate}
             </SectionEyebrow>
-            <h1 className="max-w-3xl text-5xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl md:text-7xl">
+            <h1 className="max-w-3xl text-4xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl md:text-7xl">
               {raceName}
             </h1>
             <div className="flex flex-wrap items-center gap-4 text-sm text-foreground/70">

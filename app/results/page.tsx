@@ -158,7 +158,7 @@ export default function ResultsIndexPage() {
             <SectionEyebrow>
               Archives — {coverageLabel} · {totalRaces || "—"} Grands Prix
             </SectionEyebrow>
-            <h1 className="text-5xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl">
+            <h1 className="text-4xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl">
               Résultats
             </h1>
             <p className="text-sm leading-relaxed text-foreground/55">
