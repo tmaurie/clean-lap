@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { RaceRow } from "@/components/calendar/RaceRow";
+import { splitSeasonRaces } from "@/features/season/splitSeasonRaces";
 import { SectionEyebrow } from "@/components/paddock/SectionEyebrow";
 import { HatchOverlay } from "@/components/paddock/HatchOverlay";
 import { getRacesWithWinner } from "@/features/results/hooks";
@@ -66,8 +67,11 @@ export default async function SeasonResultsPage({ params }: SeasonPageProps) {
     return [];
   });
 
-  const completedRaces = races.filter((race) => Boolean(race.winner));
-  const remainingRaces = races.filter((race) => !race.winner);
+  // Même correction que sur le calendrier : f1api.dev ne renseigne `winner`
+  // qu'à partir de 2024, si bien que 2021 s'affichait comme 22 manches « en
+  // attente de départ ».
+  const { completed: completedRaces, remaining: remainingRaces } =
+    splitSeasonRaces(races);
 
   return (
     <div className="flex flex-col">
@@ -152,9 +156,10 @@ export default async function SeasonResultsPage({ params }: SeasonPageProps) {
                     flag={flag}
                     name={race.name}
                     subtitle={`${race.circuit ? `${race.circuit} — ` : ""}${race.location}`}
-                    className="opacity-60"
                   >
-                    <span className="text-xs font-semibold uppercase tracking-wide text-foreground/40">
+                    {/* La mention suffit à distinguer ces lignes : l'`opacity`
+                        d'avant divisait le contraste de toute la ligne. */}
+                    <span className="text-xs font-semibold uppercase tracking-wide text-foreground/55">
                       En attente de départ
                     </span>
                     <span className="ml-auto whitespace-nowrap font-mono text-[13px] text-foreground/50 sm:ml-0 sm:w-[100px] sm:text-right">

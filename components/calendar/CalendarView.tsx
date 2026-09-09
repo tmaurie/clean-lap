@@ -1,59 +1,41 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
 import { RaceRow } from "@/components/calendar/RaceRow";
-import { SeasonSelect } from "@/components/calendar/SeasonSelect";
+import {
+  isThisWeekend,
+  splitSeasonRaces,
+} from "@/features/season/splitSeasonRaces";
+import { SeasonUrlSelect } from "@/components/calendar/SeasonUrlSelect";
 import { SectionEyebrow } from "@/components/paddock/SectionEyebrow";
 import { HatchOverlay } from "@/components/paddock/HatchOverlay";
 import { getRacesWithWinner } from "@/features/results/hooks";
 import { getConstructorColor } from "@/lib/utils/colors";
 import { countryToFlagEmoji } from "@/lib/utils/flags";
 import { formatRaceDay, formatSessionTime, toRaceDate } from "@/lib/utils/date";
-import {
-  RowsSkeleton,
-  SkeletonScreen,
-} from "@/components/skeletons/PageSkeletons";
 
 type RaceWithWinner = Awaited<ReturnType<typeof getRacesWithWinner>>[number];
 
-export function CalendarPageClient() {
-  const [season, setSeason] = useState(new Date().getFullYear().toString());
-  const [races, setRaces] = useState<RaceWithWinner[]>([]);
-  const [status, setStatus] = useState<"loading" | "ready" | "error">(
-    "loading",
-  );
-
-  useEffect(() => {
-    // `ignore` : une réponse lente d'une saison précédente ne doit pas écraser
-    // celle qu'on affiche maintenant.
-    let ignore = false;
-
-    setStatus("loading");
-    getRacesWithWinner(season)
-      .then((data) => {
-        if (ignore) return;
-        setRaces(data);
-        setStatus("ready");
-      })
-      .catch((error) => {
-        // Sans ce catch, une saison hors calendrier laissait une liste vide,
-        // impossible à distinguer d'une saison sans course.
-        if (ignore) return;
-        console.error(`[calendar] saison ${season} indisponible`, error);
-        setRaces([]);
-        setStatus("error");
-      });
-
-    return () => {
-      ignore = true;
-    };
-  }, [season]);
-
-  const ready = status === "ready";
-  const completedRaces = races.filter((race) => Boolean(race.winner));
-  const remainingRaces = races.filter((race) => !race.winner);
+/**
+ * Vue du calendrier, rendue côté serveur. La saison vient de l'URL (`?season=`)
+ * et non plus d'un `useState` : le lien est partageable et le retour arrière
+ * du navigateur fonctionne.
+ *
+ * `races === null` = calendrier indisponible (l'appel a échoué), `[]` = saison
+ * connue mais sans course. Sans cette distinction, une panne de l'API était
+ * indiscernable d'une saison vide.
+ */
+export function CalendarView({
+  season,
+  races,
+}: {
+  season: string;
+  races: RaceWithWinner[] | null;
+}) {
+  // Une seule horloge pour tout le rendu : sinon deux appels à `new Date()`
+  // peuvent tomber de part et d'autre d'un départ de course.
+  const now = new Date();
+  const { completed: completedRaces, remaining: remainingRaces } =
+    splitSeasonRaces(races ?? [], now);
   const nextRound = remainingRaces[0]?.round;
 
   /**
@@ -82,13 +64,9 @@ export function CalendarPageClient() {
           <div className="flex min-w-0 flex-col gap-5">
             <div className="flex flex-wrap items-center gap-4">
               <SectionEyebrow>
-                Saison {season} — {ready ? races.length : "—"} Grands Prix
+                Saison {season} — {races?.length ?? "—"} Grands Prix
               </SectionEyebrow>
-              <SeasonSelect
-                value={season}
-                action={setSeason}
-                triggerClassName="w-[120px]"
-              />
+              <SeasonUrlSelect value={season} triggerClassName="w-[120px]" />
             </div>
             <h1 className="text-4xl font-black italic uppercase leading-[0.95] tracking-tight sm:text-6xl">
               Calendrier
@@ -107,14 +85,14 @@ export function CalendarPageClient() {
               en `px-7` réclamaient 398 px, soit plus que l'écran. */}
           <div className="grid w-full grid-cols-3 gap-px border border-white/8 bg-white/8 sm:flex sm:w-auto">
             {[
-              // Pas de "0" trompeur tant que la saison n'est pas chargée.
-              { value: ready ? races.length : "—", label: "Manches" },
+              // Pas de "0" trompeur quand la saison n'a pas pu être chargée.
+              { value: races?.length ?? "—", label: "Manches" },
               {
-                value: ready ? completedRaces.length : "—",
+                value: races ? completedRaces.length : "—",
                 label: "Disputées",
               },
               {
-                value: ready ? remainingRaces.length : "—",
+                value: races ? remainingRaces.length : "—",
                 label: "Restantes",
                 accent: true,
               },
@@ -140,14 +118,7 @@ export function CalendarPageClient() {
         </div>
       </section>
 
-      {status === "loading" ? (
-        <SkeletonScreen
-          label={`Chargement du calendrier ${season}`}
-          className="gap-10 px-6 py-10 md:px-12"
-        >
-          <RowsSkeleton rows={8} />
-        </SkeletonScreen>
-      ) : status === "error" ? (
+      {races === null ? (
         <section className="flex flex-col gap-4 px-6 py-10 md:px-12">
           <h2 className="text-2xl font-black italic uppercase tracking-tight">
             Saison indisponible
@@ -179,9 +150,7 @@ export function CalendarPageClient() {
                     flag={flag}
                     name={race.name}
                     subtitle={`${race.circuit ? `${race.circuit} — ` : ""}${race.location}`}
-                    accentColor={
-                      isNext ? "var(--primary)" : "rgba(244,244,242,0.35)"
-                    }
+                    accentColor={isNext ? "var(--primary)" : undefined}
                     className="pl-3 transition-colors hover:bg-[#12151a] sm:pl-4"
                     style={{
                       borderLeft: `3px solid ${isNext ? "var(--primary)" : "transparent"}`,
@@ -190,7 +159,7 @@ export function CalendarPageClient() {
                   >
                     {isNext && (
                       <span className="bg-primary px-3 py-[5px] text-[11px] font-extrabold italic uppercase tracking-[0.1em] text-primary-foreground">
-                        Ce week-end
+                        {isThisWeekend(race, now) ? "Ce week-end" : "Prochaine"}
                       </span>
                     )}
                     <span className="ml-auto whitespace-nowrap font-mono text-[13px] text-foreground/70 sm:ml-0 sm:w-[130px] sm:text-right">
@@ -222,7 +191,7 @@ export function CalendarPageClient() {
                     flag={flag}
                     name={race.name}
                     subtitle={`${race.circuit ? `${race.circuit} — ` : ""}${race.location}`}
-                    className="opacity-75 transition-opacity hover:bg-[#12151a] hover:opacity-100"
+                    className="transition-colors hover:bg-[#12151a]"
                   >
                     {race.winner && (
                       <div className="flex min-w-0 items-center gap-2.5">

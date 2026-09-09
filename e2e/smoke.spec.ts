@@ -252,30 +252,31 @@ test("une saison du calendrier liste ses manches", async ({ page }) => {
  * l'état de chargement de façon déterministe, au lieu de courir après une
  * fenêtre de quelques millisecondes.
  */
-async function slowDownApi(page: Page, delayMs = 4000) {
-  await page.route("**://f1api.dev/**", async (route) => {
-    await new Promise((resolve) => setTimeout(resolve, delayMs));
-    await route.continue();
-  });
-}
-
 test.describe("états de chargement", () => {
-  test("le calendrier affiche un squelette annoncé, pas une page vide", async ({
-    page,
+  test("le calendrier diffuse un squelette annoncé avant ses données", async ({
+    request,
   }) => {
-    await slowDownApi(page);
-    await page.goto("/calendar");
+    // Le calendrier n'est plus chargé depuis le navigateur : son attente se
+    // joue pendant le rendu serveur, et `loading.tsx` part dans le premier
+    // flux. On lit donc le flux lui-même — piloter un clic serait à la merci
+    // du préchargement de Next, qui rend la navigation instantanée.
+    const html = await (await request.get("/calendar")).text();
 
-    // Avant, la page s'affichait avec des compteurs à 0 et aucune indication.
-    await expect(
-      page.getByRole("status").filter({ hasText: /chargement du calendrier/i }),
-    ).toBeAttached();
+    const squelette = html.indexOf("Chargement du calendrier");
+    const donnees = html.indexOf("Grands Prix");
 
-    // Et surtout : pas de "0 manches" trompeur pendant le chargement.
-    await expect(page.getByText("Manches").locator("..")).toContainText("—");
+    expect(squelette, "squelette absent du flux").toBeGreaterThan(-1);
+    expect(donnees, "données absentes du flux").toBeGreaterThan(-1);
+    // L'ordre compte : le squelette précède les données, c'est bien un état
+    // d'attente et non un résidu.
+    expect(squelette).toBeLessThan(donnees);
+
+    // Et il n'annonce aucun compteur, plutôt que le « 0 manches » trompeur
+    // d'avant.
+    expect(html.slice(0, squelette)).not.toContain("Manches");
   });
 
-  test("le squelette disparaît une fois les données arrivées", async ({
+  test("le calendrier affiche ses vrais compteurs une fois rendu", async ({
     page,
   }) => {
     await page.goto("/calendar");
@@ -284,6 +285,57 @@ test.describe("états de chargement", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
       "Calendrier",
     );
+
+    const manches = page.getByText("Manches").locator("..");
+    await expect(manches).not.toContainText("—");
+    await expect(manches).toContainText(/[1-9]\d*/);
+  });
+});
+
+test.describe("saison dans l'URL", () => {
+  test("le calendrier lit sa saison dans l'URL", async ({ page }) => {
+    const response = await page.goto("/calendar?season=2021");
+    expect(response?.status()).toBe(200);
+
+    await expect(page.getByText(/Saison 2021/)).toBeVisible();
+
+    // Les données suivent bien la saison demandée : 2021 comptait 22 manches,
+    // la saison en cours n'en compte pas le même nombre.
+    await expect(
+      page.getByText("Manches", { exact: true }).locator(".."),
+    ).toContainText("22");
+
+    // Et une saison close ne doit plus rien afficher « à venir » : f1api.dev
+    // ne renseigne pas `winner` avant 2024, ce qui affichait autrefois les 22
+    // manches comme à disputer.
+    await expect(
+      page.getByText("Aucune course restante pour cette saison."),
+    ).toBeVisible();
+  });
+
+  test("changer de saison écrit dans l'URL et le retour arrière fonctionne", async ({
+    page,
+  }) => {
+    await page.goto("/calendar?season=2022");
+
+    await page
+      .getByRole("combobox", { name: "Choisir la saison" })
+      .first()
+      .click();
+    await page.getByRole("option", { name: /^2021$/ }).click();
+
+    await expect(page).toHaveURL(/season=2021/);
+    await expect(page.getByText(/Saison 2021/)).toBeVisible();
+
+    // C'est tout l'intérêt de l'URL : le retour arrière ramène la saison
+    // précédente, ce qu'un `useState` ne permettait pas.
+    await page.goBack();
+    await expect(page.getByText(/Saison 2022/)).toBeVisible();
+  });
+
+  test("le titre de la page porte la saison", async ({ page }) => {
+    await page.goto("/calendar?season=2021");
+    expect(await page.title()).toContain("2021");
   });
 });
 
@@ -511,7 +563,11 @@ test.describe("index des écuries", () => {
     const response = await page.goto("/teams?season=2024");
     expect(response?.status()).toBe(200);
 
+    // `page.goto` rend la main dès le premier flux : sur un cache froid, c'est
+    // encore le squelette de `loading.tsx`. Sans cette attente le compte
+    // tombait à 0 — le test ne passait que quand le serveur était assez rapide.
     const cartes = page.locator("main").getByRole("listitem");
+    await expect(cartes.first()).toBeVisible();
     expect(await cartes.count()).toBeGreaterThanOrEqual(9);
 
     await page

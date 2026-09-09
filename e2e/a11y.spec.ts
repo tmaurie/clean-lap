@@ -22,6 +22,14 @@ const ROUTES = [
   "/standings",
   "/results",
   "/results/2024/1",
+  // Les listes de courses ont deux états de ligne. `/calendar` (saison en
+  // cours) montre les deux, `?season=2024` une saison entièrement courue, et
+  // `/results/{année en cours}` les manches encore à disputer. Tant que
+  // `/calendar` était rendu côté navigateur, axe n'auditait que son squelette
+  // et ne voyait aucune de ces lignes : l'`opacity` des lignes courues divisait
+  // le contraste de chaque enfant (numéro de manche à 2,48 au lieu de 3,54).
+  "/calendar?season=2024",
+  `/results/${new Date().getFullYear()}`,
 ];
 
 test.describe("accessibilité", () => {
