@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 
 import { Season } from "@/entities/season/model";
@@ -7,19 +5,20 @@ import { getConstructorColor } from "@/lib/utils/colors";
 import { countryToFlagEmoji } from "@/lib/utils/flags";
 import { GhostNumber } from "@/components/paddock/GhostNumber";
 
-type ResultsPageClientProps = {
-  seasons: Season[];
-  isLoading: boolean;
-  isInitialLoading: boolean;
-};
-
-export function ResultsPageClient({
+/**
+ * Grille des saisons. N'a plus besoin d'être un composant client : la première
+ * page arrive déjà rendue par le serveur, et seules les pages suivantes
+ * passent par `SeasonsBrowser`.
+ */
+export function SeasonGrid({
   seasons,
-  isLoading,
-  isInitialLoading,
-}: ResultsPageClientProps) {
-  const skeletonCount = isInitialLoading ? 6 : isLoading ? 3 : 0;
-  const showGrid = seasons.length > 0 || skeletonCount > 0;
+  pendingCount = 0,
+}: {
+  seasons: Season[];
+  /** Cartes fantômes pendant le chargement de la page suivante. */
+  pendingCount?: number;
+}) {
+  const showGrid = seasons.length > 0 || pendingCount > 0;
 
   if (!showGrid) {
     return (
@@ -35,7 +34,7 @@ export function ResultsPageClient({
       {seasons.map((season) => (
         <SeasonCard key={season.season} season={season} />
       ))}
-      {Array.from({ length: skeletonCount }).map((_, index) => (
+      {Array.from({ length: pendingCount }).map((_, index) => (
         <SeasonCardSkeleton key={`season-skeleton-${index}`} />
       ))}
     </div>

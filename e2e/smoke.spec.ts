@@ -301,6 +301,93 @@ test.describe("états de chargement", () => {
   });
 });
 
+test.describe("liste des saisons", () => {
+  test("la première page est rendue par le serveur, sans appel à f1api.dev", async ({
+    page,
+  }) => {
+    const errors = watchForErrors(page);
+    const versApiAmont: string[] = [];
+    page.on("request", (request) => {
+      if (request.url().includes("f1api.dev")) versApiAmont.push(request.url());
+    });
+
+    await page.goto("/results");
+
+    const cartes = page.locator("main a[href^='/results/']");
+    await expect(cartes.first()).toBeVisible();
+    expect(await cartes.count()).toBe(12);
+
+    // Le point de l'exercice : le navigateur ne parle plus à l'API publique.
+    // Avant, la page en faisait 36 au premier rendu.
+    expect(versApiAmont, "appels navigateur vers f1api.dev").toEqual([]);
+    expect(errors, "erreurs console sur /results").toEqual([]);
+  });
+
+  test("le contenu est dans le HTML servi, sans JavaScript", async ({
+    request,
+  }) => {
+    const html = await (await request.get("/results")).text();
+
+    // La page arrivait vide puis se remplissait : rien n'était indexable.
+    expect(html).toContain("Champion pilote");
+    expect(html).toContain(String(new Date().getFullYear()));
+  });
+
+  test("« charger plus » passe par le proxy et ajoute une page", async ({
+    page,
+  }) => {
+    const versProxy: string[] = [];
+    page.on("request", (request) => {
+      if (request.url().includes("/api/seasons")) versProxy.push(request.url());
+    });
+
+    await page.goto("/results");
+    const cartes = page.locator("main a[href^='/results/']");
+    await expect(cartes.first()).toBeVisible();
+
+    await page.getByRole("button", { name: /charger plus/i }).click();
+    await expect(cartes).toHaveCount(24);
+
+    expect(versProxy).toHaveLength(1);
+    expect(versProxy[0]).toContain("page=2");
+  });
+
+  test("le proxy refuse une page qui n'existe pas", async ({ request }) => {
+    // Sans ce garde-fou, on partait chercher des années antérieures à 1950.
+    for (const page of ["0", "99", "abc", "%202"]) {
+      const response = await request.get(`/api/seasons?page=${page}`);
+      expect(response.status(), `page=${page}`).toBe(400);
+    }
+
+    const ok = await request.get("/api/seasons?page=2");
+    expect(ok.status()).toBe(200);
+    const { seasons } = (await ok.json()) as { seasons: unknown[] };
+    expect(seasons).toHaveLength(12);
+  });
+
+  test("le proxy cache plus longtemps les saisons closes", async ({
+    request,
+  }) => {
+    // La page 1 contient la saison en cours, qui bouge chaque week-end ; les
+    // suivantes ne contiennent que des saisons définitivement figées.
+    const premiere = await request.get("/api/seasons?page=1");
+    const suivante = await request.get("/api/seasons?page=3");
+
+    expect(premiere.headers()["cache-control"]).toContain("s-maxage=60");
+    expect(suivante.headers()["cache-control"]).toContain("s-maxage=3600");
+  });
+
+  test("les sous-routes gardent leur 404 malgré le squelette de la liste", async ({
+    page,
+  }) => {
+    // `app/results/(list)/` est un groupe de routes : sans lui, le
+    // `loading.tsx` mettrait `/results/[season]/[round]` en flux et le statut
+    // partirait avant que la page puisse appeler `notFound()`.
+    const horsCalendrier = await page.goto("/results/1800");
+    expect(horsCalendrier?.status()).toBe(404);
+  });
+});
+
 test.describe("animations d'entrée", () => {
   test("les lignes de classement arrivent en cascade", async ({ page }) => {
     await page.goto("/standings");

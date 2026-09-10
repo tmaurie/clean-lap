@@ -2,9 +2,9 @@ import { Season } from "@/entities/season/model";
 import { API_BASE_URL, fetchApi } from "@/lib/api/client";
 import type { ApiSeasonResponse } from "@/lib/api/types";
 import { normalizeCircuit } from "@/lib/api/types";
+import { EARLIEST_SEASON, SEASONS_PAGE_SIZE } from "@/lib/api/seasonsPage";
 
 const NEW_API_BASE_URL = API_BASE_URL;
-const EARLIEST_SEASON = 1950;
 
 /**
  * La liste des saisons n'affiche que le champion : demander le classement
@@ -134,7 +134,7 @@ async function fetchSeasonSnapshot(
 
 export async function fetchSeasonDetailsPage(
   page = 1,
-  pageSize = 12,
+  pageSize = SEASONS_PAGE_SIZE,
   signal?: AbortSignal,
 ): Promise<Season[]> {
   const currentYear = new Date().getFullYear();
