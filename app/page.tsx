@@ -13,12 +13,12 @@ import { formatRaceDay, toRaceDate } from "@/lib/utils/date";
 import { resolveCurrentRace } from "@/features/season/currentRace";
 import { currentSeason } from "@/lib/utils/season";
 import { countryToFlagEmoji } from "@/lib/utils/flags";
-import { getConstructorColor } from "@/lib/utils/colors";
 import { FavoritesBoard } from "@/components/favorites/FavoritesBoard";
 import { SectionEyebrow } from "@/components/paddock/SectionEyebrow";
 import { HatchOverlay } from "@/components/paddock/HatchOverlay";
 import { GhostNumber } from "@/components/paddock/GhostNumber";
 import { HeroCountdown } from "@/components/home/HeroCountdown";
+import { RacePodium } from "@/components/home/RacePodium";
 import { StandingsToggleList } from "@/components/home/StandingsToggleList";
 
 export const revalidate = 60;
@@ -80,11 +80,7 @@ export default async function HomePage() {
       ]
     : [];
 
-  const lastRacePodium = (lastRace?.results ?? []).slice(0, 6).map((r, i) => ({
-    ...r,
-    teamColor: getConstructorColor(r.constructor),
-    numColor: i === 0 ? "var(--primary)" : "rgba(244,244,242,0.35)",
-  }));
+  const lastRacePodium = (lastRace?.results ?? []).slice(0, 6);
 
   return (
     <div className="flex flex-col">
@@ -217,47 +213,7 @@ export default async function HomePage() {
               Résultats →
             </Link>
           </div>
-          <div className="flex flex-col">
-            {lastRacePodium.length === 0 && (
-              <p className="py-4 text-sm text-foreground/50">
-                Résultats non disponibles.
-              </p>
-            )}
-            {lastRacePodium.map((r) => (
-              <div
-                key={r.position}
-                className="flex items-center gap-3 border-b border-border py-[13px] sm:gap-5"
-              >
-                <span
-                  className="w-9 shrink-0 text-2xl font-black italic"
-                  style={{ color: r.numColor }}
-                >
-                  {r.position}
-                </span>
-                <span
-                  className="h-8 w-1 shrink-0"
-                  style={{ background: r.teamColor }}
-                />
-                <div className="flex w-0 min-w-0 flex-1 flex-col">
-                  <span className="text-[15px] font-bold uppercase tracking-wide">
-                    {r.driver}
-                  </span>
-                  <span className="truncate text-xs text-foreground/50">
-                    {r.constructor}
-                  </span>
-                </div>
-                <span className="hidden font-mono text-[13px] text-foreground/70 sm:inline">
-                  {r.time}
-                </span>
-                <span className="w-16 shrink-0 text-right text-[15px] font-extrabold">
-                  {r.points}{" "}
-                  <span className="text-[11px] font-semibold text-foreground/50">
-                    PTS
-                  </span>
-                </span>
-              </div>
-            ))}
-          </div>
+          <RacePodium results={lastRacePodium} />
         </div>
 
         <div className="px-6 py-10 md:px-12">

@@ -5,6 +5,15 @@ import { expect, test, type ConsoleMessage, type Page } from "@playwright/test";
  * et ne produire aucune erreur en console. Le dernier point n'est pas
  * décoratif : c'est ce qui attrape les erreurs d'hydratation, invisibles à
  * l'œil nu et jamais couvertes par les tests unitaires.
+ *
+ * ⚠️ Limite connue, vérifiée : sous le volume de requêtes de la suite complète,
+ * f1api.dev finit par répondre **403 Forbidden** — y compris sur des URL
+ * valides. Les trois tests de 404 (`/results/{saison}/999`,
+ * `/teams/{inconnue}`, `/circuits/{inconnu}`) tombent alors à 500, parce qu'un
+ * 403 est une vraie panne amont et non un « ça n'existe pas » : le distinguer
+ * est exactement ce que fait `fetchApiOrNull`, et il a raison de le faire.
+ * Joués isolément, ces trois tests passent. C'est pourquoi la CI donne
+ * `retries: 2` à ce job et le sépare de lint / types / build.
  */
 
 /** Bruit indépendant du code applicatif (extensions, ressources annexes). */
@@ -289,6 +298,68 @@ test.describe("états de chargement", () => {
     const manches = page.getByText("Manches").locator("..");
     await expect(manches).not.toContainText("—");
     await expect(manches).toContainText(/[1-9]\d*/);
+  });
+});
+
+test.describe("animations d'entrée", () => {
+  test("les lignes de classement arrivent en cascade", async ({ page }) => {
+    await page.goto("/standings");
+    const lignes = page.locator(".cl-stagger > *");
+    await expect(lignes.first()).toBeVisible();
+
+    const [premiere, quatrieme] = await Promise.all([
+      lignes.nth(0).evaluate((el) => getComputedStyle(el).animationDelay),
+      lignes.nth(3).evaluate((el) => getComputedStyle(el).animationDelay),
+    ]);
+
+    expect(
+      await lignes.nth(0).evaluate((el) => getComputedStyle(el).animationName),
+    ).toBe("cl-enter");
+    // La cascade : la quatrième ligne démarre après la première.
+    expect(parseFloat(quatrieme)).toBeGreaterThan(parseFloat(premiere));
+  });
+
+  test("aucune animation quand l'utilisateur les refuse", async ({ page }) => {
+    // `prefers-reduced-motion` n'est pas une préférence esthétique : pour
+    // certains, le mouvement déclenche des vertiges ou des migraines.
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/standings");
+
+    const ligne = page.locator(".cl-stagger > *").first();
+    await expect(ligne).toBeVisible();
+
+    const style = await ligne.evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { animation: s.animationName, opacity: s.opacity };
+    });
+
+    expect(style.animation).toBe("none");
+    // Et surtout : le contenu reste visible. Couper l'animation sans remettre
+    // l'opacité laisserait une page blanche.
+    expect(style.opacity).toBe("1");
+  });
+
+  test("le podium du dernier GP met le vainqueur au centre", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    const marches = page.locator("ol.cl-stagger").first().locator("> li");
+    await expect(marches).toHaveCount(3);
+
+    // L'ordre du DOM reste 1, 2, 3 — c'est celui que lit un lecteur d'écran.
+    await expect(marches.nth(0)).toContainText("P1");
+    await expect(marches.nth(1)).toContainText("P2");
+    await expect(marches.nth(2)).toContainText("P3");
+
+    // Mais à l'écran, le vainqueur est au milieu et sa marche est la plus haute.
+    const boites = await marches.evaluateAll((els) =>
+      els.map((el) => el.getBoundingClientRect()),
+    );
+    expect(boites[1].left).toBeLessThan(boites[0].left);
+    expect(boites[0].left).toBeLessThan(boites[2].left);
+    expect(boites[0].height).toBeGreaterThan(boites[1].height);
+    expect(boites[1].height).toBeGreaterThan(boites[2].height);
   });
 });
 

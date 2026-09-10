@@ -40,6 +40,10 @@ const ROUTES = [
 test.describe("accessibilité", () => {
   for (const route of ROUTES) {
     test(`${route} — aucune violation WCAG 2.1 AA`, async ({ page }) => {
+      // Les animations d'entrée jouent sur l'opacité, et axe calcule le
+      // contraste avec l'opacité effective : on audite la page stabilisée,
+      // pas une page à mi-fondu.
+      await page.emulateMedia({ reducedMotion: "reduce" });
       await page.goto(route);
 
       const { violations } = await new AxeBuilder({ page })
@@ -62,6 +66,7 @@ test.describe("accessibilité", () => {
     // Sans favoris, axe ne voit ni l'étoile pleine, ni la ligne teintée, ni le
     // bloc « Mes favoris » de la home — exactement le piège du calendrier,
     // audité vide pendant des mois.
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await page.addInitScript(() =>
       localStorage.setItem(
         "cleanlap.favorites.v1",

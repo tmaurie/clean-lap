@@ -88,7 +88,7 @@ export function FavoritesBoard({
         </Link>
       </div>
 
-      <ul className="grid grid-cols-1 gap-px border border-white/8 bg-white/8 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="cl-stagger grid grid-cols-1 gap-px border border-white/8 bg-white/8 sm:grid-cols-2 lg:grid-cols-3">
         {entrees.map((entree) => (
           <li key={entree.cle}>
             <Link

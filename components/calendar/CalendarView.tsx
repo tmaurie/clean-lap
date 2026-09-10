@@ -132,7 +132,7 @@ export function CalendarView({
         <section className="flex flex-col gap-10 px-6 py-10 md:px-12">
           <div className="flex flex-col gap-4">
             <SectionEyebrow>À venir</SectionEyebrow>
-            <div className="flex flex-col border-t border-border">
+            <div className="cl-stagger flex flex-col border-t border-border">
               {remainingRaces.length === 0 && (
                 <p className="py-4 text-sm text-foreground/50">
                   Aucune course restante pour cette saison.
@@ -173,7 +173,7 @@ export function CalendarView({
 
           <div className="flex flex-col gap-4">
             <SectionEyebrow>Disputées</SectionEyebrow>
-            <div className="flex flex-col border-t border-border">
+            <div className="cl-stagger flex flex-col border-t border-border">
               {completedRaces.length === 0 && (
                 <p className="py-4 text-sm text-foreground/50">
                   La saison n&apos;a pas encore commencé.

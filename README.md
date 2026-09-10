@@ -9,6 +9,7 @@ Tableau de bord F1 construit avec Next.js, TypeScript et Shadcn/UI. L'app affich
 - 🏗️ **Écuries** : index par saison et fiche détaillée (palmarès, classement constructeurs, effectif remplaçants compris), accessibles depuis la navigation, les classements et les fiches pilotes
 - 🏟️ **Page Week-end** : les sessions du week-end en cours (essais, sprint, qualifs, course) ordonnées chronologiquement, avec leur état — terminé / en direct / à venir — et le podium de celles déjà courues
 - ⏱️ Compte à rebours de la prochaine course avec infos circuit
+- 🏆 Podium visuel du dernier GP sur l'accueil, puis le reste du top 6
 - 🏁 Résultat de la dernière course (aperçu + page détaillée)
 - 🏎️ Aperçu des qualifications du week-end courant (affichées seulement si la qualif est aujourd'hui ou demain)
 - 🏎️💨 Page Résultats : onglets Course, Sprint, Qualifications, FP1, FP2, FP3
@@ -25,8 +26,8 @@ Tableau de bord F1 construit avec Next.js, TypeScript et Shadcn/UI. L'app affich
 - TypeScript
 - Tailwind CSS
 - Shadcn/UI
-- React Query (`@tanstack/react-query`)
 - f1api.dev pour les données F1 (courses, résultats, standings, essais libres)
+- Vitest (tests unitaires) + Playwright (smoke e2e et audit axe)
 - ESLint + Prettier
 
 ---

@@ -107,7 +107,7 @@ export default async function SeasonResultsPage({ params }: SeasonPageProps) {
         <section className="flex flex-col gap-10 px-6 py-10 md:px-12">
           <div className="flex flex-col gap-4">
             <SectionEyebrow>Toutes les courses</SectionEyebrow>
-            <div className="flex flex-col border-t border-border">
+            <div className="cl-stagger flex flex-col border-t border-border">
               {completedRaces.map((race) => {
                 const flag = countryToFlagEmoji(
                   race.location.split(", ").at(-1) || "",

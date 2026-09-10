@@ -176,7 +176,7 @@ export function StandingsTabs({
                 {races.length > 0 ? ` · ${remainingCount} GP restants` : ""}
               </span>
             </div>
-            <div className="flex flex-col border-t border-border">
+            <div className="cl-stagger flex flex-col border-t border-border">
               {rows.map((row) => {
                 const favori =
                   row.favoriteId !== null &&
