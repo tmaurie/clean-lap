@@ -1,5 +1,11 @@
 import { expect, test, type ConsoleMessage, type Page } from "@playwright/test";
 
+declare global {
+  interface Window {
+    __notifs: { titre: string; corps?: string }[];
+  }
+}
+
 /**
  * Smoke test : chaque route doit répondre 200, afficher son contenu principal
  * et ne produire aucune erreur en console. Le dernier point n'est pas
@@ -298,6 +304,162 @@ test.describe("états de chargement", () => {
     const manches = page.getByText("Manches").locator("..");
     await expect(manches).not.toContainText("—");
     await expect(manches).toContainText(/[1-9]\d*/);
+  });
+});
+
+test.describe("rappel avant la course", () => {
+  /**
+   * Bouchon de l'API Notification.
+   *
+   * Chromium sans interface renvoie `Notification.permission === "denied"`
+   * quoi qu'on fasse, `grantPermissions` compris : la boîte de dialogue du
+   * navigateur n'est donc pas exerçable ici. On bouchonne l'API pour tester ce
+   * qui nous appartient — la décision de déclencher, et une seule fois.
+   */
+  const bouchonNotifications = `
+    window.__notifs = [];
+    class FauxNotification {
+      static permission = "granted";
+      static requestPermission() { return Promise.resolve("granted"); }
+      constructor(titre, options) {
+        window.__notifs.push({ titre, corps: options && options.body });
+      }
+    }
+    window.Notification = FauxNotification;
+  `;
+
+  /** Le href de l'export agenda, tel que la page le publie. */
+  async function hrefAgenda(page: Page): Promise<string> {
+    const lien = page.getByRole("link", {
+      name: /ajouter le week-end à mon agenda/i,
+    });
+    await expect(lien).toBeVisible();
+    return (await lien.getAttribute("href")) ?? "";
+  }
+
+  test("le week-end s'exporte en calendrier avec une alarme", async ({
+    page,
+    request,
+  }) => {
+    await page.goto("/weekend");
+    const href = await hrefAgenda(page);
+    expect(href).toMatch(/^\/api\/calendar\?season=\d{4}&round=\d+$/);
+
+    const response = await request.get(href);
+    expect(response.status()).toBe(200);
+    expect(response.headers()["content-type"]).toContain("text/calendar");
+    expect(response.headers()["content-disposition"]).toContain(".ics");
+
+    const ics = await response.text();
+    expect(ics.startsWith("BEGIN:VCALENDAR")).toBe(true);
+    expect(ics).toContain("BEGIN:VEVENT");
+    // Le rappel d'une heure, c'est tout l'objet de la fonctionnalité.
+    expect(ics).toContain("TRIGGER:-PT60M");
+    // Le format impose CRLF : un LF isolé fait rejeter le fichier.
+    expect(/(?<!\r)\n/.test(ics)).toBe(false);
+  });
+
+  test("la saison entière s'exporte depuis le calendrier", async ({
+    page,
+    request,
+  }) => {
+    await page.goto("/calendar");
+
+    const lien = page.getByRole("link", { name: /saison à mon agenda/i });
+    await expect(lien).toBeVisible();
+
+    const response = await request.get((await lien.getAttribute("href")) ?? "");
+    expect(response.status()).toBe(200);
+
+    const ics = await response.text();
+    // Une saison, c'est une vingtaine de manches.
+    expect((ics.match(/BEGIN:VEVENT/g) ?? []).length).toBeGreaterThan(15);
+  });
+
+  test("permission refusée : pas de bouton, mais l'agenda reste proposé", async ({
+    page,
+  }) => {
+    // C'est l'état réel d'un Chromium sans interface, et celui d'un visiteur
+    // qui a bloqué le site : la fonctionnalité doit rester utile.
+    await page.goto("/weekend");
+
+    await expect(
+      page.getByRole("button", { name: /me prévenir/i }),
+    ).toHaveCount(0);
+    await expect(page.getByText(/notifications sont bloquées/i)).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /ajouter le week-end à mon agenda/i }),
+    ).toBeVisible();
+  });
+
+  test("le bouton de rappel bascule et se souvient", async ({ page }) => {
+    await page.addInitScript(bouchonNotifications);
+    await page.goto("/weekend");
+
+    const bouton = page.getByRole("button", { name: /me prévenir/i });
+    await expect(bouton).toBeVisible();
+    await expect(bouton).toHaveAttribute("aria-pressed", "false");
+
+    await bouton.click();
+    const actif = page.getByRole("button", { name: /désactiver le rappel/i });
+    await expect(actif).toHaveAttribute("aria-pressed", "true");
+
+    await page.reload();
+    await expect(
+      page.getByRole("button", { name: /désactiver le rappel/i }),
+    ).toHaveAttribute("aria-pressed", "true");
+
+    await page.getByRole("button", { name: /désactiver le rappel/i }).click();
+    await expect(
+      page.getByRole("button", { name: /me prévenir/i }),
+    ).toBeVisible();
+  });
+
+  test("la notification part dans l'heure qui précède, une seule fois", async ({
+    page,
+    request,
+  }) => {
+    // On lit le départ réel dans le fichier que la page elle-même publie.
+    await page.goto("/weekend");
+    const ics = await (await request.get(await hrefAgenda(page))).text();
+    const course = ics
+      .split("BEGIN:VEVENT")
+      .find((bloc) => bloc.includes("-race@cleanlap"));
+    const brut = course?.match(/DTSTART:(\d{8}T\d{6}Z)/)?.[1];
+    expect(brut, "départ de la course absent du calendrier").toBeTruthy();
+
+    const depart = new Date(
+      `${brut!.slice(0, 4)}-${brut!.slice(4, 6)}-${brut!.slice(6, 8)}T${brut!.slice(9, 11)}:${brut!.slice(11, 13)}:${brut!.slice(13, 15)}Z`,
+    );
+
+    await page.addInitScript(bouchonNotifications);
+    // Deux heures avant : hors de la fenêtre, rien ne doit partir.
+    await page.clock.install({
+      time: new Date(depart.getTime() - 2 * 3600_000),
+    });
+    await page.goto("/weekend");
+
+    await page.getByRole("button", { name: /me prévenir/i }).click();
+    await expect(
+      page.getByRole("button", { name: /désactiver le rappel/i }),
+    ).toBeVisible();
+
+    expect(await page.evaluate(() => window.__notifs.length)).toBe(0);
+
+    // 45 minutes avant : dans la fenêtre.
+    await page.clock.setSystemTime(new Date(depart.getTime() - 45 * 60_000));
+    await page.clock.runFor(60_000);
+
+    await expect
+      .poll(() => page.evaluate(() => window.__notifs.length))
+      .toBe(1);
+    expect(
+      await page.evaluate(() => window.__notifs[0].corps as string),
+    ).toContain("départ");
+
+    // Et pas de doublon aux tours suivants.
+    await page.clock.runFor(5 * 60_000);
+    expect(await page.evaluate(() => window.__notifs.length)).toBe(1);
   });
 });
 

@@ -29,7 +29,7 @@ export type WeekendSession = {
  * décider si une session est « en cours » ou « terminée » : aucune donnée
  * affichée n'en dépend.
  */
-const SESSION_DURATION_MINUTES: Record<SessionKey, number> = {
+export const SESSION_DURATION_MINUTES: Record<SessionKey, number> = {
   fp1: 60,
   fp2: 60,
   fp3: 60,

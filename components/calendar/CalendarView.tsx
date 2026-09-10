@@ -74,12 +74,22 @@ export function CalendarView({
             {/* Les circuits n'ont pas d'entrée de navigation propre : la barre
                 est pleine à huit entrées. On y accède depuis le calendrier,
                 leur contexte naturel. */}
-            <Link
-              href={`/circuits?season=${season}`}
-              className="w-fit text-xs font-bold uppercase tracking-[0.1em] text-primary hover:text-primary/80"
-            >
-              Voir tous les circuits →
-            </Link>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              <Link
+                href={`/circuits?season=${season}`}
+                className="text-xs font-bold uppercase tracking-[0.1em] text-primary hover:text-primary/80"
+              >
+                Voir tous les circuits →
+              </Link>
+              {/* Lien simple et non bouton : l'export fonctionne sans
+                  JavaScript, et l'agenda du téléphone porte l'alarme. */}
+              <a
+                href={`/api/calendar?season=${season}`}
+                className="text-xs font-bold uppercase tracking-[0.1em] text-primary hover:text-primary/80"
+              >
+                Ajouter la saison à mon agenda ↓
+              </a>
+            </div>
           </div>
           {/* En grille pleine largeur sur mobile : les trois tuiles côte à côte
               en `px-7` réclamaient 398 px, soit plus que l'écran. */}

@@ -15,6 +15,7 @@ Tableau de bord F1 construit avec Next.js, TypeScript et Shadcn/UI. L'app affich
 - 🏎️💨 Page Résultats : onglets Course, Sprint, Qualifications, FP1, FP2, FP3
 - 📊 Classements pilotes & constructeurs (top 5) + couleurs d'écurie
 - ⭐ **Favoris** : marquer pilotes et écuries depuis les classements ou leur fiche, retrouvés sur l'accueil (persistés dans le navigateur)
+- 🔔 Rappel avant le départ : notification opt-in, et export iCalendar (alarme à -1 h) qui fonctionne application fermée
 - 🗓️ Aperçu des prochaines courses + page calendrier
 - 📂 Résultats par saison/manche, pages standings et calendrier dédiées
 

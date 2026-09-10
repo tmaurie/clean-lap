@@ -5,6 +5,7 @@ import { HeroCountdown } from "@/components/home/HeroCountdown";
 import { GhostNumber } from "@/components/paddock/GhostNumber";
 import { HatchOverlay } from "@/components/paddock/HatchOverlay";
 import { SectionEyebrow } from "@/components/paddock/SectionEyebrow";
+import { RaceReminder } from "@/components/weekend/RaceReminder";
 import { SessionTimeline } from "@/components/weekend/SessionTimeline";
 import { getCurrentWeekend } from "@/features/weekend/getWeekend";
 import { formatSessionDay, formatSessionTime } from "@/lib/utils/date";
@@ -156,6 +157,15 @@ export default async function WeekendPage() {
           </span>
         </div>
         <SessionTimeline sessions={sessions} />
+
+        <RaceReminder
+          raceName={race.name}
+          raceKey={`${season}-${round}`}
+          raceStartsAtIso={sessions
+            .find((session) => session.key === "race")
+            ?.startsAt.toISOString()}
+          calendarHref={`/api/calendar?season=${season}&round=${round}`}
+        />
       </section>
 
       {/* CIRCUIT */}
