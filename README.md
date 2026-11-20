@@ -21,7 +21,7 @@ Tableau de bord de Formule 1 : la prochaine course, le week-end en direct, les c
 CleanLap affiche l'essentiel d'une saison de F1 en un coup d'œil : le compte à rebours du prochain départ, les sessions du week-end avec leur état, le podium du dernier Grand Prix et les classements, puis toutes les saisons depuis 1950. L'application est construite avec Next.js et rendue côté serveur : le navigateur ne parle jamais directement à l'API de données.
 
 > [!NOTE]
-> Projet communautaire et non officiel. Les données viennent de l'API publique [f1api.dev](https://f1api.dev) ; CleanLap n'est affilié ni à la Formule 1 ni à la FIA.
+> CleanLap est un projet communautaire indépendant de la Formule 1 et de la FIA. Les données proviennent de [Jolpica-F1](https://github.com/jolpica/jolpica-f1), [OpenF1](https://openf1.org/) et [F1DB](https://github.com/f1db/f1db).
 
 ## Fonctionnalités
 
@@ -43,7 +43,7 @@ La saison consultée vit dans l'URL (`/standings?season=2021`) : chaque vue se p
 - [Node.js](https://nodejs.org) 22 ou plus récent
 - npm (le projet est verrouillé par `package-lock.json`)
 
-Aucune clé d'API n'est nécessaire : f1api.dev est publique.
+Les données utilisées par CleanLap sont accessibles sans clé. Les résultats OpenF1 sont gratuits après la fenêtre du direct, qui se termine 30 minutes après chaque séance.
 
 ### En local
 
@@ -57,7 +57,7 @@ npm run dev
 L'application est servie sur [http://localhost:3000](http://localhost:3000).
 
 > [!TIP]
-> Le premier affichage d'une page peut prendre 4 à 5 secondes : c'est le temps de réponse de f1api.dev. Les suivants sortent du cache et sont quasi instantanés — les saisons closes ne sont même jamais redemandées.
+> Le premier affichage d'une page peut attendre une réponse du fournisseur. Les visites suivantes réutilisent le cache serveur. L'index des saisons closes est fourni par un export local de F1DB.
 
 ### Variables d'environnement
 
@@ -83,7 +83,7 @@ L'application est servie sur [http://localhost:3000](http://localhost:3000).
 
 Deux niveaux, tous deux exécutés en CI :
 
-- **Tests unitaires** (Vitest) — utilitaires de dates et de temps, mappers de l'API sur des réponses réelles enregistrées dans `docs/api/`, format iCalendar, stockage des favoris. Rapides : moins d'une seconde.
+- **Tests unitaires** (Vitest) — utilitaires de dates et de temps, adaptation des réponses Jolpica et OpenF1, format iCalendar, stockage des favoris. Rapides : moins d'une seconde.
 - **Tests de bout en bout** (Playwright) — chaque route répond, affiche son contenu et ne produit aucune erreur console, ce qui attrape les erreurs d'hydratation. S'y ajoutent un audit [axe](https://github.com/dequelabs/axe-core) WCAG 2.1 AA sur les principales routes et une vérification de l'absence de débordement horizontal de 320 à 414 px.
 
 ```bash
@@ -101,11 +101,11 @@ app/          Routes (App Router) et route handlers d'API
 components/   Composants d'interface, regroupés par écran
 features/     Logique d'affichage : manche en cours, week-end, favoris…
 entities/     Types métier (course, pilote, écurie, circuit, saison)
-lib/api/      Client f1api.dev, mappers et types des réponses
+lib/api/      Clients Jolpica et OpenF1, adaptateurs et données F1DB
 lib/utils/    Dates, couleurs d'écurie, drapeaux, sessions
 lib/…         Export iCalendar, favoris, rappels
 e2e/          Tests Playwright
-docs/api/     Réponses réelles de l'API, utilisées par les tests
+docs/api/     Réponses historiques qui documentent les anciens identifiants
 ```
 
 **Rendu serveur par défaut.** Les pages sont des Server Components : les données arrivent dans le HTML, sans aller-retour depuis le navigateur. Seul reste côté client ce qui est vraiment interactif : bascules, favoris, rappel, pagination des archives.
@@ -115,14 +115,16 @@ docs/api/     Réponses réelles de l'API, utilisées par les tests
 - `GET /api/seasons?page=` — pagination des archives, avec un cache d'une minute pour la page contenant la saison en cours et d'une heure pour les saisons closes.
 - `GET /api/calendar?season=&round=` — export iCalendar d'un week-end, ou de la saison entière sans `round`.
 
-**Cache selon la volatilité de la donnée**, dans `lib/api/client.ts` : 60 secondes pour la saison en cours, aucune revalidation pour une saison passée, une heure pour les données de référence.
+Le cache serveur revalide la saison en cours après 60 secondes, les saisons passées après un jour et les référentiels après une heure. Next.js sert la dernière réponse valide si la revalidation échoue. Les appels simultanés vers une même URL sont mutualisés dans chaque processus.
+
+### Données embarquées
+
+L'export F1DB est filtré et réindexé pour CleanLap. Il fournit les résumés des saisons closes, les résultats d'essais archivés et les caractéristiques des écuries et des circuits. Un record de tour correspond au meilleur tour de course connu du tracé. Les sources et la méthode de mise à jour sont documentées dans [Sources des données](./docs/data-sources.md).
 
 > [!WARNING]
 > Un `loading.tsx` met sa route en streaming : le statut HTTP part avant que la page puisse appeler `notFound()`, et un 404 devient un 200. C'est pourquoi les listes vivent dans des groupes de routes — `app/drivers/(list)/`, `app/teams/(list)/`, `app/circuits/(list)/`, `app/results/(list)/` — qui tiennent le squelette de chargement à l'écart des fiches de détail. Détails et mesures dans [`components/skeletons/README.md`](./components/skeletons/README.md).
 
 ## Dépannage
-
-**Les tests de 404 échouent avec un 500 sur la suite complète.** Sous le volume de requêtes des tests, f1api.dev finit par répondre `403 Forbidden`, y compris sur des URL valides. Une panne en amont n'est pas un « ça n'existe pas », donc la page renvoie 500 plutôt que 404 — volontairement. Rejoués isolément, ces tests passent ; en CI, le job e2e a deux tentatives supplémentaires et reste séparé de lint, types et build.
 
 **Une page affiche « indisponible ».** L'API a répondu en erreur. Les réponses réussies restent en cache : un rechargement quelques instants plus tard suffit généralement.
 

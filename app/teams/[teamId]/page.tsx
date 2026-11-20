@@ -7,7 +7,7 @@ import { HatchOverlay } from "@/components/paddock/HatchOverlay";
 import { FavoriteButton } from "@/components/favorites/FavoriteButton";
 import { SectionEyebrow } from "@/components/paddock/SectionEyebrow";
 import { SeasonUrlSelect } from "@/components/calendar/SeasonUrlSelect";
-import { fetchTeamSeason } from "@/lib/api/teams";
+import { fetchTeam, fetchTeamSeason } from "@/lib/api/teams";
 import {
   getConstructorColor,
   getReadableConstructorColor,
@@ -26,13 +26,13 @@ export async function generateMetadata({
   params,
 }: TeamPageProps): Promise<Metadata> {
   const { teamId } = await params;
-  const team = await fetchTeamSeason(teamId, normalizeSeason(undefined));
+  const team = await fetchTeam(teamId);
 
   if (!team) notFound();
 
   return {
-    title: `${team.team.name} — CleanLap`,
-    description: `Effectif, classement et palmarès de ${team.team.name} en Formule 1.`,
+    title: `${team.name} — CleanLap`,
+    description: `Effectif, classement et palmarès de ${team.name} en Formule 1.`,
   };
 }
 
@@ -56,8 +56,8 @@ export default async function TeamPage({
   const flag = team.nationality ? countryToFlagEmoji(team.nationality) : "";
 
   const palmares = [
-    { label: "Titres constructeurs", value: team.constructorsTitles },
-    { label: "Titres pilotes", value: team.driversTitles },
+    { label: "Titres constructeurs", value: team.constructorsTitles ?? "—" },
+    { label: "Titres pilotes", value: team.driversTitles ?? "—" },
     { label: "1re saison", value: team.firstSeason ?? "—" },
   ];
 
@@ -66,7 +66,7 @@ export default async function TeamPage({
       <section className="relative overflow-hidden border-b border-border px-6 py-14 md:px-12 md:py-16">
         <HatchOverlay />
         <GhostNumber className="-bottom-4 left-6 hidden text-[200px] md:left-12 md:block">
-          {team.constructorsTitles > 0 ? team.constructorsTitles : "F1"}
+          {team.constructorsTitles || "F1"}
         </GhostNumber>
 
         <div className="relative flex flex-col gap-8">

@@ -25,6 +25,8 @@ const COUNTRY_OR_NATIONALITY_TO_CODE: Record<string, string> = {
   australian: "AU",
   "great britain": "GB",
   british: "GB",
+  uk: "GB",
+  "united kingdom": "GB",
   austria: "AT",
   austrian: "AT",
   netherlands: "NL",

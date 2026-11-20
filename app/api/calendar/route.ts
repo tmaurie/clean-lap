@@ -30,7 +30,7 @@ export async function GET(request: Request) {
 
     const round = Number(roundBrut);
     const race = races.find((r, i) => (r.round ?? i + 1) === round);
-    const planning = await fetchRaceSchedule(season, roundBrut);
+    const planning = await fetchRaceSchedule(season, String(round));
 
     if (!race || !planning) {
       return new Response("Manche introuvable.", { status: 404 });
@@ -55,7 +55,6 @@ export async function GET(request: Request) {
     );
     return icsResponse(ics, `cleanlap-${season}-r${round}.ics`);
   } catch (error) {
-    // 502 : la panne est chez f1api.dev, pas ici.
     console.error(`[api/calendar] saison ${season} indisponible`, error);
     return new Response("Calendrier momentanément indisponible.", {
       status: 502,

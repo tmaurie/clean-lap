@@ -18,7 +18,7 @@ function uid(season: string, round: number | string, suffixe: string): string {
 /**
  * Une manche par événement, pour l'export d'une saison entière.
  *
- * Sans heure connue — le cas des saisons anciennes chez f1api.dev — on pose un
+ * Sans heure connue — le cas des saisons anciennes — on pose un
  * événement d'une journée plutôt qu'un horaire inventé, et sans rappel : « une
  * heure avant » n'a pas de sens sur une journée entière.
  */

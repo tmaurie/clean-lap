@@ -11,15 +11,6 @@ declare global {
  * et ne produire aucune erreur en console. Le dernier point n'est pas
  * décoratif : c'est ce qui attrape les erreurs d'hydratation, invisibles à
  * l'œil nu et jamais couvertes par les tests unitaires.
- *
- * ⚠️ Limite connue, vérifiée : sous le volume de requêtes de la suite complète,
- * f1api.dev finit par répondre **403 Forbidden** — y compris sur des URL
- * valides. Les trois tests de 404 (`/results/{saison}/999`,
- * `/teams/{inconnue}`, `/circuits/{inconnu}`) tombent alors à 500, parce qu'un
- * 403 est une vraie panne amont et non un « ça n'existe pas » : le distinguer
- * est exactement ce que fait `fetchApiOrNull`, et il a raison de le faire.
- * Joués isolément, ces trois tests passent. C'est pourquoi la CI donne
- * `retries: 2` à ce job et le sépare de lint / types / build.
  */
 
 /** Bruit indépendant du code applicatif (extensions, ressources annexes). */
@@ -141,6 +132,31 @@ test("l'onglet Qualifications charge ses propres résultats", async ({
   await expect(qualifyingTable.locator("tbody tr")).toHaveCount(20);
 });
 
+test("la première saison et les anciens liens restent accessibles", async ({
+  request,
+}) => {
+  const results = await request.get("/results/1950");
+  expect(results.status()).toBe(200);
+  expect(await results.text()).toContain("Nino Farina");
+  const driver = await request.get("/drivers/guanyu?season=2024");
+  expect(driver.status()).toBe(200);
+  expect(await driver.text()).toContain("Guanyu");
+  const circuit = await request.get("/circuits/montmelo?season=2025");
+  expect(circuit.status()).toBe(200);
+  expect(await circuit.text()).toContain("Barcelona");
+});
+
+test("un week-end sprint s'exporte avec ses cinq sessions", async ({
+  request,
+}) => {
+  const exportIcs = await request.get("/api/calendar?season=2025&round=2");
+  expect(exportIcs.status()).toBe(200);
+  const ics = await exportIcs.text();
+  expect(ics.match(/BEGIN:VEVENT/g)).toHaveLength(5);
+  expect(ics).toContain("Qualifications sprint");
+  expect(ics).toContain("BEGIN:VALARM");
+});
+
 test("le week-end en cours détaille toutes ses sessions", async ({ page }) => {
   const errors = watchForErrors(page);
 
@@ -200,8 +216,6 @@ test("la navigation principale mène à chaque page", async ({ page }) => {
 test("une manche inexistante rend un 404, pas une 500", async ({ page }) => {
   const errors = watchForErrors(page);
 
-  // f1api.dev répond 404 sur une manche hors calendrier. Avant, l'exception
-  // remontait jusqu'au serveur et toute URL mal saisie donnait une 500.
   const response = await page.goto("/results/2024/999");
 
   expect(response?.status(), "statut HTTP").toBe(404);
@@ -261,12 +275,6 @@ test("une saison du calendrier liste ses manches", async ({ page }) => {
   ).toBeVisible();
 });
 
-/**
- * Les pages calendrier / classements / pilotes chargent leurs données depuis
- * le navigateur : on peut donc retenir la réponse de f1api.dev et observer
- * l'état de chargement de façon déterministe, au lieu de courir après une
- * fenêtre de quelques millisecondes.
- */
 test.describe("états de chargement", () => {
   test("le calendrier diffuse un squelette annoncé avant ses données", async ({
     request,
@@ -464,13 +472,16 @@ test.describe("rappel avant la course", () => {
 });
 
 test.describe("liste des saisons", () => {
-  test("la première page est rendue par le serveur, sans appel à f1api.dev", async ({
+  test("la première page est rendue par le serveur, sans appel aux fournisseurs", async ({
     page,
   }) => {
     const errors = watchForErrors(page);
     const versApiAmont: string[] = [];
     page.on("request", (request) => {
-      if (request.url().includes("f1api.dev")) versApiAmont.push(request.url());
+      const host = new URL(request.url()).hostname;
+      if (["api.jolpi.ca", "api.openf1.org", "f1api.dev"].includes(host)) {
+        versApiAmont.push(request.url());
+      }
     });
 
     await page.goto("/results");
@@ -481,7 +492,7 @@ test.describe("liste des saisons", () => {
 
     // Le point de l'exercice : le navigateur ne parle plus à l'API publique.
     // Avant, la page en faisait 36 au premier rendu.
-    expect(versApiAmont, "appels navigateur vers f1api.dev").toEqual([]);
+    expect(versApiAmont, "appels navigateur vers les fournisseurs").toEqual([]);
     expect(errors, "erreurs console sur /results").toEqual([]);
   });
 
@@ -734,9 +745,7 @@ test.describe("saison dans l'URL", () => {
       page.getByText("Manches", { exact: true }).locator(".."),
     ).toContainText("22");
 
-    // Et une saison close ne doit plus rien afficher « à venir » : f1api.dev
-    // ne renseigne pas `winner` avant 2024, ce qui affichait autrefois les 22
-    // manches comme à disputer.
+    // Une saison close ne doit plus afficher de courses « à venir ».
     await expect(
       page.getByText("Aucune course restante pour cette saison."),
     ).toBeVisible();
@@ -924,9 +933,7 @@ test.describe("fiches écuries", () => {
     const response = await page.goto("/teams/ferrari?season=2024");
     expect(response?.status()).toBe(200);
 
-    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-      "Scuderia Ferrari",
-    );
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Ferrari/);
     await expect(page.getByText("Titres constructeurs")).toBeVisible();
     await expect(
       page.getByText("Effectif 2024", { exact: false }),
@@ -1127,9 +1134,7 @@ test.describe("comparateur de pilotes", () => {
   test("les chiffres concordent avec le classement officiel", async ({
     request,
   }) => {
-    // L'endpoint /compare de f1api.dev intervertit les deux pilotes : il
-    // attribuait à Leclerc les 9 victoires et les 437 points de Verstappen.
-    // Tout est donc recalculé depuis /api/{saison}/drivers/{id}.
+    // Les chiffres sont recalculés à partir des classifications de chaque manche.
     const html = await (
       await request.get("/compare?season=2024&d1=max_verstappen&d2=leclerc")
     ).text();
@@ -1167,7 +1172,7 @@ test.describe("circuits", () => {
     expect(response?.status()).toBe(200);
 
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-      "Autodromo Nazionale Monza",
+      /Autodromo Nazionale (?:di )?Monza/,
     );
     await expect(page.getByText("Record du tour")).toBeVisible();
     await expect(page.getByText("Grand Prix 2024")).toBeVisible();

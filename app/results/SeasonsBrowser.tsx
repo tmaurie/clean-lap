@@ -12,7 +12,7 @@ import { seasonsPageCount } from "@/lib/api/seasonsPage";
  *
  * La première page est rendue par le serveur et arrive en props : la page a
  * donc son contenu sans JavaScript, et ce composant ne sert qu'aux suivantes.
- * Elles passent par `/api/seasons`, jamais par f1api.dev directement.
+ * Elles passent par `/api/seasons`.
  */
 export function SeasonsBrowser({
   initialSeasons,

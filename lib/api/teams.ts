@@ -1,12 +1,10 @@
 import { Team, TeamLineupDriver, TeamSeason } from "@/entities/team/model";
-import { API_BASE_URL, fetchApiOrNull } from "@/lib/api/client";
+import { jolpicaTeam, jolpicaTeamSeason } from "./jolpica";
 import type {
   ApiTeam,
   ApiTeamDriversResponse,
-  ApiTeamResponse,
   ApiTeamWithStanding,
-} from "@/lib/api/types";
-import { toArray } from "@/lib/api/types";
+} from "./types";
 
 /** `Number()` tolérant : l'API mélange nombres, chaînes et valeurs textuelles. */
 function toNumber(value: unknown): number | null {
@@ -19,25 +17,17 @@ function mapTeam(team: ApiTeam, fallbackId: string): Team {
   return {
     id: team.teamId ?? fallbackId,
     name: team.teamName ?? fallbackId,
-    nationality: team.teamNationality ?? team.nationality ?? null,
-    // Trois orthographes possibles selon l'endpoint (cf. ApiTeam).
-    firstSeason: toNumber(
-      team.firstAppeareance ?? team.firstAppareance ?? team.firstAppearance,
-    ),
-    constructorsTitles: toNumber(team.constructorsChampionships) ?? 0,
-    driversTitles: toNumber(team.driversChampionships) ?? 0,
+    nationality: team.nationality ?? null,
+    firstSeason: team.firstAppearance ?? null,
+    constructorsTitles: toNumber(team.constructorsChampionships),
+    driversTitles: toNumber(team.driversChampionships),
     url: team.url ?? null,
   };
 }
 
 /** Fiche d'écurie hors saison. `null` si l'écurie n'existe pas. */
 export async function fetchTeam(teamId: string): Promise<Team | null> {
-  const json = await fetchApiOrNull<ApiTeamResponse>(
-    `${API_BASE_URL}/teams/${teamId}`,
-  );
-  // Cet endpoint renvoie `team` en tableau d'un élément, là où les autres
-  // renvoient un objet.
-  const [team] = toArray(json?.team);
+  const team = await jolpicaTeam(teamId);
   return team ? mapTeam(team, teamId) : null;
 }
 
@@ -64,7 +54,7 @@ function mapLineup(json: ApiTeamDriversResponse): TeamLineupDriver[] {
         id: driver.driverId ?? "",
         name: driver.name ?? "",
         surname: driver.surname ?? "",
-        nationality: driver.nationality ?? driver.country ?? null,
+        nationality: driver.nationality ?? null,
         number: toNumber(driver.number),
         shortName: driver.shortName ?? null,
         points: toNumber(driver.points),
@@ -91,35 +81,18 @@ function mapStanding(team: ApiTeamWithStanding | undefined) {
   return { position, points, wins };
 }
 
-/**
- * Effectif et classement d'une écurie sur une saison donnée.
- *
- * Deux appels : la fiche hors saison (palmarès, première apparition) et
- * l'effectif de l'année, qui porte aussi le classement constructeurs. Ils
- * sont parallélisés — f1api.dev répond en ~4-5 s.
- *
- * `null` quand l'écurie n'a pas couru cette saison-là.
- */
 export async function fetchTeamSeason(
   teamId: string,
   season: string,
 ): Promise<TeamSeason | null> {
-  const [profile, seasonJson] = await Promise.all([
-    fetchTeam(teamId),
-    fetchApiOrNull<ApiTeamDriversResponse>(
-      `${API_BASE_URL}/${season}/teams/${teamId}/drivers`,
-      { season },
-    ),
-  ]);
+  const team = await fetchTeam(teamId);
+  if (!team) return null;
 
-  if (!profile && !seasonJson?.team) return null;
-
-  const team = profile ?? mapTeam(seasonJson?.team ?? {}, teamId);
-
+  const seasonData = await jolpicaTeamSeason(team.id, season);
   return {
     season,
     team,
-    standing: mapStanding(seasonJson?.team),
-    lineup: mapLineup(seasonJson ?? {}),
+    standing: mapStanding(seasonData?.team),
+    lineup: mapLineup(seasonData ?? {}),
   };
 }

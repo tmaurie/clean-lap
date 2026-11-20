@@ -6,7 +6,7 @@ import { currentSeason } from "@/lib/utils/season";
 /**
  * Les pages fixes, plus les dix dernières saisons. On ne liste pas les 77
  * saisons ni les manches : ça gonflerait le sitemap de milliers d'URL dont la
- * plupart n'intéressent personne, et chacune coûte un appel à f1api.dev à la
+ * plupart n'intéressent personne, et chacune peut déclencher un appel au fournisseur à la
  * première visite.
  */
 export default function sitemap(): MetadataRoute.Sitemap {

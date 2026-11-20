@@ -22,7 +22,7 @@ type SeasonPageProps = {
  * Les cinq dernières saisons sont pré-rendues au build : ce sont celles qu'on
  * consulte, et une saison close ne changera plus. Les autres restent générées
  * à la demande (`dynamicParams` par défaut), ce qui évite de payer au build
- * les ~4-5 s de f1api.dev pour les 77 saisons de l'histoire.
+ * une requête aux fournisseurs pour chaque saison de l’histoire.
  */
 export function generateStaticParams() {
   const current = Number(currentSeason());
@@ -67,9 +67,6 @@ export default async function SeasonResultsPage({ params }: SeasonPageProps) {
     return [];
   });
 
-  // Même correction que sur le calendrier : f1api.dev ne renseigne `winner`
-  // qu'à partir de 2024, si bien que 2021 s'affichait comme 22 manches « en
-  // attente de départ ».
   const { completed: completedRaces, remaining: remainingRaces } =
     splitSeasonRaces(races);
 

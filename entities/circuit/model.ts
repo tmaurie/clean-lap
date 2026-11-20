@@ -3,7 +3,7 @@ export type Circuit = {
   name: string;
   country: string | null;
   city: string | null;
-  /** Longueur en mètres. L'API la donne tantôt en nombre, tantôt en `"5793km"`. */
+  /** Longueur en mètres. */
   lengthMeters: number | null;
   corners: number | null;
   firstSeason: number | null;

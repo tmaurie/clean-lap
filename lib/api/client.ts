@@ -1,71 +1,139 @@
-export const API_BASE_URL = "https://f1api.dev/api";
+import { unstable_cache } from "next/cache";
 
-/**
- * f1api.dev répond en ~4-5 s. Le cache est donc la principale optimisation
- * possible, et les trois politiques ci-dessous dépendent de la volatilité
- * réelle de la donnée :
- *
- * - saison en cours : elle bouge chaque week-end de course → 60 s ;
- * - saison passée : immuable, plus rien ne changera → jamais revalidée ;
- * - donnée de référence sans saison (liste des pilotes, liste des saisons) :
- *   elle évolue quelques fois par an → 1 h.
- *
- * Ces options ne s'appliquent qu'au rendu serveur ; dans le navigateur elles
- * sont ignorées sans erreur, et c'est le cache HTTP qui prend le relais.
- */
-const LIVE_SEASON_REVALIDATE = 60;
-const REFERENCE_REVALIDATE = 3600;
-
-export function isLiveSeason(season?: string): boolean {
-  return season === "current" || season === new Date().getFullYear().toString();
-}
-
-function revalidateFor(season?: string): number | false {
-  if (!season) return REFERENCE_REVALIDATE;
-  return isLiveSeason(season) ? LIVE_SEASON_REVALIDATE : false;
-}
-
-export type FetchOptions = {
-  /** Saison concernée : détermine la durée de cache. */
-  season?: string;
-  signal?: AbortSignal;
+const providers = {
+  jolpica: { base: "https://api.jolpi.ca/ergast/f1/", spacing: 600 },
+  openf1: { base: "https://api.openf1.org/v1/", spacing: 450 },
 };
 
-async function request(
-  url: string,
-  { season, signal }: FetchOptions = {},
-): Promise<Response> {
-  return fetch(url, {
-    signal,
-    headers: { Accept: "application/json" },
-    next: { revalidate: revalidateFor(season) },
-  });
+type Provider = keyof typeof providers;
+type Queue = { nextRequest: number; blockedUntil: number };
+type CachedResponse = { data: unknown; freshUntil: number };
+
+type Runtime = {
+  queues: Record<Provider, Queue>;
+  inFlight: Map<string, Promise<unknown>>;
+  responses: Map<string, CachedResponse>;
+};
+
+// App Router can load the same module from several route bundles in one process.
+const globalRuntime = globalThis as typeof globalThis & {
+  cleanLapApiRuntime?: Runtime;
+};
+const runtime = (globalRuntime.cleanLapApiRuntime ??= {
+  queues: {
+    jolpica: { nextRequest: 0, blockedUntil: 0 },
+    openf1: { nextRequest: 0, blockedUntil: 0 },
+  },
+  inFlight: new Map(),
+  responses: new Map(),
+});
+
+export function isLiveSeason(season?: string): boolean {
+  return season === "current" || season === String(new Date().getFullYear());
 }
 
-/**
- * `null` sur un 404 : chez f1api.dev, un 404 veut dire « ça n'existe pas »
- * (manche hors calendrier, séance jamais disputée). C'est une donnée, pas une
- * panne. Les autres codes d'erreur lèvent.
- */
-export async function fetchApiOrNull<T = unknown>(
+async function takeTurn(provider: Provider) {
+  const queue = runtime.queues[provider];
+  while (true) {
+    const now = Date.now();
+    const wait = Math.max(queue.nextRequest, queue.blockedUntil) - now;
+    if (queue.blockedUntil - now > 2500 || wait > 8000) {
+      throw new Error(`${provider}: retry later (429)`);
+    }
+    if (wait <= 0) {
+      queue.nextRequest = now + providers[provider].spacing;
+      return;
+    }
+    await new Promise((resolve) => setTimeout(resolve, wait));
+  }
+}
+
+function retryAt(response: Response, now: number): number {
+  const header = response.headers.get("Retry-After");
+  const time =
+    header && /^\d+$/.test(header)
+      ? now + Number(header) * 1000
+      : Date.parse(header ?? "");
+  return Number.isFinite(time) ? Math.max(time, now + 350) : now + 1500;
+}
+
+async function fetchJson(provider: Provider, url: string): Promise<unknown> {
+  const queue = runtime.queues[provider];
+  for (let attempt = 0; attempt < 2; attempt++) {
+    await takeTurn(provider);
+    const response = await fetch(url, {
+      headers: { Accept: "application/json", "User-Agent": "CleanLap/0.1.0" },
+      signal: AbortSignal.timeout(10_000),
+    });
+
+    if (response.status === 429) {
+      const now = Date.now();
+      queue.blockedUntil = Math.max(queue.blockedUntil, retryAt(response, now));
+      if (attempt === 0 && queue.blockedUntil - now <= 2500) continue;
+    }
+
+    if (response.status === 404) return null;
+    if (!response.ok)
+      throw new Error(`${provider}: HTTP ${response.status} for ${url}`);
+
+    const json: unknown = await response.json();
+    if (
+      provider === "jolpica"
+        ? !json || typeof json !== "object" || !("MRData" in json)
+        : !Array.isArray(json)
+    ) {
+      throw new Error(`${provider}: invalid response for ${url}`);
+    }
+    return json;
+  }
+  throw new Error(`${provider}: retry later (429)`);
+}
+
+function coalesce(
+  provider: Provider,
   url: string,
-  options?: FetchOptions,
+  ttl: number,
+): Promise<unknown> {
+  const cached = runtime.responses.get(url);
+  if (cached && cached.freshUntil > Date.now())
+    return Promise.resolve(cached.data);
+
+  const pending = runtime.inFlight.get(url);
+  if (pending) return pending;
+
+  const request = fetchJson(provider, url)
+    .then((data) => {
+      const responses = runtime.responses;
+      responses.delete(url);
+      responses.set(url, { data, freshUntil: Date.now() + ttl * 1000 });
+      const oldest = responses.keys().next().value;
+      if (responses.size > 256 && oldest) responses.delete(oldest);
+      return data;
+    })
+    .finally(() => runtime.inFlight.delete(url));
+  runtime.inFlight.set(url, request);
+  return request;
+}
+
+export async function requestData<T>(
+  provider: Provider,
+  path: string,
+  season?: string,
 ): Promise<T | null> {
-  const res = await request(url, options);
-  if (res.status === 404) return null;
-  if (!res.ok) {
-    throw new Error(`Failed to fetch ${url}: ${res.status} ${res.statusText}`);
+  const url = `${providers[provider].base}${path}`;
+  const revalidate = !season ? 3600 : isLiveSeason(season) ? 60 : 86400;
+  try {
+    // Next retains the last successful value when revalidation throws. The
+    // process cache also covers reads from different route bundles.
+    return await unstable_cache(
+      (service: Provider, target: string, ttl: number) =>
+        coalesce(service, target, ttl) as Promise<T | null>,
+      ["f1-provider-v1"],
+      { revalidate },
+    )(provider, url, revalidate);
+  } catch (error) {
+    const stale = runtime.responses.get(url)?.data;
+    if (stale != null) return stale as T;
+    throw error;
   }
-  return (await res.json()) as T;
-}
-
-export async function fetchApi<T = unknown>(
-  url: string,
-  options?: FetchOptions,
-): Promise<T> {
-  const json = await fetchApiOrNull<T>(url, options);
-  if (json === null) {
-    throw new Error(`Failed to fetch ${url}: 404 Not Found`);
-  }
-  return json;
 }

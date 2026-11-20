@@ -1,5 +1,5 @@
 /**
- * f1api.dev expose la date ("2025-03-16") et l'heure ("04:00:00Z") dans deux
+ * Jolpica expose la date ("2025-03-16") et l'heure ("04:00:00Z") dans deux
  * champs distincts. Sans heure connue, on vise la fin de la journée UTC :
  * sinon une course programmée aujourd'hui à 15 h est datée de minuit et
  * considérée comme déjà courue pendant toute la journée.

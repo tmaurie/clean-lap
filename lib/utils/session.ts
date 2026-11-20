@@ -23,7 +23,7 @@ export type WeekendSession = {
 };
 
 /**
- * f1api.dev ne donne que l'heure de **départ** d'une session, jamais sa fin.
+ * Jolpica ne donne que l'heure de **départ** d'une session, jamais sa fin.
  * Ces durées sont les durées réglementaires usuelles, arrondies vers le haut
  * pour absorber drapeaux rouges et cérémonie du podium. Elles ne servent qu'à
  * décider si une session est « en cours » ou « terminée » : aucune donnée
