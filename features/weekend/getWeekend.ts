@@ -9,6 +9,7 @@ import {
   fetchRaces,
   fetchSprintResults,
 } from "@/lib/api/race";
+import type { PracticeResults } from "@/lib/api/openf1";
 import { buildWeekendSessions, WeekendSession } from "@/lib/utils/session";
 
 export type SessionPodiumEntry = {
@@ -21,6 +22,7 @@ export type SessionPodiumEntry = {
 
 export type WeekendSessionView = WeekendSession & {
   podium: SessionPodiumEntry[];
+  practiceStatus?: PracticeResults["status"];
 };
 
 export type Weekend = {
@@ -32,12 +34,6 @@ export type Weekend = {
   circuit?: RaceCircuitDetails;
 };
 
-/**
- * Les résultats d'une session peuvent manquer alors même qu'elle est terminée
- * (publication différée côté f1api.dev, séance annulée, saison ancienne). On
- * renvoie alors un podium vide : la page doit rester affichable, pas tomber en
- * 500 comme le fait aujourd'hui `/results/[season]/[round]`.
- */
 async function safePodium(
   load: () => Promise<SessionPodiumEntry[]>,
   session: string,
@@ -45,42 +41,48 @@ async function safePodium(
   try {
     return await load();
   } catch (error) {
-    // `warn` et pas `error` : pendant un week-end en cours, f1api.dev répond
-    // 404 sur les sessions dont les résultats ne sont pas encore publiés.
-    // C'est un état normal, pas une panne — et Next compte les console.error
-    // comme des issues dans son overlay de dev.
     console.warn(`[getWeekend] résultats indisponibles pour ${session}`, error);
     return [];
   }
 }
 
-async function loadPodium(
+async function loadSessionResults(
   session: WeekendSession,
   season: string,
   round: string,
+  now: Date,
+): Promise<Pick<WeekendSessionView, "podium" | "practiceStatus">> {
+  if (session.status !== "done") return { podium: [] };
+
+  const key = session.key;
+  if (key === "fp1" || key === "fp2" || key === "fp3") {
+    const { results, status } = await fetchFreePracticeResults(
+      season,
+      round,
+      key,
+      now,
+    );
+    return {
+      practiceStatus: status,
+      podium: results.slice(0, 3).map((result) => ({
+        position: result.position,
+        driver: result.driver,
+        constructor: result.constructor,
+        detail: result.time,
+      })),
+    };
+  }
+
+  const podium = await loadPodium(key, season, round);
+  return { podium };
+}
+
+async function loadPodium(
+  key: Exclude<WeekendSession["key"], "fp1" | "fp2" | "fp3">,
+  season: string,
+  round: string,
 ): Promise<SessionPodiumEntry[]> {
-  // Rien à afficher tant que la session n'a pas eu lieu — et surtout aucun
-  // appel à payer : f1api.dev répond en ~4-5 s.
-  if (session.status !== "done") return [];
-
-  switch (session.key) {
-    case "fp1":
-    case "fp2":
-    case "fp3":
-      return safePodium(async () => {
-        const { results } = await fetchFreePracticeResults(
-          season,
-          round,
-          session.key as "fp1" | "fp2" | "fp3",
-        );
-        return results.slice(0, 3).map((r) => ({
-          position: r.position,
-          driver: r.driver,
-          constructor: r.constructor,
-          detail: r.time,
-        }));
-      }, session.key);
-
+  switch (key) {
     case "qualy":
       return safePodium(async () => {
         const { results } = await fetchQualifyingResults(season, round);
@@ -140,14 +142,12 @@ export async function getCurrentWeekend(
   const scheduleData = await fetchRaceSchedule("current", String(round));
   if (!scheduleData) return null;
 
-  // Les endpoints de session n'acceptent pas l'alias "current" : on repart de
-  // l'année renvoyée par l'API, avec l'année courante en dernier recours.
   const season = scheduleData.season ?? new Date().getFullYear();
 
   const sessions = buildWeekendSessions(scheduleData.schedule, now);
-  const podiums = await Promise.all(
+  const sessionResults = await Promise.all(
     sessions.map((session) =>
-      loadPodium(session, String(season), String(round)),
+      loadSessionResults(session, String(season), String(round), now),
     ),
   );
 
@@ -159,7 +159,7 @@ export async function getCurrentWeekend(
     circuit: scheduleData.circuitDetails,
     sessions: sessions.map((session, index) => ({
       ...session,
-      podium: podiums[index],
+      ...sessionResults[index],
     })),
   };
 }

@@ -18,6 +18,7 @@ import {
   columnsSprint,
   columnsFreePractice,
 } from "@/lib/config/columns";
+import type { PracticeResults } from "@/lib/api/openf1";
 import { countryToFlagEmoji } from "@/lib/utils/flags";
 import { SectionEyebrow } from "@/components/paddock/SectionEyebrow";
 import { HatchOverlay } from "@/components/paddock/HatchOverlay";
@@ -51,11 +52,48 @@ export async function generateMetadata({
   };
 }
 
+const practiceMessages: Record<
+  Exclude<PracticeResults["status"], "available">,
+  string
+> = {
+  pending: "Classement en attente de publication.",
+  scheduled: "Le classement sera publié après la séance.",
+  notScheduled: "Aucune séance programmée.",
+  unavailable: "Résultats de la séance indisponibles.",
+};
+
+function PracticePanel({
+  practice,
+  name,
+  raceName,
+}: {
+  practice: PracticeResults;
+  name: string;
+  raceName: string;
+}) {
+  if (practice.status !== "available") {
+    return (
+      <p className="border border-dashed border-white/15 p-6 text-sm text-foreground/50">
+        {practiceMessages[practice.status]}
+      </p>
+    );
+  }
+  return (
+    <ResultTable
+      data={practice.results}
+      columns={columnsFreePractice}
+      caption={`${name} — ${raceName}`}
+    />
+  );
+}
+
 export default async function ResultsPage({ params }: ResultsPageProps) {
   const { season, round } = await params;
 
+  const raceResult = await getRaceResults(season, round);
+  if (!raceResult) notFound();
+
   const [
-    raceResult,
     scheduleData,
     sprintResults,
     qualifyingResults,
@@ -64,19 +102,14 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
     fp3Results,
     seasonRaces,
   ] = await Promise.all([
-    getRaceResults(season, round),
     fetchRaceSchedule(season, round),
-    fetchSprintResults(season, round),
-    fetchQualifyingResults(season, round),
+    fetchSprintResults(season, round).catch(() => null),
+    fetchQualifyingResults(season, round).catch(() => null),
     fetchFreePracticeResults(season, round, "fp1"),
     fetchFreePracticeResults(season, round, "fp2"),
     fetchFreePracticeResults(season, round, "fp3"),
     round !== "last" ? getRacesWithWinner(season) : Promise.resolve([]),
   ]);
-
-  // La manche n'existe pas (hors calendrier, saison inconnue) : on rend un
-  // vrai 404 au lieu de laisser remonter l'exception, qui donnait une 500.
-  if (!raceResult) notFound();
 
   const { raceName, location, date, results, circuit } = raceResult;
   const circuitDetails = scheduleData?.circuitDetails;
@@ -101,7 +134,9 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
     year: "numeric",
   });
 
-  const hasSprint = sprintResults.results.length > 0;
+  const hasSprint =
+    Boolean(scheduleData?.schedule.sprintRace.date) ||
+    Boolean(sprintResults?.results.length);
   const tabCount = (hasSprint ? 3 : 2) + 3;
   const tabsGridCols = tabCount === 6 ? "grid-cols-6" : "grid-cols-5";
 
@@ -198,14 +233,18 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 border-b border-border sm:grid-cols-3">
-        <PodiumBlock results={results} />
-      </section>
+      {results.length > 0 && (
+        <section className="grid grid-cols-1 border-b border-border sm:grid-cols-3">
+          <PodiumBlock results={results} />
+        </section>
+      )}
 
       <section className="flex flex-col gap-6 px-6 py-10 md:px-12">
         <div className="flex items-baseline justify-between">
           <SectionEyebrow>
-            Classement de la course — {results.length} partants
+            {results.length > 0
+              ? `Classement de la course — ${results.length} partants`
+              : "Résultats de la course"}
           </SectionEyebrow>
         </div>
 
@@ -256,16 +295,24 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
           </TabsList>
 
           <TabsContent value="results" className="mt-6">
-            <ResultTable
-              data={results}
-              columns={columnsRace}
-              caption={`Classement de la course — ${raceName}`}
-            />
+            {results.length > 0 ? (
+              <ResultTable
+                data={results}
+                columns={columnsRace}
+                caption={`Classement de la course — ${raceName}`}
+              />
+            ) : (
+              <p className="border border-dashed border-white/15 p-6 text-sm text-foreground/50">
+                Classement en attente de publication.
+              </p>
+            )}
           </TabsContent>
           <TabsContent value="sprint" className="mt-6">
-            {!hasSprint ? (
+            {!sprintResults?.results.length ? (
               <div className="border border-dashed border-white/15 p-6 text-sm text-foreground/50">
-                Pas de sprint pour ce Grand Prix.
+                {sprintResults
+                  ? "Classement du sprint en attente de publication."
+                  : "Résultats du sprint momentanément indisponibles."}
               </div>
             ) : (
               <ResultTable
@@ -276,9 +323,11 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
             )}
           </TabsContent>
           <TabsContent value="qualif" className="mt-6">
-            {!qualifyingResults ? (
+            {!qualifyingResults?.results.length ? (
               <div className="border border-dashed border-white/15 p-6 text-sm text-foreground/50">
-                Pas de qualifications disponibles.
+                {qualifyingResults
+                  ? "Pas de qualifications disponibles."
+                  : "Résultats des qualifications momentanément indisponibles."}
               </div>
             ) : (
               <ResultTable
@@ -289,43 +338,25 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
             )}
           </TabsContent>
           <TabsContent value="fp1" className="mt-6">
-            {fp1Results.results.length === 0 ? (
-              <div className="border border-dashed border-white/15 p-6 text-sm text-foreground/50">
-                Pas de données pour la FP1.
-              </div>
-            ) : (
-              <ResultTable
-                data={fp1Results.results}
-                columns={columnsFreePractice}
-                caption={`Résultats des essais libres 1 — ${raceName}`}
-              />
-            )}
+            <PracticePanel
+              practice={fp1Results}
+              name="Résultats des essais libres 1"
+              raceName={raceName}
+            />
           </TabsContent>
           <TabsContent value="fp2" className="mt-6">
-            {fp2Results.results.length === 0 ? (
-              <div className="border border-dashed border-white/15 p-6 text-sm text-foreground/50">
-                Pas de données pour la FP2.
-              </div>
-            ) : (
-              <ResultTable
-                data={fp2Results.results}
-                columns={columnsFreePractice}
-                caption={`Résultats des essais libres 2 — ${raceName}`}
-              />
-            )}
+            <PracticePanel
+              practice={fp2Results}
+              name="Résultats des essais libres 2"
+              raceName={raceName}
+            />
           </TabsContent>
           <TabsContent value="fp3" className="mt-6">
-            {fp3Results.results.length === 0 ? (
-              <div className="border border-dashed border-white/15 p-6 text-sm text-foreground/50">
-                Pas de données pour la FP3.
-              </div>
-            ) : (
-              <ResultTable
-                data={fp3Results.results}
-                columns={columnsFreePractice}
-                caption={`Résultats des essais libres 3 — ${raceName}`}
-              />
-            )}
+            <PracticePanel
+              practice={fp3Results}
+              name="Résultats des essais libres 3"
+              raceName={raceName}
+            />
           </TabsContent>
         </Tabs>
       </section>

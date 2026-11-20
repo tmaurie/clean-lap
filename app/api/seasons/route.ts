@@ -7,15 +7,7 @@ import {
   seasonsCacheControl,
 } from "@/lib/api/seasonsPage";
 
-/**
- * Proxy de la liste des saisons.
- *
- * C'était le dernier endroit où le navigateur appelait f1api.dev directement.
- * En passant par ici : les politiques de cache de `lib/api/client` s'appliquent
- * (une saison close n'est jamais revalidée), la réponse est mutualisée entre
- * tous les visiteurs, et le navigateur ne reçoit que le modèle `Season` au lieu
- * des trois réponses brutes de l'API amont.
- */
+/** Pagination serveur de l'index des saisons. */
 export async function GET(request: Request) {
   const page = parseSeasonsPage(new URL(request.url).searchParams.get("page"));
 
@@ -34,7 +26,6 @@ export async function GET(request: Request) {
       { headers: { "Cache-Control": seasonsCacheControl(page) } },
     );
   } catch (error) {
-    // 502 et non 500 : la panne est en amont, chez f1api.dev.
     console.error(`[api/seasons] page ${page} indisponible`, error);
     return NextResponse.json(
       { error: "Les saisons sont momentanément indisponibles." },

@@ -5,8 +5,7 @@ const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${PORT}`;
 
 export default defineConfig({
   testDir: "./e2e",
-  // Les pages sont rendues côté serveur et f1api.dev répond en ~4-5 s :
-  // les délais par défaut de Playwright sont trop courts ici.
+  // Plusieurs pages dépendent de réponses réseau côté serveur.
   timeout: 90_000,
   expect: { timeout: 20_000 },
   fullyParallel: true,

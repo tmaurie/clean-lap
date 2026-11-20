@@ -3,8 +3,8 @@ export type Team = {
   name: string;
   nationality: string | null;
   firstSeason: number | null;
-  constructorsTitles: number;
-  driversTitles: number;
+  constructorsTitles: number | null;
+  driversTitles: number | null;
   url: string | null;
 };
 

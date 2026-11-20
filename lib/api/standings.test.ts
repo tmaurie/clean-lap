@@ -1,99 +1,59 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
-
-import constructorFixture from "@/docs/api/constructor_championship.json";
-import driverFixture from "@/docs/api/driver_championship.json";
-
+import { expect, it, vi } from "vitest";
 import { fetchConstructorStandings, fetchDriverStandings } from "./standings";
+import { constructor, envelope, stubProvider, zhou } from "./test-support";
 
-function stubFetch(body: unknown, status = 200) {
-  vi.stubGlobal(
-    "fetch",
-    vi.fn(async () => ({
-      ok: status >= 200 && status < 300,
-      status,
-      statusText: String(status),
-      json: async () => body,
-    })),
-  );
-}
+vi.mock("./client", () => ({ requestData: vi.fn() }));
 
-afterEach(() => {
-  vi.unstubAllGlobals();
-});
+it("mappe les points fractionnaires et conserve l'identifiant de favori", async () => {
+  stubProvider({
+    "2021/driverstandings": envelope("StandingsTable", "StandingsLists", [
+      {
+        DriverStandings: [
+          {
+            position: "1",
+            points: "395.5",
+            wins: "10",
+            Driver: zhou,
+            Constructors: [constructor],
+          },
+        ],
+      },
+    ]),
+    "2021/constructorstandings": envelope("StandingsTable", "StandingsLists", [
+      {
+        ConstructorStandings: [
+          {
+            position: "1",
+            points: "492.5",
+            wins: "11",
+            Constructor: constructor,
+          },
+        ],
+      },
+    ]),
+  });
 
-describe("fetchDriverStandings", () => {
-  it("mappe le classement pilotes", async () => {
-    stubFetch(driverFixture);
-
-    const standings = await fetchDriverStandings("2024");
-
-    expect(standings).toHaveLength(21);
-    expect(standings[0]).toEqual({
-      position: "1",
-      wins: 10,
-      points: "395.5",
-      driver: "Max Verstappen",
-      driverId: "max_verstappen",
-      constructor: "Red Bull Racing",
+  await expect(fetchDriverStandings("2021")).resolves.toMatchObject([
+    {
+      driverId: "guanyu",
       constructorId: "red_bull",
-      nationality: "Netherlands",
-    });
-  });
-
-  it("comble les champs manquants au lieu de propager undefined", async () => {
-    stubFetch({
-      drivers_championship: [{ driver: { name: "Sans" }, team: null }],
-    });
-
-    const [entry] = await fetchDriverStandings("1950");
-
-    expect(entry).toEqual({
-      position: "-",
-      wins: 0,
-      points: "0",
-      driver: "Sans",
-      driverId: null,
-      constructor: "N/A",
-      constructorId: null,
-      nationality: "N/A",
-    });
-  });
-
-  it("renvoie une liste vide si l'API ne fournit pas de classement", async () => {
-    stubFetch({});
-    await expect(fetchDriverStandings("2024")).resolves.toEqual([]);
-  });
-
-  it("lève quand la requête échoue", async () => {
-    stubFetch(null, 500);
-    // Le message vient désormais du client partagé et porte l'URL fautive.
-    await expect(fetchDriverStandings("2024")).rejects.toThrow(
-      /drivers-championship/,
-    );
-  });
+      points: "395.5",
+      wins: 10,
+    },
+  ]);
+  await expect(fetchConstructorStandings("2021")).resolves.toMatchObject([
+    {
+      constructorId: "red_bull",
+      points: "492.5",
+      wins: 11,
+      nationality: "Austrian",
+    },
+  ]);
 });
 
-describe("fetchConstructorStandings", () => {
-  it("mappe le classement constructeurs", async () => {
-    stubFetch(constructorFixture);
-
-    const standings = await fetchConstructorStandings("2024");
-
-    expect(standings).toHaveLength(10);
-    expect(standings[0]).toEqual({
-      position: "1",
-      points: "613.5",
-      wins: 9,
-      constructor: "Mercedes Formula 1 Team",
-      constructorId: "mercedes",
-      nationality: "Germany",
-    });
-  });
-
-  it("lève quand la requête échoue", async () => {
-    stubFetch(null, 404);
-    await expect(fetchConstructorStandings("2024")).rejects.toThrow(
-      /constructors-championship/,
-    );
-  });
+it("accepte une saison sans championnat constructeurs et propage les pannes", async () => {
+  const fetch = stubProvider({ "2025/driverstandings": new Error("HTTP 503") });
+  await expect(fetchConstructorStandings("1950")).resolves.toEqual([]);
+  expect(fetch).not.toHaveBeenCalled();
+  await expect(fetchDriverStandings("2025")).rejects.toThrow("503");
 });

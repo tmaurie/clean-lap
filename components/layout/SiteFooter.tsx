@@ -21,7 +21,13 @@ export function SiteFooter() {
         >
           @tmaurie
         </Link>{" "}
-        · Données f1api.dev
+        ·{" "}
+        <Link
+          href="https://github.com/tmaurie/clean-lap/blob/master/docs/data-sources.md"
+          className="underline underline-offset-2 hover:text-primary"
+        >
+          Données Jolpica-F1, OpenF1 et F1DB
+        </Link>
       </span>
     </footer>
   );

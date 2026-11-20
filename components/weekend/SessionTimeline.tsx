@@ -40,7 +40,7 @@ function SessionPodium({ session }: { session: WeekendSessionView }) {
           <span
             className={clsx(
               "w-5 shrink-0 font-mono text-sm font-bold",
-              entry.position === "1" ? "text-primary" : "text-foreground/40",
+              entry.position === "1" ? "text-primary" : "text-foreground/60",
             )}
           >
             {entry.position}
@@ -95,7 +95,7 @@ export function SessionTimeline({
                 session.status === "live"
                   ? "text-primary"
                   : session.status === "done"
-                    ? "text-foreground/40"
+                    ? "text-foreground/60"
                     : "text-foreground",
               )}
             >
@@ -105,7 +105,7 @@ export function SessionTimeline({
             <span
               className={clsx(
                 "min-w-[150px] flex-1 text-sm font-semibold uppercase tracking-wide",
-                session.status === "done" && "text-foreground/50",
+                session.status === "done" && "text-foreground/60",
               )}
             >
               {session.label}
@@ -125,6 +125,14 @@ export function SessionTimeline({
           </div>
 
           {session.podium.length > 0 && <SessionPodium session={session} />}
+          {(session.practiceStatus === "pending" ||
+            session.practiceStatus === "unavailable") && (
+            <p className="px-5 pb-4 text-sm text-foreground/55 sm:px-6">
+              {session.practiceStatus === "pending"
+                ? "Classement en attente de publication."
+                : "Résultats de la séance indisponibles."}
+            </p>
+          )}
         </li>
       ))}
     </ol>
